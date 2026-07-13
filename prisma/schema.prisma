@@ -1,0 +1,178 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum Role{
+  ADMIN
+  PROJECT_MANAGER
+  TEAM_LEADER
+  USER
+  VIEWER
+}
+
+enum ProjectStatus{
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  BLOCKED
+  CANCELLED
+}
+
+enum TaskPriority{
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+
+// --- Models ---
+model Organisation{
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  
+  users     User[]
+  clients   Client[]
+  teams     Team[]
+  projects  Project[]
+  tasks     Task[]
+  taskTypes TaskType[]
+}
+
+model User{
+  id             String   @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String   @unique
+  password       String
+  role           Role    @default(USER)
+  createdAt      DateTime @default(now())
+  avatarUrl      String?
+  lastLoginAt    DateTime?
+  
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+  
+  ledTeams       Team[]       @relation("TeamLeader")
+  teams          Team[]       @relation("TeamMembers")
+  projects       Project[]    @relation("ProjectMembers")
+  tasks          Task[]       @relation("TaskAssignees")
+  projectNotes   ProjectNote[]
+}
+
+model Client{
+  id            String   @id @default(uuid())
+  name          String
+  email         String?
+  phone         String?
+  
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+  
+  projects      Project[]
+}
+
+model Team{
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+  
+  leaderId      String?
+  leader        User?       @relation("TeamLeader", fields: [leaderId], references: [id])
+  
+  members       User[]     @relation("TeamMembers")
+}
+
+model Project{
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  status        ProjectStatus @default(PLANNING)
+  startDate     DateTime?
+  endDate       DateTime?
+  
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+  
+  clientId      String?
+  client        Client?      @relation(fields: [clientId], references: [id])
+  
+  members       User[]       @relation("ProjectMembers")
+  tasks         Task[]
+  notes         ProjectNote[]
+}
+
+
+model Task{
+  id            String   @id @default(uuid())
+  title         String
+  description   String?
+  status        TaskStatus @default(TODO)
+  priority      TaskPriority @default(MEDIUM)
+  dueDate       DateTime?
+  
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+  
+  projectId     String?
+  project       Project?     @relation(fields: [projectId], references: [id])
+  
+  assignees     User[]       @relation("TaskAssignees")
+  taskTypeId    String?
+  taskType      TaskType?    @relation(fields: [taskTypeId], references: [id])
+  
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+}
+
+model TaskType{
+  id            String   @id @default(uuid())
+  name          String
+  color         String?  @default("#000000")
+  description   String?
+  
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+  
+  tasks         Task[]
+}
+
+model  ProjectNote{
+  id            String   @id @default(uuid())
+  content       String
+  
+  projectId     String?
+  project       Project?     @relation(fields: [projectId], references: [id])
+  
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  authorId      String?
+  author        User?        @relation(fields: [authorId], references: [id])
+}
