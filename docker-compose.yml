@@ -1,0 +1,17 @@
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: tasktracker-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - tasktracker-data:/var/lib/postgresql/data
+
+volumes:
+  tasktracker-data:
