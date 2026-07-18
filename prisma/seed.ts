@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient, ProjectStatus, Role, TaskPriority, TaskStatus } from '../src/generated/client'
 
@@ -6,6 +7,8 @@ const prisma = new PrismaClient({
 })
 
 async function main() {
+  const salt = await bcrypt.genSalt(10)
+  const passwordHash = await bcrypt.hash('admin1234', salt)
   console.log('Démarrage du seed de démonstration...')
 
   await prisma.projectNote.deleteMany()
@@ -52,7 +55,7 @@ async function main() {
       email: 'admin@abatechnology.com',
       firstName: 'Zakaria',
       lastName: 'Guennani',
-      password: 'hashed_password_placeholder',
+      password: passwordHash,
       role: Role.ADMIN,
       organisationId: organisation.id,
     },
@@ -63,7 +66,7 @@ async function main() {
       email: 'manager@abatechnology.com',
       firstName: 'Hamza',
       lastName: 'Radi',
-      password: 'hashed_password_placeholder',
+      password: passwordHash,
       role: Role.PROJECT_MANAGER,
       organisationId: organisation.id,
     },
@@ -74,7 +77,7 @@ async function main() {
       email: 'hind@abatechnology.com',
       firstName: 'Hind',
       lastName: 'Rahimi',
-      password: 'hashed_password_placeholder',
+      password: passwordHash,
       role: Role.USER,
       organisationId: organisation.id,
     },
@@ -85,7 +88,7 @@ async function main() {
       email: 'engineer@abatechnology.com',
       firstName: 'Alan',
       lastName: 'Cooper',
-      password: 'hashed_password_placeholder',
+      password: passwordHash,
       role: Role.USER,
       organisationId: organisation.id,
     },
