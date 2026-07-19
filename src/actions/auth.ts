@@ -33,3 +33,12 @@ export async function loginAction(prevState: any, formData: FormData) {
 		return { error: 'Une erreur est survenue lors de la connexion.' }
 	}
 }
+
+
+export async function logoutAction() {
+	const cookieStore = await cookies()
+
+	cookieStore.delete('session_user')
+	
+	return { success: true }
+}
