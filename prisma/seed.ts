@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcrypt'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { PrismaClient, ProjectStatus, Role, TaskPriority, TaskStatus } from '../src/generated/client'
+import { PrismaClient, ProjectStatus, Role, TaskPriority, TaskStatus } from '@/generated/client'
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
