@@ -3,7 +3,7 @@
 import { useActionState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { loginAction } from '../../../src/actions/auth'
+import { loginAction } from '@/actions/auth'
 
 export default function AuthenticationPage() {
 	const router = useRouter()
