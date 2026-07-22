@@ -1,0 +1,68 @@
+'use server'
+
+import { prisma } from '@/lib/prisma'
+import { Role } from '@/generated/client'
+import { authorizeRole } from '@/lib/rbac'
+import { clientSchema, ClientFormValues } from '@/validations/client.schema'
+import { revalidatePath } from 'next/cache'
+
+
+                                        //Server Actions: upsert & delete
+
+export async function upsertClient(data: ClientFormValues, orgName: string) {
+    try {
+        const user = await authorizeRole(Role.PROJECT_MANAGER)
+
+        const parsedData = clientSchema.safeParse(data)
+        if (!parsedData.success) {
+            return { error: 'Données invalides.'} 
+        }
+
+
+        const { id, name, email } = parsedData.data
+
+        if (id) {
+            await prisma.client.update({
+                where: {id},
+                data: {name, email}
+            })
+        } else {
+            await prisma.client.create({
+                data: {name: parsedData.data.name,
+                        email: parsedData.data.email,
+                        organisationId: user.organisationId}
+            })
+        }
+         revalidatePath(`/org/${orgName}/dashboard/clients`)
+         return {success: true}
+    } catch (error) {
+        return { error: 'Une erreur est survenue lors de l\'enregistrement du client.' }
+    }
+}
+
+
+export async function deleteClient(clientId: string, orgName: string) {
+    try {
+        const user = await authorizeRole(Role.PROJECT_MANAGER)
+
+        const client = await prisma.client.findUnique({
+            where: {id: clientId},
+            include: {projects: true}
+        })
+
+
+
+        if (client && client.projects.length > 0){
+            return { error: 'Impossible de supprimer un client qui a des projets associés.' }
+        }
+        
+        await prisma.client.delete({
+            where: { id: clientId }
+        })
+
+        revalidatePath(`/org/${orgName}/dashboard/clients`)
+        return {success: true}
+    } catch (error) {
+        return { error: 'Une erreur est survenue lors de la suppression du client.' }
+    }
+}
