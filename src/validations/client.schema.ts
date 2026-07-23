@@ -11,6 +11,4 @@ export const clientSchema = z.object({
 
 })
 
-
 export type ClientFormValues = z.infer<typeof clientSchema>
-

@@ -5,7 +5,7 @@ import { cookies } from 'next/headers'
 import { validateCredentials } from '@/services/auth.service'
 import { Role } from '@/generated/client'
 import { authorizeRole } from '@/lib/rbac'
-import { prisma } from '@/lib/validations/prisma'
+import { prisma } from '@/lib/prisma'
 import { error } from 'console'
 
 export async function loginAction(prevState: any, formData: FormData) {
