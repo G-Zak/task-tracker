@@ -9,6 +9,7 @@ import { Role } from '@/src/generated/client'
 import { ProjectStatus } from '@/src/generated/enums'
 import { FolderKanban, Users, Calendar, Building2 } from 'lucide-react'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 
 interface PageProps {
   params: Promise<{ name: string }>
@@ -118,9 +119,10 @@ export default async function ProjectsPage({
           ) : (
             <div className="grid gap-4">
               {projects.map((project) => (
-                <div
+                <Link
                   key={project.id}
-                  className="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm hover:shadow-md transition-all space-y-3"
+                  href={`/org/${orgName}/projects/${project.id}`}
+                  className="block rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:border-zinc-300 transition-all space-y-3"
                 >
                   <div className="flex items-start justify-between">
                     <div>
@@ -159,7 +161,7 @@ export default async function ProjectsPage({
                       <span>{project.members.length} membre(s)</span>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
