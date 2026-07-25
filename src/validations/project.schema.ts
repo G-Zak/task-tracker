@@ -23,3 +23,14 @@ export const projectSchema = z.object({
 })
 
 export type ProjectFormValues = z.infer<typeof projectSchema>
+
+
+
+export const projectFilterSchema = z.object({
+  q: z.string().default(''),
+  status: z.nativeEnum(ProjectStatus).optional(),
+  clientId: z.string().optional(),
+  page: z.coerce.number().int().positive().default(1),
+})
+
+export type ProjectFilters = z.infer<typeof projectFilterSchema>
