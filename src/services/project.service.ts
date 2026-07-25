@@ -9,7 +9,10 @@ interface FilterParams{
     pageSize?: number
 }
 
-export async function getFilteredProjects(organizationId: string, filters: FilterParams){
+export async function getFilteredProjects(
+    organizationId: string, 
+    filters: FilterParams
+){
     
     const {searchQuery = '', status, clientId, page = 1, pageSize = 10} = filters
 
@@ -60,4 +63,68 @@ export async function getFilteredProjects(organizationId: string, filters: Filte
             perPage: pageSize,
         },
     }
+}
+
+
+
+export async function getProjectDetail(
+  projectId: string,
+  organizationId: string
+) {
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: {
+      client: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
+      members: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          role: true,
+          avatarUrl: true,
+        },
+        orderBy: { firstName: 'asc' },
+      },
+      tasks: {
+        include: {
+          assignees: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatarUrl: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      },
+      notes: {
+        include: {
+          author: {
+            select: {
+              firstName: true,
+              lastName: true,
+              avatarUrl: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      },
+    },
+  })
+
+  // Verify project belongs to user's organization
+  if (!project || project.organisationId !== organizationId) {
+    return null
+  }
+
+  return project
 }
