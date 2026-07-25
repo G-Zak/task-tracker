@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { projectSchema, ProjectFormValues } from '@/src/validations/project.schema'
-import { createProject } from '@/src/actions/project'
+import { createProject, updateProject } from '@/src/actions/project'
 import { ProjectStatus } from '@/src/generated/enums'
-import { FolderPlus, Loader2 } from 'lucide-react'
+import { FolderPlus, Loader2, CheckCircle2 } from 'lucide-react'
 
 interface SelectOption {
   id: string
@@ -18,18 +19,31 @@ interface ProjectFormProps {
   clients: SelectOption[]
   users: { id: string; name: string; role: string }[]
   onSuccess?: () => void
+  mode?: 'create' | 'edit'
+  project?: ProjectFormValues & { id: string }
+  redirectTo?: string
 }
 
-export function ProjectForm({ orgName, clients, users, onSuccess }: ProjectFormProps) {
+export function ProjectForm({
+  orgName,
+  clients,
+  users,
+  onSuccess,
+  mode = 'create',
+  project,
+  redirectTo,
+}: ProjectFormProps) {
+  const router = useRouter()
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   const { register, handleSubmit, setValue, watch, formState: { errors }, reset} = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
-    defaultValues: {
+    defaultValues: project ?? {
       name: '',
       description: '',
-      startDate: new Date().toISOString().split('T')[0], 
+      startDate: new Date().toISOString().split('T')[0],
       status: ProjectStatus.PLANNING,
       clientId: '',
       memberIds: [],
@@ -51,14 +65,27 @@ export function ProjectForm({ orgName, clients, users, onSuccess }: ProjectFormP
   const onSubmit = (data: ProjectFormValues) => {
     startTransition(async () => {
       setError(null)
-      const res = await createProject(data, orgName)
+      setSuccess(false)
+
+      const res = mode === 'edit' && project
+        ? await updateProject(project.id, data, orgName)
+        : await createProject(data, orgName)
 
       if (res.error) {
         setError(res.error)
+        return
+      }
+
+      if (mode === 'edit') {
+        setSuccess(true)
+        if (redirectTo) {
+          setTimeout(() => router.push(redirectTo), 800)
+        }
       } else {
         reset()
-        if (onSuccess) onSuccess()
       }
+
+      if (onSuccess) onSuccess()
     })
   }
 
@@ -66,12 +93,21 @@ export function ProjectForm({ orgName, clients, users, onSuccess }: ProjectFormP
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
       <div className="flex items-center gap-2 border-b border-zinc-100 pb-3">
         <FolderPlus className="h-5 w-5 text-zinc-800" />
-        <h3 className="font-semibold text-zinc-900">Nouveau Projet</h3>
+        <h3 className="font-semibold text-zinc-900">
+          {mode === 'edit' ? 'Modifier le projet' : 'Nouveau Projet'}
+        </h3>
       </div>
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-600">
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 p-3 text-xs text-green-700">
+          <CheckCircle2 className="h-4 w-4" />
+          Projet mis à jour avec succès.
         </div>
       )}
 
@@ -192,8 +228,10 @@ export function ProjectForm({ orgName, clients, users, onSuccess }: ProjectFormP
         {isPending ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Création du projet...
+            {mode === 'edit' ? 'Enregistrement...' : 'Création du projet...'}
           </>
+        ) : mode === 'edit' ? (
+          'Enregistrer les modifications'
         ) : (
           'Créer le projet'
         )}

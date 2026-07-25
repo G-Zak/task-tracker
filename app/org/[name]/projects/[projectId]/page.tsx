@@ -2,9 +2,10 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUserSession } from '@/src/lib/rbac'
 import { Role } from '@/src/generated/client'
 import { redirect, notFound } from 'next/navigation'
-import { ArrowLeft, MoreVertical } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { AddMemberModal } from '@/src/components/projects/AddMemberModal'
 import { RemoveMemberButton } from '@/src/components/projects/RemoveMemberButton'
+import { DeleteProjectButton } from '@/src/components/projects/DeleteProjectButton'
 
 interface PageProps {
   params: Promise<{ name: string; projectId: string }>
@@ -86,7 +87,11 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     user.role === Role.ADMIN || 
     user.role === Role.PROJECT_MANAGER
   
-  const canDelete = user.role === Role.ADMIN
+  // US-013 : "En tant que PM/Admin" -> mêmes rôles que canEdit, cohérent avec
+  // authorizeRole(Role.PROJECT_MANAGER) côté serveur dans deleteProject()
+  const canDelete =
+    user.role === Role.ADMIN ||
+    user.role === Role.PROJECT_MANAGER
   
   const canManageMembers = 
     user.role === Role.ADMIN || 
@@ -132,9 +137,11 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             </a>
           )}
           {canDelete && (
-            <button className="p-2 hover:bg-zinc-100 rounded-lg">
-              <MoreVertical className="h-5 w-5 text-zinc-600" />
-            </button>
+            <DeleteProjectButton
+              projectId={projectId}
+              projectName={project.name}
+              orgName={orgName}
+            />
           )}
         </div>
       </div>
