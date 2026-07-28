@@ -10,6 +10,7 @@ import { ProjectStatus } from '@/src/generated/enums'
 import { FolderKanban, Users, Calendar, Building2 } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { projectStatusStyles } from '@/src/lib/status-colors'
 
 interface PageProps {
   params: Promise<{ name: string }>
@@ -126,7 +127,7 @@ export default async function ProjectsPage({
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <span className="inline-block rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-zinc-600 uppercase mb-1">
+                      <span className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold tracking-wider uppercase mb-1 ring-1 ring-inset ${projectStatusStyles[project.status] ?? 'bg-zinc-100 text-zinc-600 ring-zinc-600/10'}`}>
                         {project.status}
                       </span>
                       <h3 className="font-semibold text-zinc-900 text-base">

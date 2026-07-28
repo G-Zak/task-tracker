@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react'
 import { AddMemberModal } from '@/src/components/projects/AddMemberModal'
 import { RemoveMemberButton } from '@/src/components/projects/RemoveMemberButton'
 import { DeleteProjectButton } from '@/src/components/projects/DeleteProjectButton'
+import { projectStatusStyles } from '@/src/lib/status-colors'
 
 interface PageProps {
   params: Promise<{ name: string; projectId: string }>
@@ -114,7 +115,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               {project.name}
             </h1>
             <div className="mt-1 flex items-center gap-2">
-              <span className="inline-block px-2 py-1 bg-zinc-100 text-xs font-semibold text-zinc-600 rounded-md uppercase">
+              <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-md uppercase ring-1 ring-inset ${projectStatusStyles[project.status] ?? 'bg-zinc-100 text-zinc-600 ring-zinc-600/10'}`}>
                 {project.status}
               </span>
               {project.client && (

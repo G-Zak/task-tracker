@@ -99,7 +99,7 @@ export default async function ClientsPage({ params, searchParams }: PageProps) {
                     className="group relative flex items-center justify-between rounded-xl border border-zinc-200/80 bg-white p-4 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md"
                   >
                     <div className="flex items-start gap-3.5">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 font-semibold text-zinc-700 group-hover:bg-zinc-900 group-hover:text-white transition-colors">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 font-semibold text-zinc-700 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                         {client.name.substring(0, 2).toUpperCase()}
                       </div>
 

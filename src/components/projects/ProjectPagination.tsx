@@ -49,7 +49,7 @@ export function ProjectPagination({
               onClick={() => goToPage(page)}
               className={`min-w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
                 page === currentPage
-                  ? 'bg-zinc-900 text-white'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-50'
               }`}
             >

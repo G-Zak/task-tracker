@@ -12,13 +12,13 @@ export async function validateCredentials(email: string, passwordPlain: string){
         return null
     }
 
-    const isPasswordValid = await bcrypt.compare(passwordPlain, user.password)
+    const isPasswordValid = await bcrypt.compare(passwordPlain, user.passwordHash)
 
     if(!isPasswordValid){
         return null
     }
 
-    const {password, ...userWithoutPassword} = user
+    const {passwordHash, ...userWithoutPassword} = user
 
     return userWithoutPassword
 
