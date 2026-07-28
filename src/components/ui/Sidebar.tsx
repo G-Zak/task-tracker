@@ -41,9 +41,9 @@ export function Sidebar({ items, orgName }: SidebarProps) {
             key={item.href}
             href={fullHref}
             onClick={() => setIsOpen(false)}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
               isActive
-                ? 'bg-zinc-900 text-white'
+                ? 'bg-primary text-primary-foreground shadow-sm'
                 : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
             }`}
           >
@@ -58,8 +58,13 @@ export function Sidebar({ items, orgName }: SidebarProps) {
   return (
     <>
       {/* Bouton Mobile de la Topbar (Masqué sur Desktop) */}
-      <div className="flex h-16 items-center border-b border-zinc-200 bg-white px-4 md:hidden justify-between w-full fixed top-0 z-40">
-        <span className="font-bold text-zinc-900 text-lg">TaskTracker</span>
+      <div className="flex h-16 items-center border-b border-zinc-200 bg-white/80 backdrop-blur-sm shadow-sm px-4 md:hidden justify-between w-full fixed top-0 z-40">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground text-xs font-bold">
+            AT
+          </div>
+          <span className="font-bold text-zinc-900 text-lg">TaskTracker</span>
+        </div>
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 focus:outline-none"
@@ -70,7 +75,7 @@ export function Sidebar({ items, orgName }: SidebarProps) {
 
       {/* Menu Latéral Rideau Mobile */}
       {isOpen && (
-        <div className="fixed inset-0 z-30 bg-zinc-900/40 md:hidden" onClick={() => setIsOpen(false)} />
+        <div className="fixed inset-0 z-30 bg-zinc-900/40 backdrop-blur-[1px] md:hidden" onClick={() => setIsOpen(false)} />
       )}
 
       <aside
@@ -78,9 +83,14 @@ export function Sidebar({ items, orgName }: SidebarProps) {
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="mb-6 hidden md:block px-3">
-          <span className="font-bold text-zinc-900 text-xl tracking-tight">ABA Technology</span>
-          <p className="text-xs text-zinc-400 capitalize">{orgName}</p>
+        <div className="mb-6 hidden md:flex items-center gap-2.5 px-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-sm">
+            AT
+          </div>
+          <div>
+            <span className="font-bold text-zinc-900 text-base tracking-tight leading-none block">ABA Technology</span>
+            <p className="text-xs text-zinc-400 capitalize mt-0.5">{orgName}</p>
+          </div>
         </div>
 
         <nav className="space-y-1 flex flex-col">

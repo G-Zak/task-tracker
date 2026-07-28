@@ -16,11 +16,16 @@ export default function AuthenticationPage() {
 	}, [state, router])
 
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4">
-			<div className="w-full max-w-md space-y-6 rounded-xl border border-zinc-200 bg-white p-8 shadow-sm">
-				<div className="space-y-2 text-center">
-					<h1 className="text-2xl font-bold text-zinc-900">Connexion à TaskTracker</h1>
-					<p className="text-sm text-zinc-500">Entrez vos identifiants pour accéder à votre espace</p>
+		<div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-50 to-zinc-100/60 px-4">
+			<div className="w-full max-w-md space-y-6 rounded-2xl border border-zinc-200/80 bg-white p-8 shadow-md">
+				<div className="space-y-3 text-center">
+					<div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-sm">
+						AT
+					</div>
+					<div className="space-y-1">
+						<h1 className="text-2xl font-bold text-zinc-900">Connexion à TaskTracker</h1>
+						<p className="text-sm text-zinc-500">Entrez vos identifiants pour accéder à votre espace</p>
+					</div>
 				</div>
 
 				<form action={formAction} className="space-y-4">
@@ -35,7 +40,7 @@ export default function AuthenticationPage() {
 							name="email"
 							type="email"
 							required
-							className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none"
+							className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-colors"
 							placeholder="admin@abatechnology.com"
 						/>
 					</div>
@@ -49,7 +54,7 @@ export default function AuthenticationPage() {
 							name="password"
 							type="password"
 							required
-							className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none"
+							className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-colors"
 							placeholder="••••••••"
 						/>
 					</div>
@@ -57,7 +62,7 @@ export default function AuthenticationPage() {
 					<button
 						type="submit"
 						disabled={isPending}
-						className="w-full rounded-lg bg-zinc-900 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:bg-zinc-400"
+						className="w-full rounded-xl bg-primary py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
 					>
 						{isPending ? 'Connexion en cours...' : 'Se connecter'}
 					</button>

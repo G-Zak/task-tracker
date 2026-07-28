@@ -38,16 +38,16 @@ export function ClientForm({ orgName, initialData, onSuccess }: ClientFormProps)
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-white p-4 rounded-xl border border-zinc-200">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm">
       <h3 className="font-semibold text-zinc-900">{initialData ? 'Modifier le client' : 'Nouveau client'}</h3>
-      
-      {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>}
+
+      {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded-lg">{error}</p>}
 
       <div>
         <label className="text-sm font-medium text-zinc-700">Nom de l'entreprise</label>
-        <input 
-          {...register('name')} 
-          className="w-full mt-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none" 
+        <input
+          {...register('name')}
+          className="w-full mt-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-colors"
           placeholder="Ex: Numspot"
         />
         {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>}
@@ -55,19 +55,19 @@ export function ClientForm({ orgName, initialData, onSuccess }: ClientFormProps)
 
       <div>
         <label className="text-sm font-medium text-zinc-700">Email de contact</label>
-        <input 
-          {...register('email')} 
+        <input
+          {...register('email')}
           type="email"
-          className="w-full mt-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-500 focus:outline-none" 
+          className="w-full mt-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-colors"
           placeholder="contact@numspot.fr"
         />
         {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>}
       </div>
 
-      <button 
-        type="submit" 
+      <button
+        type="submit"
         disabled={isPending}
-        className="w-full rounded-lg bg-zinc-900 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
+        className="w-full rounded-xl bg-primary py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
       >
         {isPending ? 'Enregistrement...' : 'Enregistrer'}
       </button>
