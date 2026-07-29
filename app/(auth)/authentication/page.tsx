@@ -59,6 +59,17 @@ export default function AuthenticationPage() {
 						/>
 					</div>
 
+					<div className="rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-[11px] leading-relaxed text-zinc-500">
+					<p className="mb-1 font-semibold uppercase tracking-wide text-zinc-600">Comptes de demonstration</p>
+					<p>admin@abatechnology.com — administrateur</p>
+					<p>manager@abatechnology.com — chef de projet</p>
+					<p>lead@abatechnology.com — chef d&apos;equipe</p>
+					<p>hind@abatechnology.com — collaboratrice</p>
+					<p className="mt-1">
+						Mot de passe commun : <span className="font-mono font-semibold">admin1234</span>
+					</p>
+				</div>
+
 					<button
 						type="submit"
 						disabled={isPending}
