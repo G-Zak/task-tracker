@@ -15,7 +15,7 @@ interface SelectOption {
 }
 
 interface ProjectFormProps {
-  orgName: string
+  orgSlug: string
   clients: SelectOption[]
   users: { id: string; name: string; role: string }[]
   onSuccess?: () => void
@@ -25,7 +25,7 @@ interface ProjectFormProps {
 }
 
 export function ProjectForm({
-  orgName,
+  orgSlug,
   clients,
   users,
   onSuccess,
@@ -68,8 +68,8 @@ export function ProjectForm({
       setSuccess(false)
 
       const res = mode === 'edit' && project
-        ? await updateProject(project.id, data, orgName)
-        : await createProject(data, orgName)
+        ? await updateProject(project.id, data, orgSlug)
+        : await createProject(data, orgSlug)
 
       if (res.error) {
         setError(res.error)

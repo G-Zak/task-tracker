@@ -9,12 +9,12 @@ import { useState, useTransition } from 'react'
                                   // Client Component / RHF + Zod
 
 interface ClientFormProps {
-  orgName: string
+  orgSlug: string
   initialData?: ClientFormValues | null
   onSuccess?: () => void
 }
 
-export function ClientForm({ orgName, initialData, onSuccess }: ClientFormProps) {
+export function ClientForm({ orgSlug, initialData, onSuccess }: ClientFormProps) {
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -26,7 +26,7 @@ export function ClientForm({ orgName, initialData, onSuccess }: ClientFormProps)
   const onSubmit = (data: ClientFormValues) => {
     startTransition(async () => {
       setError(null)
-      const result = await upsertClient(data, orgName)
+      const result = await upsertClient(data, orgSlug)
       
       if (result.error) {
         setError(result.error)

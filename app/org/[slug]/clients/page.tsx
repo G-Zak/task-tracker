@@ -12,7 +12,7 @@ interface PageProps {
 }
 
 export default async function ClientsPage({ params, searchParams }: PageProps) {
-  const { name: orgName } = await params
+  const { name: orgSlug } = await params
   const { q: searchQuery } = await searchParams
   
   const user = await getCurrentUserSession()
@@ -126,7 +126,7 @@ export default async function ClientsPage({ params, searchParams }: PageProps) {
                         <DeleteClientButton 
                           clientId={client.id}
                           clientName={client.name}
-                          orgName={orgName}
+                          orgSlug={orgSlug}
                           hasProjects={projectCount > 0}
                         />
                       )}
@@ -142,7 +142,7 @@ export default async function ClientsPage({ params, searchParams }: PageProps) {
         <div className="lg:sticky lg:top-8">
           {canManageClients ? (
             <div className="rounded-2xl border border-zinc-200 bg-white p-1 shadow-sm">
-              <ClientForm orgName={orgName} />
+              <ClientForm orgSlug={orgSlug} />
             </div>
           ) : (
             <div className="rounded-2xl border border-amber-200/60 bg-amber-50/50 p-6 text-center">

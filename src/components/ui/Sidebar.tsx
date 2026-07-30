@@ -20,14 +20,14 @@ const ICON_MAP: Record<string, any> = {
 
 interface SidebarProps {
   items: NavigationItem[]
-  orgName: string
+  orgSlug: string
 }
 
-export function Sidebar({ items, orgName }: SidebarProps) {
+export function Sidebar({ items, orgSlug }: SidebarProps) {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
-  const basePath = `/org/${orgName}`
+  const basePath = `/org/${orgSlug}`
 
   const NavLinks = () => (
     <>
@@ -89,7 +89,7 @@ export function Sidebar({ items, orgName }: SidebarProps) {
           </div>
           <div>
             <span className="font-bold text-zinc-900 text-base tracking-tight leading-none block">ABA Technology</span>
-            <p className="text-xs text-zinc-400 capitalize mt-0.5">{orgName}</p>
+            <p className="text-xs text-zinc-400 capitalize mt-0.5">{orgSlug}</p>
           </div>
         </div>
 

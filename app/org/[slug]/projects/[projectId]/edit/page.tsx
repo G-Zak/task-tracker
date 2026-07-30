@@ -11,13 +11,13 @@ interface PageProps {
 }
 
 export default async function EditProjectPage({ params }: PageProps) {
-  const { name: orgName, projectId } = await params
+  const { name: orgSlug, projectId } = await params
 
   const user = await getCurrentUserSession()
   if (!user) redirect('/authentication')
 
   const canEdit = user.role === Role.ADMIN || user.role === Role.PROJECT_MANAGER
-  if (!canEdit) redirect(`/org/${orgName}/projects/${projectId}`)
+  if (!canEdit) redirect(`/org/${orgSlug}/projects/${projectId}`)
 
   const project = await prisma.project.findUnique({
     where: { id: projectId },
@@ -53,7 +53,7 @@ export default async function EditProjectPage({ params }: PageProps) {
     <div className="space-y-8 max-w-2xl">
       <div className="flex items-center gap-3 border-b border-zinc-200/80 pb-5">
         <Link
-          href={`/org/${orgName}/projects/${projectId}`}
+          href={`/org/${orgSlug}/projects/${projectId}`}
           className="p-2 hover:bg-zinc-100 rounded-lg transition"
         >
           <ArrowLeft className="h-5 w-5 text-zinc-600" />
@@ -67,11 +67,11 @@ export default async function EditProjectPage({ params }: PageProps) {
       </div>
 
       <ProjectForm
-        orgName={orgName}
+        orgSlug={orgSlug}
         clients={clients}
         users={users}
         mode="edit"
-        redirectTo={`/org/${orgName}/projects/${projectId}`}
+        redirectTo={`/org/${orgSlug}/projects/${projectId}`}
         project={{
           id: project.id,
           name: project.name,

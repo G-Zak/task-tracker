@@ -7,11 +7,11 @@ import { Trash2, Loader2 } from 'lucide-react'
 interface DeleteClientButtonProps {
   clientId: string
   clientName: string
-  orgName: string
+  orgSlug: string
   hasProjects: boolean
 }
 
-export function DeleteClientButton({ clientId, clientName, orgName, hasProjects }: DeleteClientButtonProps) {
+export function DeleteClientButton({ clientId, clientName, orgSlug, hasProjects }: DeleteClientButtonProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
@@ -28,7 +28,7 @@ export function DeleteClientButton({ clientId, clientName, orgName, hasProjects 
 
     startTransition(async () => {
       setError(null)
-      const res = await deleteClient(clientId, orgName)
+      const res = await deleteClient(clientId, orgSlug)
       if (res?.error) {
         setError(res.error)
         setTimeout(() => setError(null), 3500)
