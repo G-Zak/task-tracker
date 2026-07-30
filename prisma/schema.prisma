@@ -73,6 +73,8 @@ model User{
   projects       Project[]    @relation("ProjectMembers")
   tasks          Task[]       @relation("TaskAssignees")
   projectNotes   ProjectNote[]
+
+  assignedTasks  Task[]       @relation("AssignedTasks")
 }
 
 model Client{

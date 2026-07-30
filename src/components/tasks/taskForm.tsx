@@ -1,169 +1,178 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { taskSchema, TaskFormValues } from '@/src/validations/task.schema'
-import { createTask } from '@/src/actions/task'
-import { TaskStatus, TaskPriority } from '@/src/generated/enums'
-import { CheckSquare, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
-interface SelectOption {
-  id: string
-  name: string
+import { createTask, updateTask } from '@/actions/task'
+import { taskSchema, type TaskFormValues } from '@/validations/task.schema'
+import { TaskPriority, TaskStatus } from '@/generated/enums'
+import { taskPriorityLabels, taskPriorityOptions, taskStatusLabels, taskStatusOptions } from '@/lib/labels'
+import { FormAlert, FormField, Input, Select, Textarea } from '@/components/ui/Field'
+import { MemberPicker } from '@/components/ui/MemberPicker'
+
+interface Option {
+    id: string
+    name: string
 }
 
 interface TaskFormProps {
-  orgSlug: string
-  projects: SelectOption[]
-  taskTypes: SelectOption[]
-  defaultProjectId?: string
-  onSuccess?: () => void
+    orgSlug: string
+    projects: Option[]
+    taskTypes: { id: string; name: string; color: string | null }[]
+    members: { id: string; name: string; role: string }[]
+    mode?: 'create' | 'edit'
+    task?: TaskFormValues & { id: string }
+    defaultProjectId?: string
+    redirectTo?: string
 }
 
-export function TaskForm({ orgSlug, projects, taskTypes, defaultProjectId = '', onSuccess }: TaskFormProps) {
-  const [error, setError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+export function TaskForm({
+    orgSlug,
+    projects,
+    taskTypes,
+    members,
+    mode = 'create',
+    task,
+    defaultProjectId,
+    redirectTo,
+}: TaskFormProps) {
+    const router = useRouter()
+    const [error, setError] = useState<string | null>(null)
+    const [isPending, startTransition] = useTransition()
 
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<TaskFormValues>({
-    resolver: zodResolver(taskSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      status: TaskStatus.TODO,
-      priority: TaskPriority.MEDIUM,
-      projectId: defaultProjectId,
-      taskTypeId: taskTypes.length > 0 ? taskTypes[0].id : '',
-    },
-  })
-
-  const onSubmit = (data: TaskFormValues) => {
-    startTransition(async () => {
-      setError(null)
-      const res = await createTask(data, orgSlug)
-
-      if (res.error) {
-        setError(res.error)
-      } else {
-        reset()
-        if (onSuccess) onSuccess()
-      }
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        watch,
+        reset,
+        formState: { errors },
+    } = useForm<TaskFormValues>({
+        resolver: zodResolver(taskSchema),
+        defaultValues: task ?? {
+            title: '',
+            description: '',
+            status: TaskStatus.TODO,
+            priority: TaskPriority.MEDIUM,
+            projectId: defaultProjectId ?? '',
+            taskTypeId: '',
+            dueDate: '',
+            assigneeIds: [], 
+        },
     })
-  }
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-      <div className="flex items-center gap-2 border-b border-zinc-100 pb-3">
-        <CheckSquare className="h-5 w-5 text-zinc-800" />
-        <h3 className="font-semibold text-zinc-900">Nouvelle Tâche</h3>
-      </div>
+    const selectedAssignees = watch('assigneeIds') ?? []
 
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-600">
-          {error}
-        </div>
-      )}
+    const onSubmit = (values: TaskFormValues) => {
+        startTransition(async () => {
+            setError(null)
 
-      <div>
-        <label className="text-xs font-semibold text-zinc-700">Titre de la tâche *</label>
-        <input
-          {...register('title')}
-          placeholder="ex: Configurer le serveur de base de données"
-          className="mt-1 w-full rounded-xl border border-zinc-200 px-3.5 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
-        />
-        {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>}
-      </div>
+            const result = mode === 'edit' && task 
+                ? await updateTask(task.id, values, orgSlug) 
+                : await createTask(values, orgSlug)
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-semibold text-zinc-700">Projet lié *</label>
-          <select
-            {...register('projectId')}
-            className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
-          >
-            <option value="">Sélectionner un projet...</option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-          {errors.projectId && <p className="mt-1 text-xs text-red-600">{errors.projectId.message}</p>}
-        </div>
+            if ('error' in result) {
+                setError(result.error)
+                return
+            }
 
-        <div>
-          <label className="text-xs font-semibold text-zinc-700">Type de tâche</label>
-          <select
-            {...register('taskTypeId')}
-            className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
-          >
-            <option value="">Sélectionner un type...</option>
-            {taskTypes.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
-          {errors.taskTypeId && <p className="mt-1 text-xs text-red-600">{errors.taskTypeId.message}</p>}
-        </div>
-      </div>
+            if (mode === 'create') reset()
 
-      <div>
-        <label className="text-xs font-semibold text-zinc-700">Description</label>
-        <textarea
-          {...register('description')}
-          rows={3}
-          placeholder="Détails techniques, livrables attendus..."
-          className="mt-1 w-full rounded-xl border border-zinc-200 px-3.5 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
-        />
-      </div>
+            router.refresh()
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-semibold text-zinc-700">Statut</label>
-          <select
-            {...register('status')}
-            className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
-          >
-            {Object.values(TaskStatus).map((st) => (
-              <option key={st} value={st}>{st}</option>
-            ))}
-          </select>
-        </div>
+            if (redirectTo) router.push(redirectTo)
+            else if (result.action === 'create') {
+                router.push(`/org/${orgSlug}/tasks/${result.data.id}`)
+            }
+        })
+    }
 
-        <div>
-          <label className="text-xs font-semibold text-zinc-700">Priorité</label>
-          <select
-            {...register('priority')}
-            className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
-          >
-            {Object.values(TaskPriority).map((pr) => (
-              <option key={pr} value={pr}>{pr}</option>
-            ))}
-          </select>
-        </div>
-      </div>
+    return (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {error && <FormAlert type="error" message={error} />}
 
-      <div>
-        <label className="text-xs font-semibold text-zinc-700">Date d'échéance</label>
-        <input
-          type="date"
-          {...register('dueDate')}
-          className="mt-1 w-full rounded-xl border border-zinc-200 px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
-        />
-        {errors.dueDate && <p className="mt-1 text-xs text-red-600">{errors.dueDate.message}</p>}
-      </div>
+            <FormField label="Titre de la tâche" required error={errors.title?.message}>
+                <Input {...register('title')} placeholder="ex: Intégrer l'API de facturation" />
+            </FormField>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 transition-colors"
-      >
-        {isPending ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Création de la tâche...
-          </>
-        ) : (
-          'Ajouter la tâche'
-        )}
-      </button>
-    </form>
-  )
+            <FormField label="Description" error={errors.description?.message}>
+                <Textarea {...register('description')} rows={4} placeholder="Contexte, critères d'acceptation, liens utiles..." />
+            </FormField>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+                <FormField label="Projet" required error={errors.projectId?.message}>
+                    <Select {...register('projectId')}>
+                        <option value="">Sélectionner un projet...</option>
+                        {projects.map((project) => (
+                            <option key={project.id} value={project.id}>
+                                {project.name}
+                            </option>
+                        ))}
+                    </Select>
+                </FormField>
+
+                <FormField label="Type de tâche" error={errors.taskTypeId?.message}>
+                    <Select {...register('taskTypeId')}>
+                        <option value="">Aucun type</option>
+                        {taskTypes.map((type) => (
+                            <option key={type.id} value={type.id}>
+                                {type.name}
+                            </option>
+                        ))}
+                    </Select>
+                </FormField>
+
+                <FormField label="Statut" error={errors.status?.message}>
+                    <Select {...register('status')}>
+                        {taskStatusOptions.map((status) => (
+                            <option key={status} value={status}>
+                                {taskStatusLabels[status]}
+                            </option>
+                        ))}
+                    </Select>
+                </FormField>
+
+                <FormField label="Priorité" error={errors.priority?.message}>
+                    <Select {...register('priority')}>
+                        {taskPriorityOptions.map((priority) => (
+                            <option key={priority} value={priority}>
+                                {taskPriorityLabels[priority]}
+                            </option>
+                        ))}
+                    </Select>
+                </FormField>
+
+                <FormField label="Échéance" error={errors.dueDate?.message}>
+                    <Input type="date" {...register('dueDate')} />
+                </FormField>
+
+                {/* 
+                <FormField label="Charge estimée (heures)" error={errors.estimatedHours?.message} hint="Laisser vide si inconnue.">
+                    <Input type="number" step="0.5" min="0" {...register('estimatedHours')} placeholder="ex: 8" />
+                </FormField>
+                */}        
+                
+            </div>
+
+            <FormField label={`Assignés (${selectedAssignees.length})`} error={errors.assigneeIds?.message}>
+                <MemberPicker
+                    members={members}
+                    selectedIds={selectedAssignees}
+                    onChange={(ids) => setValue('assigneeIds', ids, { shouldValidate: true })}
+                />
+            </FormField>
+
+            <button
+                type="submit"
+                disabled={isPending}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+            >
+                {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {mode === 'edit' ? 'Enregistrer les modifications' : 'Créer la tâche'}
+            </button>
+        </form>
+    )
 }

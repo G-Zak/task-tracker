@@ -36,9 +36,21 @@ export default async function TasksPage({ params }: PageProps) {
 
   const taskTypes = await prisma.taskType.findMany({
     where: { organisationId: user.organisationId },
-    select: { id: true, name: true },
+    select: { id: true, name: true, color: true },
     orderBy: { name: 'asc' },
   })
+
+  const organizationMembersRaw = await prisma.user.findMany({
+    where: { organisationId: user.organisationId },
+    select: { id: true, firstName: true, lastName: true, role: true },
+    orderBy: { firstName: 'asc' },
+  })
+
+  const organizationMembers = organizationMembersRaw.map((member) => ({
+    id: member.id,
+    name: `${member.firstName} ${member.lastName}`,
+    role: member.role,
+  }))
 
   return (
     <div className="space-y-8">
@@ -116,7 +128,7 @@ export default async function TasksPage({ params }: PageProps) {
 
         <div className="lg:sticky lg:top-8">
           {canCreateTask ? (
-            <TaskForm orgSlug={orgSlug} projects={projects} taskTypes={taskTypes} />
+            <TaskForm orgSlug={orgSlug} projects={projects} taskTypes={taskTypes} members={organizationMembers} />
           ) : (
             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6 text-center text-xs text-zinc-500">
               Vous n'avez pas les privilèges suffisants pour créer des tâches.
