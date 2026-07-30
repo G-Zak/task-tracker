@@ -49,7 +49,7 @@ export default async function TasksPage({ params }: PageProps) {
   const organizationMembers = organizationMembersRaw.map((member) => ({
     id: member.id,
     name: `${member.firstName} ${member.lastName}`,
-    role: member.role,
+    role: String(member.role),
   }))
 
   return (
