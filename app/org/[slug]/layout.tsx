@@ -11,7 +11,7 @@ interface OrgLayoutProps {
 
 export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   const user = await getCurrentUserSession()
-  const { name: orgName } = await params
+  const { name: orgSlug } = await params
 
   if (!user || !user.role) {
     redirect('/authentication')
@@ -23,7 +23,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-b from-zinc-50 to-zinc-100/60">
-      <Sidebar items={filteredNavigation} orgName={orgName} />
+      <Sidebar items={filteredNavigation} orgSlug={orgSlug} />
 
       <main className="flex-1 p-4 md:p-8 pt-20 md:pt-8 w-full max-w-7xl mx-auto">
         {children}

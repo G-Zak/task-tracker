@@ -6,13 +6,13 @@ import { Plus, Loader2, X } from 'lucide-react'
 
 interface AddMemberModalProps {
   projectId: string
-  orgName: string
+  orgSlug: string
   existingMemberIds: string[]
 }
 
 export function AddMemberModal({
   projectId,
-  orgName,
+  orgSlug,
   existingMemberIds,
 }: AddMemberModalProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -43,7 +43,7 @@ export function AddMemberModal({
 
     startTransition(async () => {
       try {
-        const result = await addMemberToProject(projectId, selectedUserId, orgName)
+        const result = await addMemberToProject(projectId, selectedUserId, orgSlug)
         if (result.error) {
           setError(result.error)
         } else {

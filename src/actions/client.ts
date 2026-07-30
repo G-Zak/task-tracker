@@ -9,7 +9,7 @@ import { revalidatePath } from 'next/cache'
 
                                         //Server Actions: upsert & delete
 
-export async function upsertClient(data: ClientFormValues, orgName: string) {
+export async function upsertClient(data: ClientFormValues, orgSlug: string) {
     try {
         const user = await authorizeRole(Role.PROJECT_MANAGER)
 
@@ -33,7 +33,7 @@ export async function upsertClient(data: ClientFormValues, orgName: string) {
                         organisationId: user.organisationId}
             })
         }
-         revalidatePath(`/org/${orgName}/dashboard/clients`)
+         revalidatePath(`/org/${orgSlug}/dashboard/clients`)
          return {success: true}
     } catch (error) {
         return { error: 'Une erreur est survenue lors de l\'enregistrement du client.' }
@@ -41,7 +41,7 @@ export async function upsertClient(data: ClientFormValues, orgName: string) {
 }
 
 
-export async function deleteClient(clientId: string, orgName: string) {
+export async function deleteClient(clientId: string, orgSlug: string) {
     try {
         const user = await authorizeRole(Role.PROJECT_MANAGER)
 
@@ -60,7 +60,7 @@ export async function deleteClient(clientId: string, orgName: string) {
             where: { id: clientId }
         })
 
-        revalidatePath(`/org/${orgName}/dashboard/clients`)
+        revalidatePath(`/org/${orgSlug}/dashboard/clients`)
         return {success: true}
     } catch (error) {
         return { error: 'Une erreur est survenue lors de la suppression du client.' }

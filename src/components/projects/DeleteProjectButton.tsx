@@ -8,10 +8,10 @@ import { Trash2, Loader2 } from 'lucide-react'
 interface DeleteProjectButtonProps {
   projectId: string
   projectName: string
-  orgName: string
+  orgSlug: string
 }
 
-export function DeleteProjectButton({ projectId, projectName, orgName }: DeleteProjectButtonProps) {
+export function DeleteProjectButton({ projectId, projectName, orgSlug }: DeleteProjectButtonProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -23,7 +23,7 @@ export function DeleteProjectButton({ projectId, projectName, orgName }: DeleteP
 
     startTransition(async () => {
       setError(null)
-      const res = await deleteProject(projectId, orgName)
+      const res = await deleteProject(projectId, orgSlug)
 
       if (res?.error) {
         setError(res.error)
@@ -31,7 +31,7 @@ export function DeleteProjectButton({ projectId, projectName, orgName }: DeleteP
         return
       }
 
-      router.push(`/org/${orgName}/projects`)
+      router.push(`/org/${orgSlug}/projects`)
     })
   }
 
