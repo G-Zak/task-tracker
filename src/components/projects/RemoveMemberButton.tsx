@@ -8,14 +8,14 @@ interface RemoveMemberButtonProps {
   projectId: string
   memberId: string
   memberName: string
-  orgName: string
+  orgSlug: string
 }
 
 export function RemoveMemberButton({
   projectId,
   memberId,
   memberName,
-  orgName,
+  orgSlug,
 }: RemoveMemberButtonProps) {
   const [showConfirm, setShowConfirm] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -24,7 +24,7 @@ export function RemoveMemberButton({
   const handleRemove = () => {
     startTransition(async () => {
       try {
-        const result = await removeMemberFromProject(projectId, memberId, orgName)
+        const result = await removeMemberFromProject(projectId, memberId, orgSlug)
         if (result.error) {
           setError(result.error)
         } else {

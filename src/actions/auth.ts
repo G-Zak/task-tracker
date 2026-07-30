@@ -32,7 +32,7 @@ export async function loginAction(prevState: any, formData: FormData) {
 			path: '/',
 		})
 
-		return { success: true, orgName: 'ABA Technplogy - NEXTRONIC' }
+		return { success: true, orgSlug: 'ABA Technplogy - NEXTRONIC' }
 	} catch (error: any) {
 		return { error: error.message || 'Une erreur est survenue lors de la connexion.' }
 	}

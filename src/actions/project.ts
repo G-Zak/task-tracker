@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma"
 import { projectSchema, ProjectFormValues } from "@/src/validations/project.schema"
 import { revalidatePath } from 'next/cache'
 
-export async function createProject(data: ProjectFormValues, orgName: string) {
+export async function createProject(data: ProjectFormValues, orgSlug: string) {
     try {
         // authorizeRole vérifie déjà si l'user est connecté ET s'il est au moins PM
         const user = await authorizeRole(Role.PROJECT_MANAGER)
@@ -33,7 +33,7 @@ export async function createProject(data: ProjectFormValues, orgName: string) {
             },
         })
 
-        revalidatePath(`/org/${orgName}/projects`)
+        revalidatePath(`/org/${orgSlug}/projects`)
 
         return { success: true, project: newProject }
     } catch (error: any) {
@@ -43,7 +43,7 @@ export async function createProject(data: ProjectFormValues, orgName: string) {
 }
 
 
-export async function updateProject(projectId: string, data: ProjectFormValues, orgName: string) {
+export async function updateProject(projectId: string, data: ProjectFormValues, orgSlug: string) {
     try {
         const user = await authorizeRole(Role.PROJECT_MANAGER)
 
@@ -77,8 +77,8 @@ export async function updateProject(projectId: string, data: ProjectFormValues, 
             },
         })
 
-        revalidatePath(`/org/${orgName}/projects/${projectId}`)
-        revalidatePath(`/org/${orgName}/projects`)
+        revalidatePath(`/org/${orgSlug}/projects/${projectId}`)
+        revalidatePath(`/org/${orgSlug}/projects`)
 
         return { success: true, project: updated }
     } catch (error: any) {
@@ -87,7 +87,7 @@ export async function updateProject(projectId: string, data: ProjectFormValues, 
 }
 
 
-export async function addMemberToProject(projectId: string, userId: string, orgName: string) {
+export async function addMemberToProject(projectId: string, userId: string, orgSlug: string) {
     try {
         const user = await authorizeRole(Role.PROJECT_MANAGER)
 
@@ -114,7 +114,7 @@ export async function addMemberToProject(projectId: string, userId: string, orgN
             }
         })
 
-        revalidatePath(`/org/${orgName}/projects/${projectId}`)
+        revalidatePath(`/org/${orgSlug}/projects/${projectId}`)
 
         return { success: true }
     } catch (error: any) {
@@ -123,7 +123,7 @@ export async function addMemberToProject(projectId: string, userId: string, orgN
 }
 
 
-export async function removeMemberFromProject(projectId: string, userId: string, orgName: string) {
+export async function removeMemberFromProject(projectId: string, userId: string, orgSlug: string) {
     try {
         const user = await authorizeRole(Role.PROJECT_MANAGER)
 
@@ -150,7 +150,7 @@ export async function removeMemberFromProject(projectId: string, userId: string,
             }
         })
 
-        revalidatePath(`/org/${orgName}/projects/${projectId}`)
+        revalidatePath(`/org/${orgSlug}/projects/${projectId}`)
 
         return { success: true }
     } catch (error: any) {
@@ -158,7 +158,7 @@ export async function removeMemberFromProject(projectId: string, userId: string,
     }
 }
 
-export async function deleteProject(projectId: string, orgName: string) {
+export async function deleteProject(projectId: string, orgSlug: string) {
     try {
         const user = await authorizeRole(Role.PROJECT_MANAGER) 
 
@@ -174,7 +174,7 @@ export async function deleteProject(projectId: string, orgName: string) {
             where: { id: projectId },
         })
 
-        revalidatePath(`/org/${orgName}/projects`)
+        revalidatePath(`/org/${orgSlug}/projects`)
 
         return { success: true }
     } catch (error: any) {

@@ -10,8 +10,8 @@ export default function AuthenticationPage() {
 	const [state, formAction, isPending] = useActionState(loginAction, null)
 
 	useEffect(() => {
-		if (state?.success && state.orgName) {
-			router.push(`/org/${state.orgName}/dashboard`)
+		if (state?.success && state.orgSlug) {
+			router.push(`/org/${state.orgSlug}/dashboard`)
 		}
 	}, [state, router])
 

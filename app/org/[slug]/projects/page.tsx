@@ -26,7 +26,7 @@ export default async function ProjectsPage({
   params,
   searchParams,
 }: PageProps) {
-  const { name: orgName } = await params
+  const { name: orgSlug } = await params
   const rawSearchParams = await searchParams
 
   const user = await getCurrentUserSession()
@@ -122,7 +122,7 @@ export default async function ProjectsPage({
               {projects.map((project) => (
                 <Link
                   key={project.id}
-                  href={`/org/${orgName}/projects/${project.id}`}
+                  href={`/org/${orgSlug}/projects/${project.id}`}
                   className="block rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm hover:shadow-md hover:border-zinc-300 transition-all space-y-3"
                 >
                   <div className="flex items-start justify-between">
@@ -178,7 +178,7 @@ export default async function ProjectsPage({
         {/* Form Column */}
         <div className="lg:sticky lg:top-8">
           {canCreateProject ? (
-            <ProjectForm orgName={orgName} clients={clients} users={users} />
+            <ProjectForm orgSlug={orgSlug} clients={clients} users={users} />
           ) : (
             <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-6 text-center text-xs text-zinc-500">
               Vous n'avez pas les privilèges suffisants pour créer des projets.

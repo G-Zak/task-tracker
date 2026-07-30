@@ -14,7 +14,7 @@ interface PageProps {
 
 export default async function ProjectDetailPage({ params }: PageProps) {
 
-    const { name: orgName, projectId } = await params
+    const { name: orgSlug, projectId } = await params
   
   
   const user = await getCurrentUserSession()
@@ -105,7 +105,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       <div className="flex items-center justify-between border-b border-zinc-200/80 pb-5">
         <div className="flex items-center gap-3">
           <a 
-            href={`/org/${orgName}/projects`}
+            href={`/org/${orgSlug}/projects`}
             className="p-2 hover:bg-zinc-100 rounded-lg transition"
           >
             <ArrowLeft className="h-5 w-5 text-zinc-600" />
@@ -131,7 +131,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         <div className="flex items-center gap-2">
           {canEdit && (
             <a
-              href={`/org/${orgName}/projects/${projectId}/edit`}
+              href={`/org/${orgSlug}/projects/${projectId}/edit`}
               className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition text-sm font-medium"
             >
               Modifier
@@ -141,7 +141,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             <DeleteProjectButton
               projectId={projectId}
               projectName={project.name}
-              orgName={orgName}
+              orgSlug={orgSlug}
             />
           )}
         </div>
@@ -256,7 +256,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               {canManageMembers && (
                 <AddMemberModal 
                   projectId={projectId}
-                  orgName={orgName}
+                  orgSlug={orgSlug}
                   existingMemberIds={project.members.map(m => m.id)}
                 />
               )}
@@ -296,7 +296,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                         projectId={projectId}
                         memberId={member.id}
                         memberName={`${member.firstName} ${member.lastName}`}
-                        orgName={orgName}
+                        orgSlug={orgSlug}
                       />
                     )}
                   </div>
@@ -315,7 +315,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </h2>
           {canManageMembers && (
             <a
-              href={`/org/${orgName}/projects/${projectId}/tasks/new`}
+              href={`/org/${orgSlug}/projects/${projectId}/tasks/new`}
               className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition text-sm font-medium"
             >
               + Nouvelle tâche
