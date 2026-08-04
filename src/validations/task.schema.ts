@@ -25,3 +25,13 @@ export const updateTaskMetricsSchema = z.object({
 })
 
 export type UpdateTaskMetricsValues = z.infer<typeof updateTaskMetricsSchema>
+
+export const taskFilterSchema = z.object({
+    q: z.string().default(''),
+    status: z.nativeEnum(TaskStatus).optional(),
+    priority: z.nativeEnum(TaskPriority).optional(),
+    projectId: z.string().optional(),
+    page: z.coerce.number().int().positive().default(1),
+})
+
+export type TaskFilters = z.infer<typeof taskFilterSchema>

@@ -2,6 +2,10 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUserSession } from '@/src/lib/rbac'
 import { TaskForm } from '@/src/components/tasks/taskForm'
 import { TaskQuickEdit } from '@/src/components/tasks/taskEdit'
+import { TaskFilters } from '@/src/components/tasks/TaskFilters'
+import { Pagination } from '@/src/components/ui/Pagination'
+import { getFilteredTasks } from '@/src/services/task.service'
+import { taskFilterSchema } from '@/src/validations/task.schema'
 import { Role } from '@/src/generated/client'
 import { CheckSquare, FolderKanban, Pencil } from 'lucide-react'
 import { redirect } from 'next/navigation'
@@ -10,36 +14,45 @@ import { taskStatusStyles, taskPriorityStyles } from '@/src/lib/status-colors'
 
 interface PageProps {
   params: Promise<{ slug: string }>
+  searchParams: Promise<{
+    q?: string
+    status?: string
+    priority?: string
+    projectId?: string
+    page?: string
+  }>
 }
 
-export default async function TasksPage({ params }: PageProps) {
+export default async function TasksPage({ params, searchParams }: PageProps) {
   const { slug: orgSlug } = await params
+  const rawSearchParams = await searchParams
 
   const user = await getCurrentUserSession()
   if (!user) redirect('/authentication')
 
   const canCreateTask = user.role === Role.ADMIN || user.role === Role.PROJECT_MANAGER
 
-//who and what can be visible in tasks
-  const taskVisibilityFilter = canCreateTask
-    ? {}
-    : {
-        OR: [
-          { assignees: { some: { id: user.id } } },
-          { project: { members: { some: { id: user.id } } } },
-        ],
-      }
-
-  const rawTasks = await prisma.task.findMany({
-    where: { organisationId: user.organisationId, ...taskVisibilityFilter },
-    include: {
-      project: { select: { id: true, name: true } },
-      taskType: { select: { id: true, name: true, color: true } },
-      assignees: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
-    },
-    orderBy: { createdAt: 'desc' },
+  const filters = taskFilterSchema.parse({
+    q: rawSearchParams.q,
+    status: rawSearchParams.status,
+    priority: rawSearchParams.priority,
+    projectId: rawSearchParams.projectId,
+    page: rawSearchParams.page || '1',
   })
 
+  // Un manager voit toutes les tâches de l'organisation. Un simple collaborateur ne voit
+  // que les tâches qui lui sont assignées ou rattachées à un projet dont il est membre.
+  const { tasks: rawTasks, pagination } = await getFilteredTasks(user.organisationId, {
+    searchQuery: filters.q,
+    status: filters.status,
+    priority: filters.priority,
+    projectId: filters.projectId,
+    page: filters.page,
+    pageSize: 10,
+    restrictToUserId: canCreateTask ? undefined : user.id,
+  })
+
+  // Sur sa page, un collaborateur voit ses propres tâches assignées remonter en priorité.
   const tasks = canCreateTask
     ? rawTasks
     : [...rawTasks].sort((a, b) => {
@@ -86,8 +99,16 @@ export default async function TasksPage({ params }: PageProps) {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 items-start">
         <div className="lg:col-span-2 space-y-4">
+          <TaskFilters
+            projects={projects}
+            currentStatus={filters.status}
+            currentPriority={filters.priority}
+            currentProjectId={filters.projectId}
+            currentSearch={filters.q}
+          />
+
           <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400 px-1">
-            {tasks.length} tâche(s) trouvée(s)
+            {pagination.count} tâche(s) trouvée(s)
           </div>
 
           {tasks.length === 0 ? (
@@ -97,9 +118,11 @@ export default async function TasksPage({ params }: PageProps) {
               </div>
               <h3 className="font-semibold text-zinc-900">Aucune tâche trouvée</h3>
               <p className="mt-1 text-sm text-zinc-500 max-w-sm">
-                {canCreateTask
-                  ? "Aucune tâche n'est encore enregistrée pour cette organisation."
-                  : "Aucune tâche ne vous est assignée ni liée à l'un de vos projets pour le moment."}
+                {filters.q || filters.status || filters.priority || filters.projectId
+                  ? 'Aucune tâche ne correspond à vos critères de recherche.'
+                  : canCreateTask
+                    ? "Aucune tâche n'est encore enregistrée pour cette organisation."
+                    : "Aucune tâche ne vous est assignée ni liée à l'un de vos projets pour le moment."}
               </p>
             </div>
           ) : (
@@ -169,6 +192,12 @@ export default async function TasksPage({ params }: PageProps) {
               ))}
             </div>
           )}
+
+          <Pagination
+            currentPage={pagination.current}
+            totalPages={pagination.total}
+            total={pagination.count}
+          />
         </div>
 
         <div className="lg:sticky lg:top-8">

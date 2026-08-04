@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUserSession } from '@/src/lib/rbac'
 import { ProjectForm } from '@/src/components/projects/ProjectForm'
 import { ProjectFilters } from '@/src/components/projects/ProjectsFilters'
-import { ProjectPagination } from '@/src/components/projects/ProjectPagination'
+import { Pagination } from '@/src/components/ui/Pagination'
 import { getFilteredProjects } from '@/src/services/project.service'
 import { projectFilterSchema } from '@/src/validations/project.schema'
 import { Role } from '@/src/generated/client'
@@ -168,7 +168,7 @@ export default async function ProjectsPage({
           )}
 
           {/* Pagination */}
-          <ProjectPagination
+          <Pagination
             currentPage={pagination.current}
             totalPages={pagination.total}
             total={pagination.count}

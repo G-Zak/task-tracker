@@ -1,0 +1,138 @@
+'use client'
+
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { Search, X } from 'lucide-react'
+
+import { taskStatusLabels, taskStatusOptions, taskPriorityLabels, taskPriorityOptions } from '@/lib/labels'
+
+interface TaskFiltersProps {
+  projects: Array<{ id: string; name: string }>
+  currentStatus?: string
+  currentPriority?: string
+  currentProjectId?: string
+  currentSearch?: string
+}
+
+export function TaskFilters({
+  projects,
+  currentStatus,
+  currentPriority,
+  currentProjectId,
+  currentSearch,
+}: TaskFiltersProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+  const [search, setSearch] = useState(currentSearch || '')
+
+  const handleFilterChange = (key: 'status' | 'priority' | 'projectId', value: string | undefined) => {
+    const params = new URLSearchParams()
+
+    if (search) params.set('q', search)
+    if (key !== 'status' && currentStatus) params.set('status', currentStatus)
+    if (key !== 'priority' && currentPriority) params.set('priority', currentPriority)
+    if (key !== 'projectId' && currentProjectId) params.set('projectId', currentProjectId)
+
+    if (value) params.set(key, value)
+
+    params.set('page', '1')
+
+    startTransition(() => {
+      router.push(`?${params.toString()}`)
+    })
+  }
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const params = new URLSearchParams()
+
+    if (search) params.set('q', search)
+    if (currentStatus) params.set('status', currentStatus)
+    if (currentPriority) params.set('priority', currentPriority)
+    if (currentProjectId) params.set('projectId', currentProjectId)
+    params.set('page', '1')
+
+    startTransition(() => {
+      router.push(`?${params.toString()}`)
+    })
+  }
+
+  const handleReset = () => {
+    setSearch('')
+    startTransition(() => {
+      router.push('')
+    })
+  }
+
+  const hasFilters = search || currentStatus || currentPriority || currentProjectId
+
+  return (
+    <div className="space-y-4">
+      <form onSubmit={handleSearch} className="relative">
+        <Search className="absolute left-3.5 h-4 w-4 text-zinc-400 pointer-events-none top-3" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher par titre de tâche..."
+          className="w-full rounded-lg border border-zinc-200 bg-white pl-10 pr-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+        />
+      </form>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <select
+          value={currentStatus || ''}
+          onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
+          disabled={isPending}
+          className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:opacity-50"
+        >
+          <option value="">Tous les statuts</option>
+          {taskStatusOptions.map((status) => (
+            <option key={status} value={status}>
+              {taskStatusLabels[status]}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={currentPriority || ''}
+          onChange={(e) => handleFilterChange('priority', e.target.value || undefined)}
+          disabled={isPending}
+          className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:opacity-50"
+        >
+          <option value="">Toutes les priorités</option>
+          {taskPriorityOptions.map((priority) => (
+            <option key={priority} value={priority}>
+              {taskPriorityLabels[priority]}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={currentProjectId || ''}
+          onChange={(e) => handleFilterChange('projectId', e.target.value || undefined)}
+          disabled={isPending}
+          className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:opacity-50"
+        >
+          <option value="">Tous les projets</option>
+          {projects.map((project) => (
+            <option key={project.id} value={project.id}>
+              {project.name}
+            </option>
+          ))}
+        </select>
+
+        {hasFilters && (
+          <button
+            onClick={handleReset}
+            disabled={isPending}
+            className="rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 disabled:opacity-50 transition-colors"
+          >
+            <X className="h-4 w-4 inline mr-1" />
+            Réinitialiser
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
