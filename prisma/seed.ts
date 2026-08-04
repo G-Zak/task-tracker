@@ -6,6 +6,87 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
 })
 
+const MOROCCAN_FIRST_NAMES = [
+  'Youssef', 'Amine', 'Karim', 'Omar', 'Yassine', 'Anas', 'Mehdi', 'Reda',
+  'Soufiane', 'Ayoub', 'Ilyas', 'Rachid', 'Nabil', 'Othmane', 'Adil',
+  'Fatima Zahra', 'Salma', 'Imane', 'Khadija', 'Meriem', 'Sara', 'Nour',
+  'Hajar', 'Ghita', 'Zineb', 'Lamiae', 'Asmae', 'Rania', 'Kenza', 'Loubna',
+]
+
+const MOROCCAN_LAST_NAMES = [
+  'Bennani', 'Alaoui', 'Tazi', 'Idrissi', 'El Amrani', 'Chraibi', 'Berrada',
+  'Fassi', 'Cherkaoui', 'Benjelloun', 'Squalli', 'Lahlou', 'Guessous',
+  'Bouzidi', 'Sbai', 'Ziani', 'Rahmouni', 'Kabbaj', 'Moussaoui', 'Tahiri',
+]
+
+const CLIENT_NAME_POOL = [
+  { name: 'Maroc Telecom', domain: 'iam.ma' },
+  { name: 'Bank Al-Maghrib', domain: 'bkam.ma' },
+  { name: 'Royal Air Maroc', domain: 'royalairmaroc.com' },
+  { name: 'Marjane Holding', domain: 'marjane.ma' },
+  { name: 'CDG Capital', domain: 'cdgcapital.ma' },
+  { name: 'ONCF', domain: 'oncf.ma' },
+  { name: 'ADM - Autoroutes du Maroc', domain: 'adm.co.ma' },
+  { name: 'Attijariwafa Bank', domain: 'attijariwafa.com' },
+  { name: 'Managem Group', domain: 'managemgroup.com' },
+  { name: 'Akdital Santé', domain: 'akdital.ma' },
+]
+
+const TASK_TITLE_POOL = [
+  'Automatiser les tests de charge du cluster edge',
+  'Refondre le pipeline CI/CD des modèles embarqués',
+  'Auditer la conformité RGPD des flux clients',
+  'Mettre en place la supervision temps réel des capteurs',
+  'Réduire la latence du moteur d inférence embarqué',
+  'Cartographier les dépendances de l infrastructure souveraine',
+  'Rédiger la documentation d intégration API partenaires',
+  'Stabiliser le déploiement multi-région',
+  'Concevoir le tableau de bord de suivi des flottes',
+  'Chiffrer les échanges inter-services critiques',
+  'Optimiser le stockage des séries temporelles capteurs',
+  'Mettre à jour le firmware des unités mobiles',
+  'Industrialiser le pipeline d étiquetage des données',
+  'Renforcer les tests de résilience réseau',
+  'Migrer la base de configuration vers le cloud souverain',
+  'Former les équipes terrain au nouveau tableau de bord',
+  'Corriger les alertes faux positifs du monitoring',
+  'Préparer l audit de sécurité trimestriel',
+]
+
+function randomItem<T>(items: T[]): T {
+  return items[Math.floor(Math.random() * items.length)]
+}
+
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+function shuffle<T>(items: T[]): T[] {
+  const copy = [...items]
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[copy[i], copy[j]] = [copy[j], copy[i]]
+  }
+  return copy
+}
+
+function progressForStatus(status: TaskStatus): number {
+  switch (status) {
+    case TaskStatus.DONE:
+      return 100
+    case TaskStatus.TODO:
+      return 0
+    case TaskStatus.CANCELLED:
+      return randomInt(0, 40)
+    case TaskStatus.BLOCKED:
+      return randomInt(10, 60)
+    case TaskStatus.IN_REVIEW:
+      return randomInt(70, 95)
+    default:
+      return randomInt(20, 90)
+  }
+}
+
 async function main() {
   const salt = await bcrypt.genSalt(10)
   const passwordHash = await bcrypt.hash('admin1234', salt)
@@ -83,16 +164,63 @@ async function main() {
     },
   })
 
-  const engineer = await prisma.user.create({
+  const teamLead = await prisma.user.create({
     data: {
-      email: 'engineer@abatechnology.com',
-      firstName: 'Alan',
-      lastName: 'Cooper',
+      email: 'lead@abatechnology.com',
+      firstName: 'Karim',
+      lastName: 'Tazi',
+      passwordHash: passwordHash,
+      role: Role.TEAM_LEADER,
+      organisationId: organisation.id,
+    },
+  })
+
+  const collaborator = await prisma.user.create({
+    data: {
+      email: 'user@abatechnology.com',
+      firstName: 'Yassine',
+      lastName: 'El Amrani',
       passwordHash: passwordHash,
       role: Role.USER,
       organisationId: organisation.id,
     },
   })
+
+  const usedEmails = new Set([
+    'admin@abatechnology.com',
+    'manager@abatechnology.com',
+    'hind@abatechnology.com',
+    'lead@abatechnology.com',
+    'user@abatechnology.com',
+  ])
+  const fakeUsers = []
+
+  for (let i = 0; i < 14; i++) {
+    const firstName = randomItem(MOROCCAN_FIRST_NAMES)
+    const lastName = randomItem(MOROCCAN_LAST_NAMES)
+
+    let email = `${firstName}.${lastName}@abatechnology.com`.toLowerCase().replace(/\s+/g, '-')
+    let suffix = 1
+    while (usedEmails.has(email)) {
+      email = `${firstName}.${lastName}${suffix}@abatechnology.com`.toLowerCase().replace(/\s+/g, '-')
+      suffix += 1
+    }
+    usedEmails.add(email)
+
+    const role = Math.random() < 0.15 ? Role.TEAM_LEADER : Role.USER
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        firstName,
+        lastName,
+        passwordHash,
+        role,
+        organisationId: organisation.id,
+      },
+    })
+    fakeUsers.push(user)
+  }
 
   const clientHealth = await prisma.client.create({
     data: {
@@ -118,14 +246,25 @@ async function main() {
     },
   })
 
+  for (const { name, domain } of shuffle(CLIENT_NAME_POOL).slice(0, 6)) {
+    await prisma.client.create({
+      data: {
+        name,
+        email: `contact@${domain}`,
+        phone: `+212 5${randomInt(20, 39)}-${randomInt(100000, 999999)}`,
+        organisationId: organisation.id,
+      },
+    })
+  }
+
   await prisma.team.create({
     data: {
       name: 'ABA Sovereignty & Hardware',
       description: 'Équipe matériel et systèmes embarqués',
       organisationId: organisation.id,
-      leaderId: admin.id,
+      leaderId: teamLead.id,
       members: {
-        connect: [{ id: engineer.id }],
+        connect: [{ id: fakeUsers[0].id }, { id: collaborator.id }],
       },
     },
   })
@@ -150,7 +289,7 @@ async function main() {
       organisationId: organisation.id,
       clientId: clientHealth.id,
       members: {
-        connect: [{ id: admin.id }, { id: teamMember.id }],
+        connect: [{ id: admin.id }, { id: teamMember.id }, { id: collaborator.id }],
       },
     },
   })
@@ -176,7 +315,7 @@ async function main() {
       organisationId: organisation.id,
       clientId: clientCloud.id,
       members: {
-        connect: [{ id: admin.id }, { id: engineer.id }],
+        connect: [{ id: admin.id }, { id: fakeUsers[1].id }],
       },
     },
   })
@@ -261,11 +400,39 @@ async function main() {
         title: task.title,
         status: task.status,
         priority: task.priority,
+        progress: progressForStatus(task.status),
         organisationId: organisation.id,
         projectId: task.projectId,
         taskTypeId: task.taskTypeId,
         assignees: {
           connect: [{ id: teamMember.id }],
+        },
+      },
+    })
+  }
+
+  const allUsers = [admin, projectManager, teamMember, teamLead, collaborator, ...fakeUsers]
+  const allProjects = [projectHealth, projectIndustry, projectCloud]
+  const allTaskTypes = [taskTypeHardware, taskTypeAI, taskTypeInfra]
+  const allStatuses = Object.values(TaskStatus)
+  const allPriorities = Object.values(TaskPriority)
+
+  for (const title of shuffle(TASK_TITLE_POOL)) {
+    const status = randomItem(allStatuses)
+    const assigneeCount = randomInt(1, 2)
+    const assignees = shuffle(allUsers).slice(0, assigneeCount)
+
+    await prisma.task.create({
+      data: {
+        title,
+        status,
+        priority: randomItem(allPriorities),
+        progress: progressForStatus(status),
+        organisationId: organisation.id,
+        projectId: randomItem(allProjects).id,
+        taskTypeId: randomItem(allTaskTypes).id,
+        assignees: {
+          connect: assignees.map((assignee) => ({ id: assignee.id })),
         },
       },
     })

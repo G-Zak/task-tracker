@@ -9,12 +9,12 @@ import { DeleteProjectButton } from '@/src/components/projects/DeleteProjectButt
 import { projectStatusStyles } from '@/src/lib/status-colors'
 
 interface PageProps {
-  params: Promise<{ name: string; projectId: string }>
+  params: Promise<{ slug: string; projectId: string }>
 }
 
 export default async function ProjectDetailPage({ params }: PageProps) {
 
-    const { name: orgSlug, projectId } = await params
+    const { slug: orgSlug, projectId } = await params
   
   
   const user = await getCurrentUserSession()

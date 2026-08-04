@@ -1,9 +1,9 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import { authorizeRole } from '@/src/lib/rbac'
+import { authorizeRole, getCurrentUserSession } from '@/src/lib/rbac'
 import { Role } from '@/src/generated/client'
-import { taskSchema, TaskFormValues } from '@/src/validations/task.schema'
+import { taskSchema, TaskFormValues, updateTaskMetricsSchema, UpdateTaskMetricsValues } from '@/src/validations/task.schema'
 import { revalidatePath } from 'next/cache'
 
 function revalidateTaskViews(orgSlug: string, taskId?: string, projectId?: string | null) {
@@ -91,5 +91,51 @@ export async function updateTask(taskId: string, values: TaskFormValues, orgSlug
         return { success: true, action: 'update' }
     } catch (error: any) {
         return { error: 'Une erreur est survenue lors de la mise à jour de la tâche.' }
+    }
+}
+
+export async function updateTaskMetrics(values: UpdateTaskMetricsValues, orgSlug: string): Promise<{ success: true } | { error: string }> {
+    try {
+        const user = await getCurrentUserSession()
+        if (!user) return { error: 'Non authentifié.' }
+
+        const parsed = updateTaskMetricsSchema.safeParse(values)
+        if (!parsed.success) {
+            return { error: parsed.error.issues[0]?.message || 'Données de mise à jour invalides.' }
+        }
+
+        const { taskId, status, priority, progress } = parsed.data
+
+        const task = await prisma.task.findFirst({
+            where: { id: taskId, organisationId: user.organisationId },
+            select: { id: true, projectId: true, assignees: { select: { id: true } } },
+        })
+        if (!task) return { error: 'Tâche introuvable ou accès refusé.' }
+
+        const isAssignee = task.assignees.some((assignee) => assignee.id === user.id)
+        const isManager = user.role === Role.ADMIN || user.role === Role.PROJECT_MANAGER
+
+        if (!isAssignee && !isManager) {
+            return { error: "Vous n'êtes pas autorisé à modifier cette tâche." }
+        }
+
+        if (priority && !isManager) {
+            return { error: 'Seuls les administrateurs et chefs de projet peuvent modifier la priorité.' }
+        }
+
+        await prisma.task.update({
+            where: { id: taskId },
+            data: {
+                ...(status && { status }),
+                ...(priority && { priority }),
+                ...(progress !== undefined && { progress }),
+            },
+        })
+
+        revalidateTaskViews(orgSlug, taskId, task.projectId)
+
+        return { success: true }
+    } catch (error: any) {
+        return { error: 'Impossible de mettre à jour la tâche.' }
     }
 }
