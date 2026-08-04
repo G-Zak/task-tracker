@@ -7,11 +7,11 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 
 interface PageProps {
-  params: Promise<{ name: string; projectId: string }>
+  params: Promise<{ slug: string; projectId: string }>
 }
 
 export default async function EditProjectPage({ params }: PageProps) {
-  const { name: orgSlug, projectId } = await params
+  const { slug: orgSlug, projectId } = await params
 
   const user = await getCurrentUserSession()
   if (!user) redirect('/authentication')

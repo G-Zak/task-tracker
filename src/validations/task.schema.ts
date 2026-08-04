@@ -16,3 +16,12 @@ export const taskSchema = z.object({
 })
 
 export type TaskFormValues = z.infer<typeof taskSchema>
+
+export const updateTaskMetricsSchema = z.object({
+    taskId: z.string().min(1),
+    status: z.nativeEnum(TaskStatus).optional(),
+    priority: z.nativeEnum(TaskPriority).optional(),
+    progress: z.number().min(0).max(100).optional(),
+})
+
+export type UpdateTaskMetricsValues = z.infer<typeof updateTaskMetricsSchema>

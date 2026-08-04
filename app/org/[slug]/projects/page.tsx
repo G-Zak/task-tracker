@@ -13,7 +13,7 @@ import Link from 'next/link'
 import { projectStatusStyles } from '@/src/lib/status-colors'
 
 interface PageProps {
-  params: Promise<{ name: string }>
+  params: Promise<{ slug: string }>
   searchParams: Promise<{
     q?: string
     status?: string
@@ -26,7 +26,7 @@ export default async function ProjectsPage({
   params,
   searchParams,
 }: PageProps) {
-  const { name: orgSlug } = await params
+  const { slug: orgSlug } = await params
   const rawSearchParams = await searchParams
 
   const user = await getCurrentUserSession()

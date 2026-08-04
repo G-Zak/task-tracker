@@ -1,25 +1,37 @@
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserSession } from '@/src/lib/rbac'
 import { TaskForm } from '@/src/components/tasks/taskForm'
+import { TaskQuickEdit } from '@/src/components/tasks/taskEdit'
 import { Role } from '@/src/generated/client'
-import { CheckSquare, FolderKanban } from 'lucide-react'
+import { CheckSquare, FolderKanban, Pencil } from 'lucide-react'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { taskStatusStyles, taskPriorityStyles } from '@/src/lib/status-colors'
 
 interface PageProps {
-  params: Promise<{ name: string }>
+  params: Promise<{ slug: string }>
 }
 
 export default async function TasksPage({ params }: PageProps) {
-  const { name: orgSlug } = await params
+  const { slug: orgSlug } = await params
 
   const user = await getCurrentUserSession()
   if (!user) redirect('/authentication')
 
   const canCreateTask = user.role === Role.ADMIN || user.role === Role.PROJECT_MANAGER
 
-  const tasks = await prisma.task.findMany({
-    where: { organisationId: user.organisationId },
+//who and what can be visible in tasks
+  const taskVisibilityFilter = canCreateTask
+    ? {}
+    : {
+        OR: [
+          { assignees: { some: { id: user.id } } },
+          { project: { members: { some: { id: user.id } } } },
+        ],
+      }
+
+  const rawTasks = await prisma.task.findMany({
+    where: { organisationId: user.organisationId, ...taskVisibilityFilter },
     include: {
       project: { select: { id: true, name: true } },
       taskType: { select: { id: true, name: true, color: true } },
@@ -27,6 +39,14 @@ export default async function TasksPage({ params }: PageProps) {
     },
     orderBy: { createdAt: 'desc' },
   })
+
+  const tasks = canCreateTask
+    ? rawTasks
+    : [...rawTasks].sort((a, b) => {
+        const aMine = a.assignees.some((assignee) => assignee.id === user.id) ? 0 : 1
+        const bMine = b.assignees.some((assignee) => assignee.id === user.id) ? 0 : 1
+        return aMine - bMine
+      })
 
   const projects = await prisma.project.findMany({
     where: { organisationId: user.organisationId },
@@ -77,7 +97,9 @@ export default async function TasksPage({ params }: PageProps) {
               </div>
               <h3 className="font-semibold text-zinc-900">Aucune tâche trouvée</h3>
               <p className="mt-1 text-sm text-zinc-500 max-w-sm">
-                Aucune tâche n'est encore enregistrée pour cette organisation.
+                {canCreateTask
+                  ? "Aucune tâche n'est encore enregistrée pour cette organisation."
+                  : "Aucune tâche ne vous est assignée ni liée à l'un de vos projets pour le moment."}
               </p>
             </div>
           ) : (
@@ -100,12 +122,24 @@ export default async function TasksPage({ params }: PageProps) {
                       <h3 className="font-semibold text-zinc-900">{task.title}</h3>
                     </div>
 
-                    {task.project && (
-                      <div className="flex items-center gap-1.5 text-xs text-zinc-500 bg-zinc-50 px-2.5 py-1 rounded-lg border border-zinc-100 shrink-0">
-                        <FolderKanban className="h-3.5 w-3.5 text-zinc-400" />
-                        <span>{task.project.name}</span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {task.project && (
+                        <div className="flex items-center gap-1.5 text-xs text-zinc-500 bg-zinc-50 px-2.5 py-1 rounded-lg border border-zinc-100">
+                          <FolderKanban className="h-3.5 w-3.5 text-zinc-400" />
+                          <span>{task.project.name}</span>
+                        </div>
+                      )}
+
+                      {canCreateTask && (
+                        <Link
+                          href={`/org/${orgSlug}/tasks/${task.id}/edit`}
+                          className="flex items-center gap-1.5 text-xs font-medium text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg hover:bg-blue-100 transition-colors"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          Modifier
+                        </Link>
+                      )}
+                    </div>
                   </div>
 
                   {task.assignees.length > 0 && (
@@ -119,6 +153,17 @@ export default async function TasksPage({ params }: PageProps) {
                         </span>
                       ))}
                     </div>
+                  )}
+
+                  {(canCreateTask || task.assignees.some((assignee) => assignee.id === user.id)) && (
+                    <TaskQuickEdit
+                      taskId={task.id}
+                      orgSlug={orgSlug}
+                      currentStatus={task.status}
+                      currentPriority={task.priority}
+                      currentProgress={task.progress}
+                      canEditPriority={canCreateTask}
+                    />
                   )}
                 </div>
               ))}

@@ -7,12 +7,12 @@ import { Search, Building2, FolderKanban, Mail, ShieldAlert } from 'lucide-react
 import { redirect } from 'next/navigation'
 
 interface PageProps {
-  params: Promise<{ name: string }>
+  params: Promise<{ slug: string }>
   searchParams: Promise<{ q?: string }>
 }
 
 export default async function ClientsPage({ params, searchParams }: PageProps) {
-  const { name: orgSlug } = await params
+  const { slug: orgSlug } = await params
   const { q: searchQuery } = await searchParams
   
   const user = await getCurrentUserSession()

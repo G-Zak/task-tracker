@@ -6,12 +6,12 @@ import { redirect } from 'next/navigation'
 
 interface OrgLayoutProps {
   children: React.ReactNode
-  params: Promise<{ name: string }>
+  params: Promise<{ slug: string }>
 }
 
 export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   const user = await getCurrentUserSession()
-  const { name: orgSlug } = await params
+  const { slug: orgSlug } = await params
 
   if (!user || !user.role) {
     redirect('/authentication')

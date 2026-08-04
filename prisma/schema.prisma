@@ -73,8 +73,6 @@ model User{
   projects       Project[]    @relation("ProjectMembers")
   tasks          Task[]       @relation("TaskAssignees")
   projectNotes   ProjectNote[]
-
-  assignedTasks  Task[]       @relation("AssignedTasks")
 }
 
 model Client{
@@ -129,6 +127,7 @@ model Task{
   description   String?
   status        TaskStatus @default(TODO)
   priority      TaskPriority @default(MEDIUM)
+  progress      Int      @default(0)
   dueDate       DateTime?
   
   organisationId String

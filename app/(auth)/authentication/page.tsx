@@ -64,7 +64,7 @@ export default function AuthenticationPage() {
 					<p>admin@abatechnology.com — administrateur</p>
 					<p>manager@abatechnology.com — chef de projet</p>
 					<p>lead@abatechnology.com — chef d&apos;equipe</p>
-					<p>hind@abatechnology.com — collaboratrice</p>
+					<p>user@abatechnology.com — collaborateur</p>
 					<p className="mt-1">
 						Mot de passe commun : <span className="font-mono font-semibold">admin1234</span>
 					</p>
