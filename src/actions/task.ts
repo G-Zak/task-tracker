@@ -139,3 +139,27 @@ export async function updateTaskMetrics(values: UpdateTaskMetricsValues, orgSlug
         return { error: 'Impossible de mettre à jour la tâche.' }
     }
 }
+
+export async function deleteTask(taskId: string, orgSlug: string): Promise<{ success: true } | { error: string }> {
+    try {
+        const user = await authorizeRole(Role.PROJECT_MANAGER)
+
+        const task = await prisma.task.findUnique({
+            where: { id: taskId },
+        })
+
+        if (!task || task.organisationId !== user.organisationId) {
+            return { error: 'Tâche introuvable ou accès refusé.' }
+        }
+
+        await prisma.task.delete({
+            where: { id: taskId },
+        })
+
+        revalidateTaskViews(orgSlug, taskId, task.projectId)
+
+        return { success: true }
+    } catch (error: any) {
+        return { error: 'Une erreur est survenue lors de la suppression de la tâche.' }
+    }
+}
