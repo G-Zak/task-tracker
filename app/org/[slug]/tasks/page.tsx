@@ -3,6 +3,7 @@ import { getCurrentUserSession } from '@/src/lib/rbac'
 import { TaskForm } from '@/src/components/tasks/taskForm'
 import { TaskQuickEdit } from '@/src/components/tasks/taskEdit'
 import { TaskFilters } from '@/src/components/tasks/TaskFilters'
+import { DeleteTaskButton } from '@/src/components/tasks/DeleteTaskButton'
 import { Pagination } from '@/src/components/ui/Pagination'
 import { getFilteredTasks } from '@/src/services/task.service'
 import { taskFilterSchema } from '@/src/validations/task.schema'
@@ -161,6 +162,10 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
                           <Pencil className="h-3.5 w-3.5" />
                           Modifier
                         </Link>
+                      )}
+
+                      {canCreateTask && (
+                        <DeleteTaskButton taskId={task.id} taskTitle={task.title} orgSlug={orgSlug} />
                       )}
                     </div>
                   </div>
