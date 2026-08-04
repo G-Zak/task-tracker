@@ -88,8 +88,6 @@ export default async function ProjectDetailPage({ params }: PageProps) {
     user.role === Role.ADMIN || 
     user.role === Role.PROJECT_MANAGER
   
-  // US-013 : "En tant que PM/Admin" -> mêmes rôles que canEdit, cohérent avec
-  // authorizeRole(Role.PROJECT_MANAGER) côté serveur dans deleteProject()
   const canDelete =
     user.role === Role.ADMIN ||
     user.role === Role.PROJECT_MANAGER

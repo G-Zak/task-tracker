@@ -9,7 +9,7 @@ interface PaginationProps {
   total: number
 }
 
-export function ProjectPagination({
+export function Pagination({
   currentPage,
   totalPages,
   total,
