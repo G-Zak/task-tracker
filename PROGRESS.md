@@ -1,0 +1,80 @@
+# Task Tracker — Historique du projet
+
+Suivi de l'avancement du projet, du démarrage à aujourd'hui, basé sur l'historique Git et la documentation (`documentation/`).
+
+## Stack
+
+- **Framework**: Next.js 16 (React 19, TypeScript)
+- **Base de données**: PostgreSQL via Docker Compose (port `5433`)
+- **ORM**: Prisma 7 (`@prisma/adapter-pg`)
+- **UI**: Tailwind CSS 4, shadcn, Base UI, lucide-react
+- **Formulaires / validation**: react-hook-form + zod
+- **Auth**: mot de passe + bcrypt, sessions protégées par proxy
+
+## Organisation
+
+Le projet est mené en sprints, avec des User Stories (US) suivies via des issues GitHub. Chaque US correspond à une branche `<issue#>-us-<num>-<titre>`, mergée dans `main` via PR, et documentée dans `documentation/Sprint_X_Doc/USxxx.md`.
+
+---
+
+## Sprint 1 — Fondations (13 juil. 2026)
+
+| US | Description | Commit |
+|----|--------------|--------|
+| US-001 | Initialisation du projet Next.js/TypeScript | `14ee53a` |
+| US-002 | Mise en place de PostgreSQL via Docker Compose | `cee418f` |
+| US-003 | Modélisation du schéma Prisma initial | `54f5379` |
+| US-004 | Script de seed de démonstration | `ce2af15` |
+
+## Sprint 2 — Auth & Layout (18–20 juil. 2026)
+
+| US | Description | Commit |
+|----|--------------|--------|
+| US-005 | Connexion email/mot de passe | `e6ec41d` |
+| US-006 | Protection des routes / session (proxy) | `ca4f1a7` |
+| US-007 | Contrôle d'accès par rôle (RBAC simple) | `c94dc91` |
+| US-008 | Layout principal (sidebar/topbar), navigation filtrée par rôle | `30fae76` |
+
+## Sprint 3 — Clients & Projets (22–29 juil. 2026)
+
+| US | Description | Commit |
+|----|--------------|--------|
+| US-009 | CRUD client (créer/lister/modifier/supprimer) par ADM et PM | `08d2492`, `f356ef0` |
+| US-010 | Créer un projet (workflow + page sidebar) | `02ca06c` |
+| US-011 | Liste des projets avec recherche/filtres/pagination | `95d1bbe` |
+| US-012 | Détail projet (membres, tâches associées) | `ae30347` |
+| US-013 | Modifier ou supprimer un projet | `d7a1803` |
+| — | UI: adoption palette couleur "aba tech", `password` → `passwordHash` dans le schéma Prisma | `1b96957` |
+| — | Comptes de connexion — tests | `b8e9700` |
+
+## Sprint 4 — Tâches (30 juil. – 4 août 2026)
+
+| US | Description | Commit |
+|----|--------------|--------|
+| US-014 | Créer une tâche (orgName → orgSlug, validation zod, form + actions Prisma) | `5bb233b` |
+| US-015 | Assigner une tâche à un ou plusieurs utilisateurs | `98b26dd` |
+| — | Fix: TaskForm attend une string, pas une valeur brute | `9df7d35` |
+| US-016 | Modifier statut / priorité / progression d'une tâche | `e4fbd70` |
+| US-017 | Liste des tâches avec filtres (statut, priorité, projet) | `218dba3` |
+| US-018 | Supprimer une tâche | `2176b92` |
+
+---
+
+## État actuel (7 août 2026)
+
+Fonctionnalités livrées et mergées dans `main` :
+
+- Projet Next.js/TypeScript initialisé, PostgreSQL en local via Docker, schéma Prisma en place avec seed de démo.
+- Authentification par email/mot de passe, routes protégées, RBAC (rôles ADM/PM/etc.), layout avec sidebar/topbar filtrée par rôle.
+- Gestion complète des clients (CRUD).
+- Gestion complète des projets : création, liste avec recherche/filtres/pagination, page détail (membres + tâches), modification/suppression.
+- Gestion complète des tâches : création, assignation multi-utilisateurs, modification (statut/priorité/progression), liste avec filtres, suppression.
+
+Dernier commit : `49ad0bb` — Merge PR #42 (US-018, suppression d'une tâche).
+
+## Documentation associée
+
+- `documentation/Conception/` — backlog GitHub, diagrammes UML, architecture, planning des livrables.
+- `documentation/Sprint_1_Doc/` à `Sprint_4_Doc/` — fiches détaillées par US.
+- `documentation/Rapports_livrables/` — rapports de sprint (Sprint 1, Sprint 4).
+- `documentation/AI_Integration.md` — notes sur l'intégration IA.

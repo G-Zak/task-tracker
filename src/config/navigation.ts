@@ -28,7 +28,25 @@ export const navigationConfig: NavigationItem[] = [
         href: '/tasks',
         icon: 'CheckSquare',
         allowedRoles: [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER, Role.USER]
-    
+
+    },
+    {
+        name: 'Tableau Kanban',
+        href: '/kanban',
+        icon: 'Kanban',
+        allowedRoles: [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER, Role.USER]
+    },
+    {
+        name: 'Feuilles de temps',
+        href: '/timesheets',
+        icon: 'Clock',
+        allowedRoles: [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER, Role.USER, Role.VIEWER]
+    },
+    {
+        name: 'Messagerie',
+        href: '/messaging',
+        icon: 'MessageSquare',
+        allowedRoles: [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER, Role.USER, Role.VIEWER]
     },
     {
         name: 'Equipes',
@@ -43,13 +61,19 @@ export const navigationConfig: NavigationItem[] = [
         allowedRoles: [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER]
     },
     {
+        name: 'Statistiques',
+        href: '/statistics',
+        icon: 'BarChart3',
+        allowedRoles: [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER]
+    },
+    {
         name: 'Utilisateurs',
         href: '/users',
         icon: 'UserCog',
         allowedRoles: [Role.ADMIN]
     },
     {
-        name: 'Profil',
+        name: 'Mon profil',
         href: '/profile',
         icon: 'User',
         allowedRoles: [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER, Role.USER, Role.VIEWER]

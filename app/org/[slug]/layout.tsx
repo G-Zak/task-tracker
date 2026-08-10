@@ -23,7 +23,11 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-b from-zinc-50 to-zinc-100/60">
-      <Sidebar items={filteredNavigation} orgSlug={orgSlug} />
+      <Sidebar
+        items={filteredNavigation}
+        orgSlug={orgSlug}
+        user={{ firstName: user.firstName, lastName: user.lastName, role: user.role as Role }}
+      />
 
       <main className="flex-1 p-4 md:p-8 pt-20 md:pt-8 w-full max-w-7xl mx-auto">
         {children}
