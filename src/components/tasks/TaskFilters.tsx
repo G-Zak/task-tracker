@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Search, X } from 'lucide-react'
 
 import { taskStatusLabels, taskStatusOptions, taskPriorityLabels, taskPriorityOptions } from '@/lib/labels'
@@ -12,6 +12,7 @@ interface TaskFiltersProps {
   currentPriority?: string
   currentProjectId?: string
   currentSearch?: string
+  currentView?: 'list' | 'board'
 }
 
 export function TaskFilters({
@@ -20,8 +21,10 @@ export function TaskFilters({
   currentPriority,
   currentProjectId,
   currentSearch,
+  currentView = 'list',
 }: TaskFiltersProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const [isPending, startTransition] = useTransition()
   const [search, setSearch] = useState(currentSearch || '')
 
@@ -32,6 +35,7 @@ export function TaskFilters({
     if (key !== 'status' && currentStatus) params.set('status', currentStatus)
     if (key !== 'priority' && currentPriority) params.set('priority', currentPriority)
     if (key !== 'projectId' && currentProjectId) params.set('projectId', currentProjectId)
+    if (currentView !== 'list') params.set('view', currentView)
 
     if (value) params.set(key, value)
 
@@ -50,6 +54,7 @@ export function TaskFilters({
     if (currentStatus) params.set('status', currentStatus)
     if (currentPriority) params.set('priority', currentPriority)
     if (currentProjectId) params.set('projectId', currentProjectId)
+    if (currentView !== 'list') params.set('view', currentView)
     params.set('page', '1')
 
     startTransition(() => {
@@ -60,7 +65,7 @@ export function TaskFilters({
   const handleReset = () => {
     setSearch('')
     startTransition(() => {
-      router.push('')
+      router.push(currentView !== 'list' ? `${pathname}?view=${currentView}` : pathname)
     })
   }
 

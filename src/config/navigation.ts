@@ -31,12 +31,6 @@ export const navigationConfig: NavigationItem[] = [
 
     },
     {
-        name: 'Tableau Kanban',
-        href: '/kanban',
-        icon: 'Kanban',
-        allowedRoles: [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER, Role.USER]
-    },
-    {
         name: 'Feuilles de temps',
         href: '/timesheets',
         icon: 'Clock',

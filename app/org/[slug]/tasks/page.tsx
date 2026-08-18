@@ -3,11 +3,14 @@ import { getCurrentUserSession } from '@/src/lib/rbac'
 import { TaskForm } from '@/src/components/tasks/taskForm'
 import { TaskQuickEdit } from '@/src/components/tasks/taskEdit'
 import { TaskFilters } from '@/src/components/tasks/TaskFilters'
+import { TaskViewToggle } from '@/src/components/tasks/TaskViewToggle'
 import { DeleteTaskButton } from '@/src/components/tasks/DeleteTaskButton'
+import { KanbanBoard, KanbanTask } from '@/src/components/tasks/KanbanBoard'
 import { Pagination } from '@/src/components/ui/Pagination'
 import { getFilteredTasks } from '@/src/services/task.service'
 import { taskFilterSchema } from '@/src/validations/task.schema'
-import { Role } from '@/src/generated/client'
+import { Role, TaskStatus } from '@/src/generated/client'
+import { taskStatusOptions } from '@/src/lib/labels'
 import { CheckSquare, FolderKanban, Pencil } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -21,6 +24,7 @@ interface PageProps {
     priority?: string
     projectId?: string
     page?: string
+    view?: string
   }>
 }
 
@@ -32,6 +36,7 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
   if (!user) redirect('/authentication')
 
   const canCreateTask = user.role === Role.ADMIN || user.role === Role.PROJECT_MANAGER
+  const view: 'list' | 'board' = rawSearchParams.view === 'board' ? 'board' : 'list'
 
   const filters = taskFilterSchema.parse({
     q: rawSearchParams.q,
@@ -43,13 +48,15 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
 
   // Un manager voit toutes les tâches de l'organisation. Un simple collaborateur ne voit
   // que les tâches qui lui sont assignées ou rattachées à un projet dont il est membre.
+  // La vue Kanban n'est pas paginée (un board affiche toutes les colonnes en une fois),
+  // la vue Liste garde sa pagination par page de 10.
   const { tasks: rawTasks, pagination } = await getFilteredTasks(user.organisationId, {
     searchQuery: filters.q,
     status: filters.status,
     priority: filters.priority,
     projectId: filters.projectId,
-    page: filters.page,
-    pageSize: 10,
+    page: view === 'board' ? 1 : filters.page,
+    pageSize: view === 'board' ? 1000 : 10,
     restrictToUserId: canCreateTask ? undefined : user.id,
   })
 
@@ -86,26 +93,46 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
     role: String(member.role),
   }))
 
+  const kanbanTasks: KanbanTask[] = tasks.map((task) => ({
+    id: task.id,
+    title: task.title,
+    status: task.status as TaskStatus,
+    priority: task.priority,
+    progress: task.progress,
+    project: task.project ? { id: task.project.id, name: task.project.name } : null,
+    assignees: task.assignees.map((assignee) => ({
+      id: assignee.id,
+      firstName: assignee.firstName,
+      lastName: assignee.lastName,
+    })),
+    editable: canCreateTask || task.assignees.some((assignee) => assignee.id === user.id),
+  }))
+
   return (
     <div className="space-y-8">
-      <div className="border-b border-zinc-200/80 pb-5">
-        <div className="flex items-center gap-2">
-          <CheckSquare className="h-6 w-6 text-zinc-700" />
-          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Tâches</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/80 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <CheckSquare className="h-6 w-6 text-zinc-700" />
+            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Tâches</h1>
+          </div>
+          <p className="mt-1 text-sm text-zinc-500">
+            Suivi de l'ensemble des tâches techniques de l'organisation.
+          </p>
         </div>
-        <p className="mt-1 text-sm text-zinc-500">
-          Suivi de l'ensemble des tâches techniques de l'organisation.
-        </p>
+
+        <TaskViewToggle currentView={view} />
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 items-start">
-        <div className="lg:col-span-2 space-y-4">
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+        <div className="min-w-0 flex-1 space-y-4">
           <TaskFilters
             projects={projects}
             currentStatus={filters.status}
             currentPriority={filters.priority}
             currentProjectId={filters.projectId}
             currentSearch={filters.q}
+            currentView={view}
           />
 
           <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400 px-1">
@@ -126,6 +153,8 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
                     : "Aucune tâche ne vous est assignée ni liée à l'un de vos projets pour le moment."}
               </p>
             </div>
+          ) : view === 'board' ? (
+            <KanbanBoard orgSlug={orgSlug} initialTasks={kanbanTasks} columns={taskStatusOptions} />
           ) : (
             <div className="grid gap-3">
               {tasks.map((task) => (
@@ -198,14 +227,16 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
             </div>
           )}
 
-          <Pagination
-            currentPage={pagination.current}
-            totalPages={pagination.total}
-            total={pagination.count}
-          />
+          {view === 'list' && (
+            <Pagination
+              currentPage={pagination.current}
+              totalPages={pagination.total}
+              total={pagination.count}
+            />
+          )}
         </div>
 
-        <div className="lg:sticky lg:top-8">
+        <div className="lg:sticky lg:top-8 lg:w-80 lg:shrink-0">
           {canCreateTask ? (
             <TaskForm orgSlug={orgSlug} projects={projects} taskTypes={taskTypes} members={organizationMembers} />
           ) : (
