@@ -27,6 +27,7 @@ interface TaskFormProps {
     task?: TaskFormValues & { id: string }
     defaultProjectId?: string
     redirectTo?: string
+    onSuccess?: () => void
 }
 
 export function TaskForm({
@@ -38,6 +39,7 @@ export function TaskForm({
     task,
     defaultProjectId,
     redirectTo,
+    onSuccess,
 }: TaskFormProps) {
     const router = useRouter()
     const [error, setError] = useState<string | null>(null)
@@ -82,6 +84,11 @@ export function TaskForm({
             if (mode === 'create') reset()
 
             router.refresh()
+
+            if (onSuccess) {
+                onSuccess()
+                return
+            }
 
             if (redirectTo) router.push(redirectTo)
             else if (result.action === 'create') {
