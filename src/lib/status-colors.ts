@@ -21,3 +21,14 @@ export const taskPriorityStyles: Record<string, string> = {
   HIGH: 'bg-orange-50 text-orange-700 ring-orange-600/20',
   CRITICAL: 'bg-red-50 text-red-700 ring-red-600/20',
 }
+
+// Couleurs pleines (barres, puces) associées à chaque statut de tâche.
+// Source de vérité partagée par le Kanban (STATUS_DOT) et les widgets du dashboard.
+export const taskStatusSolidStyles: Record<string, string> = {
+  TODO: 'bg-zinc-400',
+  IN_PROGRESS: 'bg-blue-500',
+  IN_REVIEW: 'bg-violet-500',
+  DONE: 'bg-emerald-500',
+  BLOCKED: 'bg-red-500',
+  CANCELLED: 'bg-zinc-300',
+}

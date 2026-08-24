@@ -5,6 +5,7 @@ import { FolderKanban, Lock } from 'lucide-react'
 import { updateTaskMetrics } from '@/src/actions/task'
 import { TaskStatus, TaskPriority } from '@/src/generated/client'
 import { taskStatusLabels, taskPriorityLabels, taskPriorityStyles } from '@/src/lib/labels'
+import { taskStatusSolidStyles } from '@/src/lib/status-colors'
 
 export interface KanbanTask {
   id: string
@@ -21,15 +22,6 @@ interface KanbanBoardProps {
   orgSlug: string
   initialTasks: KanbanTask[]
   columns: TaskStatus[]
-}
-
-const STATUS_DOT: Record<TaskStatus, string> = {
-  TODO: 'bg-zinc-400',
-  IN_PROGRESS: 'bg-blue-500',
-  IN_REVIEW: 'bg-violet-500',
-  DONE: 'bg-emerald-500',
-  BLOCKED: 'bg-red-500',
-  CANCELLED: 'bg-zinc-300',
 }
 
 export function KanbanBoard({ orgSlug, initialTasks, columns }: KanbanBoardProps) {
@@ -97,7 +89,7 @@ export function KanbanBoard({ orgSlug, initialTasks, columns }: KanbanBoardProps
             >
               <div className="mb-3 flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                  <span className={`h-2 w-2 rounded-full ${STATUS_DOT[status]}`} />
+                  <span className={`h-2 w-2 rounded-full ${taskStatusSolidStyles[status]}`} />
                   <h3 className="text-sm font-semibold text-zinc-800">{taskStatusLabels[status]}</h3>
                 </div>
                 <span className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-zinc-500 border border-zinc-200">
