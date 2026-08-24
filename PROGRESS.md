@@ -58,6 +58,16 @@ Le projet est mené en sprints, avec des User Stories (US) suivies via des issue
 | US-017 | Liste des tâches avec filtres (statut, priorité, projet) | `218dba3` |
 | US-018 | Supprimer une tâche | `2176b92` |
 
+## Sprint 6 — Messagerie de projet (complété le 24 août 2026)
+
+> Sprint initialement prévu 03→07 août (`06-Backlog-S5-S7.md`), exécuté en réalité le 24 août dans la
+> même session que le début du backlog Phase 2 — même décalage calendaire que Sprint 5 (US-019/US-020).
+
+| US | Description | Doc |
+|----|--------------|-----|
+| US-021 | Fil de discussion par projet — déjà implémenté sur la branche avant cette session, vérifié complet (5/5 critères) pendant celle-ci | non documenté (code pré-existant, voir note dans `US022.md`) |
+| US-022 | Suppression d'un message : auteur ou ADMIN/PROJECT_MANAGER, règle appliquée côté serveur, confirmation avant suppression | `Sprint_6_Doc/US022.md` |
+
 ## Sprint 9 — Backlog Phase 2 (à partir du 24 août 2026)
 
 > Le plan initial de stage (`06-Backlog-S5-S7.md`) réservait le Sprint 8 (24→28 août) à la stabilisation
@@ -72,6 +82,8 @@ Le projet est mené en sprints, avec des User Stories (US) suivies via des issue
 | US-027 | Widgets KPI du tableau de bord (projets actifs, tâches en retard, répartition par statut, agrégés côté serveur et filtrés par rôle) | `Sprint_9_Doc/US027.md` |
 | US-028 | Widget « Mon activité » : tâches assignées triées par échéance, activité récente (tâches + messages), résumé organisation additionnel pour ADMIN | `Sprint_9_Doc/US028.md` |
 | US-029 | Création de projet via pop-up (formulaire sorti de la colonne fixe, même pattern que US-020) ; bug pré-existant du sélecteur de membres corrigé au passage | `Sprint_9_Doc/US029.md` |
+| US-033 | Messagerie temps réel : serveur WebSocket autonome (`server/ws-server.ts`, process séparé), diffusion à la création/suppression de message, reconnexion automatique + statut affiché en cas de coupure | `Sprint_9_Doc/US033.md` |
+| US-044 | Page « Messagerie » dédiée (hub) : liste des conversations par projet + réutilisation du fil de discussion existant, sans nouveau modèle de données | `Sprint_9_Doc/US044.md` |
 
 ---
 
@@ -84,7 +96,7 @@ Fonctionnalités livrées (mergées dans `main` ou en cours sur branche) :
 - Gestion complète des clients (CRUD).
 - Gestion complète des projets : création via pop-up (US-029), liste avec recherche/filtres/pagination, page détail (membres + tâches), modification/suppression.
 - Gestion complète des tâches : création, assignation multi-utilisateurs, modification (statut/priorité/progression), liste avec filtres, suppression, vue Liste ⇄ Kanban fusionnée, création via pop-up.
-- Fil de discussion par projet (US-021) : en cours sur la branche courante, non encore mergé.
+- Fil de discussion par projet (US-021), suppression de message (US-022) et diffusion temps réel via WebSocket (US-033) : complets sur la branche courante, non encore mergés.
 - Dashboard : widgets KPI réels (projets actifs, tâches en retard, répartition par statut), remplaçant les deux cartes statiques d'origine (US-027) ; widget « Mon activité » (mes tâches, activité récente, résumé organisation pour ADMIN) (US-028).
 
 Dernier commit mergé : `652ad82` — Merge PR #52 (US-020, création de tâche via pop-up).
