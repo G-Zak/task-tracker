@@ -1,7 +1,13 @@
 import { getCurrentUserSession } from '@/lib/rbac'
 import { LogoutButton } from '@/components/ui/LogoutButton'
 import { DashboardKpis } from '@/src/components/dashboard/DashboardKpis'
-import { getDashboardKpis } from '@/src/services/dashboard.service'
+import { MyActivityWidget } from '@/src/components/dashboard/MyActivityWidget'
+import {
+  getDashboardKpis,
+  getMyAssignedTasks,
+  getRecentActivity,
+  getOrgActivitySummary,
+} from '@/src/services/dashboard.service'
 import { Role } from '@/generated/client'
 import { LayoutDashboard } from 'lucide-react'
 
@@ -12,12 +18,18 @@ export default async function DashboardPage() {
     return <p className="p-8 text-red-500">Erreur : Session introuvable.</p>
   }
 
-  const isManagerOrAdmin = user.role === Role.ADMIN || user.role === Role.PROJECT_MANAGER
+  const isAdmin = user.role === Role.ADMIN
+  const isManagerOrAdmin = isAdmin || user.role === Role.PROJECT_MANAGER
 
-  const kpis = await getDashboardKpis({
-    organisationId: user.organisationId,
-    restrictToUserId: isManagerOrAdmin ? undefined : user.id,
-  })
+  const [kpis, myTasks, recentActivity, orgSummary] = await Promise.all([
+    getDashboardKpis({
+      organisationId: user.organisationId,
+      restrictToUserId: isManagerOrAdmin ? undefined : user.id,
+    }),
+    getMyAssignedTasks(user.organisationId, user.id),
+    getRecentActivity(user.organisationId, user.id),
+    isAdmin ? getOrgActivitySummary(user.organisationId) : Promise.resolve(null),
+  ])
 
   const scopeLabel = isManagerOrAdmin ? "Toute l'organisation" : 'Vos projets'
 
@@ -38,6 +50,7 @@ export default async function DashboardPage() {
       </div>
 
       <DashboardKpis kpis={kpis} scopeLabel={scopeLabel} />
+      <MyActivityWidget myTasks={myTasks} recentActivity={recentActivity} orgSummary={orgSummary} />
     </div>
   )
 }
