@@ -70,6 +70,7 @@ Le projet est mené en sprints, avec des User Stories (US) suivies via des issue
 | US | Description | Doc |
 |----|--------------|-----|
 | US-027 | Widgets KPI du tableau de bord (projets actifs, tâches en retard, répartition par statut, agrégés côté serveur et filtrés par rôle) | `Sprint_9_Doc/US027.md` |
+| US-029 | Création de projet via pop-up (formulaire sorti de la colonne fixe, même pattern que US-020) ; bug pré-existant du sélecteur de membres corrigé au passage | `Sprint_9_Doc/US029.md` |
 
 ---
 
@@ -80,7 +81,7 @@ Fonctionnalités livrées (mergées dans `main` ou en cours sur branche) :
 - Projet Next.js/TypeScript initialisé, PostgreSQL en local via Docker, schéma Prisma en place avec seed de démo.
 - Authentification par email/mot de passe, routes protégées, RBAC (rôles ADM/PM/etc.), layout avec sidebar/topbar filtrée par rôle.
 - Gestion complète des clients (CRUD).
-- Gestion complète des projets : création, liste avec recherche/filtres/pagination, page détail (membres + tâches), modification/suppression.
+- Gestion complète des projets : création via pop-up (US-029), liste avec recherche/filtres/pagination, page détail (membres + tâches), modification/suppression.
 - Gestion complète des tâches : création, assignation multi-utilisateurs, modification (statut/priorité/progression), liste avec filtres, suppression, vue Liste ⇄ Kanban fusionnée, création via pop-up.
 - Fil de discussion par projet (US-021) : en cours sur la branche courante, non encore mergé.
 - Dashboard : widgets KPI réels (projets actifs, tâches en retard, répartition par statut), remplaçant les deux cartes statiques d'origine (US-027).

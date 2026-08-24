@@ -199,7 +199,6 @@ export function ProjectForm({
             return (
               <label
                 key={u.id}
-                onClick={() => toggleMember(u.id)}
                 className="flex cursor-pointer items-center justify-between py-2 px-2 hover:bg-zinc-50 rounded-lg transition-colors"
               >
                 <div>
@@ -209,7 +208,7 @@ export function ProjectForm({
                 <input
                   type="checkbox"
                   checked={isChecked}
-                  onChange={() => {}} // Géré par le parent
+                  onChange={() => toggleMember(u.id)}
                   className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
                 />
               </label>
