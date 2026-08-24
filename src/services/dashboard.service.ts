@@ -29,6 +29,27 @@ export interface OrgActivitySummary {
     notesPostedToday: number
 }
 
+export interface WeeklyTrendPoint {
+    weekStart: string // ISO date (lundi de la semaine)
+    created: number
+    completed: number
+}
+
+export interface MemberWorkload {
+    userId: string
+    name: string
+    activeTaskCount: number
+}
+
+function startOfWeek(date: Date): Date {
+    const d = new Date(date)
+    d.setHours(0, 0, 0, 0)
+    const day = d.getDay() // 0 = dimanche
+    const diffToMonday = (day + 6) % 7
+    d.setDate(d.getDate() - diffToMonday)
+    return d
+}
+
 interface DashboardScope {
     organisationId: string
     restrictToUserId?: string
@@ -176,4 +197,81 @@ export async function getOrgActivitySummary(organisationId: string): Promise<Org
     ])
 
     return { tasksUpdatedToday, notesPostedToday }
+}
+
+// Tendance hebdomadaire (créées vs. terminées) sur les `weeks` dernières semaines, pour le
+// graphique du dashboard. « Terminées » est une approximation : faute d'horodatage dédié
+// (startedAt/approvedAt, prévu en US-030/US-031), on retient updatedAt des tâches déjà DONE —
+// juste tant qu'une tâche terminée n'est pas ré-éditée pour une autre raison ensuite.
+export async function getWeeklyTaskTrend(
+    organisationId: string,
+    restrictToUserId?: string,
+    weeks = 8
+): Promise<WeeklyTrendPoint[]> {
+    const scopeWhere: Prisma.TaskWhereInput = { organisationId }
+    if (restrictToUserId) {
+        scopeWhere.OR = [
+            { assignees: { some: { id: restrictToUserId } } },
+            { project: { members: { some: { id: restrictToUserId } } } },
+        ]
+    }
+
+    const currentWeekStart = startOfWeek(new Date())
+    const windowStart = new Date(currentWeekStart)
+    windowStart.setDate(windowStart.getDate() - (weeks - 1) * 7)
+
+    const [createdTasks, completedTasks] = await Promise.all([
+        prisma.task.findMany({
+            where: { ...scopeWhere, createdAt: { gte: windowStart } },
+            select: { createdAt: true },
+        }),
+        prisma.task.findMany({
+            where: { ...scopeWhere, status: TaskStatus.DONE, updatedAt: { gte: windowStart } },
+            select: { updatedAt: true },
+        }),
+    ])
+
+    const points: WeeklyTrendPoint[] = []
+    for (let i = 0; i < weeks; i++) {
+        const weekStart = new Date(windowStart)
+        weekStart.setDate(weekStart.getDate() + i * 7)
+        const weekEnd = new Date(weekStart)
+        weekEnd.setDate(weekEnd.getDate() + 7)
+
+        points.push({
+            weekStart: weekStart.toISOString().slice(0, 10),
+            created: createdTasks.filter((t) => t.createdAt >= weekStart && t.createdAt < weekEnd).length,
+            completed: completedTasks.filter((t) => t.updatedAt >= weekStart && t.updatedAt < weekEnd).length,
+        })
+    }
+
+    return points
+}
+
+// Charge de travail par membre (tâches actives, non DONE/CANCELLED) — vue organisation,
+// réservée à ADMIN/PROJECT_MANAGER (même esprit que getOrgActivitySummary).
+export async function getWorkloadByMember(organisationId: string, limit = 8): Promise<MemberWorkload[]> {
+    const users = await prisma.user.findMany({
+        where: { organisationId },
+        select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            _count: {
+                select: {
+                    tasks: { where: { status: { notIn: [TaskStatus.DONE, TaskStatus.CANCELLED] } } },
+                },
+            },
+        },
+    })
+
+    return users
+        .map((u) => ({
+            userId: u.id,
+            name: `${u.firstName} ${u.lastName}`,
+            activeTaskCount: u._count.tasks,
+        }))
+        .filter((u) => u.activeTaskCount > 0)
+        .sort((a, b) => b.activeTaskCount - a.activeTaskCount)
+        .slice(0, limit)
 }

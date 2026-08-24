@@ -2,11 +2,15 @@ import { getCurrentUserSession } from '@/lib/rbac'
 import { LogoutButton } from '@/components/ui/LogoutButton'
 import { DashboardKpis } from '@/src/components/dashboard/DashboardKpis'
 import { MyActivityWidget } from '@/src/components/dashboard/MyActivityWidget'
+import { TaskTrendChart } from '@/src/components/dashboard/TaskTrendChart'
+import { WorkloadChart } from '@/src/components/dashboard/WorkloadChart'
 import {
   getDashboardKpis,
   getMyAssignedTasks,
   getRecentActivity,
   getOrgActivitySummary,
+  getWeeklyTaskTrend,
+  getWorkloadByMember,
 } from '@/src/services/dashboard.service'
 import { Role } from '@/generated/client'
 import { LayoutDashboard } from 'lucide-react'
@@ -21,7 +25,7 @@ export default async function DashboardPage() {
   const isAdmin = user.role === Role.ADMIN
   const isManagerOrAdmin = isAdmin || user.role === Role.PROJECT_MANAGER
 
-  const [kpis, myTasks, recentActivity, orgSummary] = await Promise.all([
+  const [kpis, myTasks, recentActivity, orgSummary, weeklyTrend, workload] = await Promise.all([
     getDashboardKpis({
       organisationId: user.organisationId,
       restrictToUserId: isManagerOrAdmin ? undefined : user.id,
@@ -29,6 +33,8 @@ export default async function DashboardPage() {
     getMyAssignedTasks(user.organisationId, user.id),
     getRecentActivity(user.organisationId, user.id),
     isAdmin ? getOrgActivitySummary(user.organisationId) : Promise.resolve(null),
+    getWeeklyTaskTrend(user.organisationId, isManagerOrAdmin ? undefined : user.id),
+    isManagerOrAdmin ? getWorkloadByMember(user.organisationId) : Promise.resolve([]),
   ])
 
   const scopeLabel = isManagerOrAdmin ? "Toute l'organisation" : 'Vos projets'
@@ -51,6 +57,13 @@ export default async function DashboardPage() {
 
       <DashboardKpis kpis={kpis} scopeLabel={scopeLabel} />
       <MyActivityWidget myTasks={myTasks} recentActivity={recentActivity} orgSummary={orgSummary} />
+
+      <div className={`grid gap-4 ${isManagerOrAdmin ? 'lg:grid-cols-3' : ''}`}>
+        <div className={isManagerOrAdmin ? 'lg:col-span-2' : ''}>
+          <TaskTrendChart data={weeklyTrend} />
+        </div>
+        {isManagerOrAdmin && <WorkloadChart data={workload} />}
+      </div>
     </div>
   )
 }

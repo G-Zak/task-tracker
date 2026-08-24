@@ -84,6 +84,7 @@ Le projet est mené en sprints, avec des User Stories (US) suivies via des issue
 | US-029 | Création de projet via pop-up (formulaire sorti de la colonne fixe, même pattern que US-020) ; bug pré-existant du sélecteur de membres corrigé au passage | `Sprint_9_Doc/US029.md` |
 | US-033 | Messagerie temps réel : serveur WebSocket autonome (`server/ws-server.ts`, process séparé), diffusion à la création/suppression de message, reconnexion automatique + statut affiché en cas de coupure | `Sprint_9_Doc/US033.md` |
 | US-044 | Page « Messagerie » dédiée (hub) : liste des conversations par projet + réutilisation du fil de discussion existant, sans nouveau modèle de données | `Sprint_9_Doc/US044.md` |
+| US-045 | Vrais graphiques sur le dashboard : tendance hebdomadaire tâches créées/terminées (SVG, survol + infobulle) et charge de travail par membre (ADMIN/PM), palette de marque réutilisée | `Sprint_9_Doc/US045.md` |
 
 ---
 
