@@ -374,6 +374,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           orgSlug={orgSlug}
           notes={notes}
           canPost={canAccessNotes}
+          currentUserId={user.id}
+          canModerate={canDelete}
         />
       )}
     </div>

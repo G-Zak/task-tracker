@@ -1,8 +1,18 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useCallback, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { createProjectNote } from '@/src/actions/note'
+import { DeleteNoteButton } from '@/src/components/projects/DeleteNoteButton'
+import { useProjectSocket, type SocketStatus } from '@/src/hooks/useProjectSocket'
 import { Loader2, Send } from 'lucide-react'
+
+const SOCKET_STATUS_DISPLAY: Record<SocketStatus, { dot: string; label: string }> = {
+  connecting: { dot: 'bg-amber-400 animate-pulse', label: 'Connexion au temps réel…' },
+  open: { dot: 'bg-emerald-500', label: 'Temps réel' },
+  reconnecting: { dot: 'bg-amber-400 animate-pulse', label: 'Reconnexion…' },
+  unavailable: { dot: 'bg-zinc-300', label: 'Temps réel indisponible (les messages restent fonctionnels)' },
+}
 
 interface NoteAuthor {
   firstName: string
@@ -14,6 +24,7 @@ interface ProjectNoteItem {
   id: string
   content: string
   createdAt: Date | string
+  authorId: string | null
   author: NoteAuthor | null
 }
 
@@ -22,12 +33,25 @@ interface ProjectDiscussionProps {
   orgSlug: string
   notes: ProjectNoteItem[]
   canPost: boolean
+  currentUserId: string
+  // ADMIN/PROJECT_MANAGER : peut supprimer n'importe quel message du projet (US-022)
+  canModerate: boolean
 }
 
-export function ProjectDiscussion({ projectId, orgSlug, notes, canPost }: ProjectDiscussionProps) {
+export function ProjectDiscussion({ projectId, orgSlug, notes, canPost, currentUserId, canModerate }: ProjectDiscussionProps) {
+  const router = useRouter()
   const [content, setContent] = useState('')
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+
+  const handleRealtimeEvent = useCallback(() => {
+    // US-033 : un autre membre a posté ou supprimé un message — on redemande au
+    // Server Component les notes à jour plutôt que de reconstruire l'état côté client.
+    router.refresh()
+  }, [router])
+
+  const socketStatus = useProjectSocket(projectId, handleRealtimeEvent)
+  const statusDisplay = SOCKET_STATUS_DISPLAY[socketStatus]
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,9 +70,15 @@ export function ProjectDiscussion({ projectId, orgSlug, notes, canPost }: Projec
 
   return (
     <div className="bg-white rounded-lg border border-zinc-200 p-6 space-y-4">
-      <h2 className="text-lg font-semibold text-zinc-900">
-        Discussion ({notes.length})
-      </h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-zinc-900">
+          Discussion ({notes.length})
+        </h2>
+        <div className="flex items-center gap-1.5" title={statusDisplay.label}>
+          <span className={`h-2 w-2 rounded-full ${statusDisplay.dot}`} />
+          <span className="text-xs text-zinc-400">{statusDisplay.label}</span>
+        </div>
+      </div>
 
       {notes.length === 0 ? (
         <p className="text-sm text-zinc-500 italic py-4 text-center">
@@ -86,6 +116,10 @@ export function ProjectDiscussion({ projectId, orgSlug, notes, canPost }: Projec
                   {note.content}
                 </p>
               </div>
+
+              {(canModerate || note.authorId === currentUserId) && (
+                <DeleteNoteButton noteId={note.id} orgSlug={orgSlug} />
+              )}
             </div>
           ))}
         </div>
