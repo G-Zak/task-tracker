@@ -85,6 +85,7 @@ Le projet est mené en sprints, avec des User Stories (US) suivies via des issue
 | US-033 | Messagerie temps réel : serveur WebSocket autonome (`server/ws-server.ts`, process séparé), diffusion à la création/suppression de message, reconnexion automatique + statut affiché en cas de coupure | `Sprint_9_Doc/US033.md` |
 | US-044 | Page « Messagerie » dédiée (hub) : liste des conversations par projet + réutilisation du fil de discussion existant, sans nouveau modèle de données | `Sprint_9_Doc/US044.md` |
 | US-045 | Vrais graphiques sur le dashboard : tendance hebdomadaire tâches créées/terminées (SVG, survol + infobulle) et charge de travail par membre (ADMIN/PM), palette de marque réutilisée | `Sprint_9_Doc/US045.md` |
+| US-040 | Page « Mon profil » : édition prénom/nom/e-mail/mot de passe (avec vérification de l'ancien), résumé équipes/projets/tâches assignées, rafraîchissement du cookie de session après mise à jour | `Sprint_9_Doc/US040.md` |
 
 ---
 
