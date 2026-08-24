@@ -22,6 +22,11 @@ export async function getCurrentUserSession(){
     }
 }
 
+export function canAccessProject(user: { id: string; role: Role }, memberIds: string[]) {
+    if (user.role === Role.ADMIN || user.role === Role.PROJECT_MANAGER) return true
+    return memberIds.includes(user.id)
+}
+
 export async function authorizeRole(requiredRole: Role){
     const user = await getCurrentUserSession()
     if (!user || !user.role) {

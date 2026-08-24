@@ -1,11 +1,12 @@
 import { prisma } from '@/lib/prisma'
-import { getCurrentUserSession } from '@/src/lib/rbac'
+import { getCurrentUserSession, canAccessProject } from '@/src/lib/rbac'
 import { Role } from '@/src/generated/client'
 import { redirect, notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { AddMemberModal } from '@/src/components/projects/AddMemberModal'
 import { RemoveMemberButton } from '@/src/components/projects/RemoveMemberButton'
 import { DeleteProjectButton } from '@/src/components/projects/DeleteProjectButton'
+import { ProjectDiscussion } from '@/src/components/projects/ProjectDiscussion'
 import { projectStatusStyles } from '@/src/lib/status-colors'
 
 interface PageProps {
@@ -57,9 +58,24 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           }
         },
         orderBy: { createdAt: 'desc' }
-      },
-      
-      notes: {
+      }
+    }
+  })
+
+
+  if (!project) {
+    notFound()
+  }
+
+  if (project.organisationId !== user.organisationId) {
+    redirect('/authentication')
+  }
+
+  const canAccessNotes = canAccessProject(user, project.members.map((m) => m.id))
+
+  const notes = canAccessNotes
+    ? await prisma.projectNote.findMany({
+        where: { projectId },
         include: {
           author: {
             select: {
@@ -69,22 +85,12 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             }
           }
         },
-        orderBy: { createdAt: 'desc' }
-      }
-    }
-  })
-  
-  
-  if (!project) {
-    notFound()  
-  }
-  
-  if (project.organisationId !== user.organisationId) {
-    redirect('/authentication')  
-  }
-  
-  
-  const canEdit = 
+        orderBy: { createdAt: 'asc' }
+      })
+    : []
+
+
+  const canEdit =
     user.role === Role.ADMIN || 
     user.role === Role.PROJECT_MANAGER
   
@@ -360,6 +366,16 @@ export default async function ProjectDetailPage({ params }: PageProps) {
           </div>
         )}
       </div>
+
+      {/* DISCUSSION SECTION */}
+      {canAccessNotes && (
+        <ProjectDiscussion
+          projectId={projectId}
+          orgSlug={orgSlug}
+          notes={notes}
+          canPost={canAccessNotes}
+        />
+      )}
     </div>
   )
 }

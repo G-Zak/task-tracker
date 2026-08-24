@@ -58,19 +58,34 @@ Le projet est mené en sprints, avec des User Stories (US) suivies via des issue
 | US-017 | Liste des tâches avec filtres (statut, priorité, projet) | `218dba3` |
 | US-018 | Supprimer une tâche | `2176b92` |
 
+## Sprint 9 — Backlog Phase 2 (à partir du 24 août 2026)
+
+> Le plan initial de stage (`06-Backlog-S5-S7.md`) réservait le Sprint 8 (24→28 août) à la stabilisation
+> et au rapport, sans nouvelle fonctionnalité. Cette section démarre donc un **backlog Phase 2**
+> (US-027 → US-043 : dashboard, suivi du temps, équipes, statistiques, utilisateurs, profil, messagerie
+> temps réel, RAG) qui prolonge le produit au-delà du périmètre initial, numéroté à partir du Sprint 9
+> pour ne pas réécrire l'historique du Sprint 8 tel que documenté. Détail des 17 stories : artefact
+> "Backlog Phase 2" (24 août 2026) et `documentation/Sprint_9_Doc/`.
+
+| US | Description | Doc |
+|----|--------------|-----|
+| US-027 | Widgets KPI du tableau de bord (projets actifs, tâches en retard, répartition par statut, agrégés côté serveur et filtrés par rôle) | `Sprint_9_Doc/US027.md` |
+
 ---
 
-## État actuel (7 août 2026)
+## État actuel (24 août 2026)
 
-Fonctionnalités livrées et mergées dans `main` :
+Fonctionnalités livrées (mergées dans `main` ou en cours sur branche) :
 
 - Projet Next.js/TypeScript initialisé, PostgreSQL en local via Docker, schéma Prisma en place avec seed de démo.
 - Authentification par email/mot de passe, routes protégées, RBAC (rôles ADM/PM/etc.), layout avec sidebar/topbar filtrée par rôle.
 - Gestion complète des clients (CRUD).
 - Gestion complète des projets : création, liste avec recherche/filtres/pagination, page détail (membres + tâches), modification/suppression.
-- Gestion complète des tâches : création, assignation multi-utilisateurs, modification (statut/priorité/progression), liste avec filtres, suppression.
+- Gestion complète des tâches : création, assignation multi-utilisateurs, modification (statut/priorité/progression), liste avec filtres, suppression, vue Liste ⇄ Kanban fusionnée, création via pop-up.
+- Fil de discussion par projet (US-021) : en cours sur la branche courante, non encore mergé.
+- Dashboard : widgets KPI réels (projets actifs, tâches en retard, répartition par statut), remplaçant les deux cartes statiques d'origine (US-027).
 
-Dernier commit : `49ad0bb` — Merge PR #42 (US-018, suppression d'une tâche).
+Dernier commit mergé : `652ad82` — Merge PR #52 (US-020, création de tâche via pop-up).
 
 ## Documentation associée
 
