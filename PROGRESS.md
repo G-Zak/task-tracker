@@ -91,21 +91,22 @@ Le projet est mené en sprints, avec des User Stories (US) suivies via des issue
 
 ## État actuel (24 août 2026)
 
-Fonctionnalités livrées (mergées dans `main` ou en cours sur branche) :
+Fonctionnalités livrées (mergées dans `main` sauf mention contraire) :
 
 - Projet Next.js/TypeScript initialisé, PostgreSQL en local via Docker, schéma Prisma en place avec seed de démo.
 - Authentification par email/mot de passe, routes protégées, RBAC (rôles ADM/PM/etc.), layout avec sidebar/topbar filtrée par rôle.
 - Gestion complète des clients (CRUD).
-- Gestion complète des projets : création via pop-up (US-029), liste avec recherche/filtres/pagination, page détail (membres + tâches), modification/suppression.
+- Gestion complète des projets : création via pop-up (US-029, PR #54), liste avec recherche/filtres/pagination, page détail (membres + tâches), modification/suppression.
 - Gestion complète des tâches : création, assignation multi-utilisateurs, modification (statut/priorité/progression), liste avec filtres, suppression, vue Liste ⇄ Kanban fusionnée, création via pop-up.
-- Fil de discussion par projet (US-021), suppression de message (US-022) et diffusion temps réel via WebSocket (US-033) : complets sur la branche courante, non encore mergés.
-- Dashboard : widgets KPI réels (projets actifs, tâches en retard, répartition par statut), remplaçant les deux cartes statiques d'origine (US-027) ; widget « Mon activité » (mes tâches, activité récente, résumé organisation pour ADMIN) (US-028).
+- Fil de discussion par projet (US-021), suppression de message (US-022), diffusion temps réel via WebSocket (US-033) et page Messagerie dédiée (US-044) : mergés dans `main` (PR #56).
+- Dashboard : widgets KPI réels (US-027, PR #53), widget « Mon activité » (US-028, PR #55), graphiques tendance hebdomadaire + charge de travail (US-045, commit direct `b2aea5c`, hors flux branche/PR habituel).
+- Page « Mon profil » (US-040) : committée et poussée sur la branche `53-us-040-page-mon-profil`, **fusion vers `main` pas encore effectuée**.
 
-Dernier commit mergé : `652ad82` — Merge PR #52 (US-020, création de tâche via pop-up).
+Dernier commit sur `main` : `b2aea5c` — "dashboard v2" (US-045).
 
 ## Documentation associée
 
-- `documentation/Conception/` — backlog GitHub, diagrammes UML, architecture, planning des livrables.
-- `documentation/Sprint_1_Doc/` à `Sprint_4_Doc/` — fiches détaillées par US.
-- `documentation/Rapports_livrables/` — rapports de sprint (Sprint 1, Sprint 4).
+- `documentation/Conception/` — backlog GitHub, diagrammes UML, architecture, planning des livrables, guide de construction (`07-Guide-Construction.md`).
+- `documentation/Sprint_1_Doc/` à `Sprint_6_Doc/`, `Sprint_9_Doc/` — fiches détaillées par US.
+- `documentation/Rapports_livrables/` — rapports de sprint (Sprint 1, Sprint 4, Sprint 9).
 - `documentation/AI_Integration.md` — notes sur l'intégration IA.

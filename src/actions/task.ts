@@ -2,8 +2,9 @@
 
 import { prisma } from '@/lib/prisma'
 import { authorizeRole, getCurrentUserSession } from '@/src/lib/rbac'
-import { Role } from '@/src/generated/client'
+import { Role, TaskStatus } from '@/src/generated/client'
 import { taskSchema, TaskFormValues, updateTaskMetricsSchema, UpdateTaskMetricsValues } from '@/src/validations/task.schema'
+import { computeTaskTimestampUpdates } from '@/src/lib/task-timestamps'
 import { revalidatePath } from 'next/cache'
 
 function revalidateTaskViews(orgSlug: string, taskId?: string, projectId?: string | null) {
@@ -29,6 +30,12 @@ export async function createTask(values: TaskFormValues, orgSlug: string): Promi
         })
         if (!project) return { error: 'Projet introuvable ou accès refusé.' }
 
+        const timestampUpdates = computeTaskTimestampUpdates({
+            previousStatus: TaskStatus.TODO,
+            nextStatus: status,
+            startedAt: null,
+        })
+
         const task = await prisma.task.create({
             data: {
                 title,
@@ -42,6 +49,7 @@ export async function createTask(values: TaskFormValues, orgSlug: string): Promi
                 assignees: {
                     connect: (assigneeIds ?? []).map((id) => ({ id })),
                 },
+                ...timestampUpdates,
             },
         })
 
@@ -66,9 +74,15 @@ export async function updateTask(taskId: string, values: TaskFormValues, orgSlug
 
         const task = await prisma.task.findFirst({
             where: { id: taskId, organisationId: user.organisationId },
-            select: { id: true, projectId: true },
+            select: { id: true, projectId: true, status: true, startedAt: true },
         })
         if (!task) return { error: 'Tâche introuvable ou accès refusé.' }
+
+        const timestampUpdates = computeTaskTimestampUpdates({
+            previousStatus: task.status,
+            nextStatus: status,
+            startedAt: task.startedAt,
+        })
 
         await prisma.task.update({
             where: { id: taskId },
@@ -83,6 +97,7 @@ export async function updateTask(taskId: string, values: TaskFormValues, orgSlug
                 assignees: {
                     set: (assigneeIds ?? []).map((id) => ({ id })),
                 },
+                ...timestampUpdates,
             },
         })
 
@@ -104,11 +119,11 @@ export async function updateTaskMetrics(values: UpdateTaskMetricsValues, orgSlug
             return { error: parsed.error.issues[0]?.message || 'Données de mise à jour invalides.' }
         }
 
-        const { taskId, status, priority, progress } = parsed.data
+        const { taskId, status, priority } = parsed.data
 
         const task = await prisma.task.findFirst({
             where: { id: taskId, organisationId: user.organisationId },
-            select: { id: true, projectId: true, assignees: { select: { id: true } } },
+            select: { id: true, projectId: true, status: true, startedAt: true, assignees: { select: { id: true } } },
         })
         if (!task) return { error: 'Tâche introuvable ou accès refusé.' }
 
@@ -123,12 +138,18 @@ export async function updateTaskMetrics(values: UpdateTaskMetricsValues, orgSlug
             return { error: 'Seuls les administrateurs et chefs de projet peuvent modifier la priorité.' }
         }
 
+        const timestampUpdates = computeTaskTimestampUpdates({
+            previousStatus: task.status,
+            nextStatus: status,
+            startedAt: task.startedAt,
+        })
+
         await prisma.task.update({
             where: { id: taskId },
             data: {
                 ...(status && { status }),
                 ...(priority && { priority }),
-                ...(progress !== undefined && { progress }),
+                ...timestampUpdates,
             },
         })
 

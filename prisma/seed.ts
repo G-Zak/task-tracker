@@ -70,21 +70,16 @@ function shuffle<T>(items: T[]): T[] {
   return copy
 }
 
-function progressForStatus(status: TaskStatus): number {
-  switch (status) {
-    case TaskStatus.DONE:
-      return 100
-    case TaskStatus.TODO:
-      return 0
-    case TaskStatus.CANCELLED:
-      return randomInt(0, 40)
-    case TaskStatus.BLOCKED:
-      return randomInt(10, 60)
-    case TaskStatus.IN_REVIEW:
-      return randomInt(70, 95)
-    default:
-      return randomInt(20, 90)
-  }
+function startedAtForStatus(status: TaskStatus): Date | null {
+  if (status === TaskStatus.TODO) return null
+  const hoursAgo = randomInt(2, 240)
+  return new Date(Date.now() - hoursAgo * 60 * 60 * 1000)
+}
+
+function approvedAtForStatus(status: TaskStatus, startedAt: Date | null): Date | null {
+  if (status !== TaskStatus.DONE || !startedAt) return null
+  const hoursAfterStart = randomInt(1, 72)
+  return new Date(startedAt.getTime() + hoursAfterStart * 60 * 60 * 1000)
 }
 
 async function main() {
@@ -395,12 +390,14 @@ async function main() {
   ]
 
   for (const task of tasks) {
+    const startedAt = startedAtForStatus(task.status)
     await prisma.task.create({
       data: {
         title: task.title,
         status: task.status,
         priority: task.priority,
-        progress: progressForStatus(task.status),
+        startedAt,
+        approvedAt: approvedAtForStatus(task.status, startedAt),
         organisationId: organisation.id,
         projectId: task.projectId,
         taskTypeId: task.taskTypeId,
@@ -422,12 +419,14 @@ async function main() {
     const assigneeCount = randomInt(1, 2)
     const assignees = shuffle(allUsers).slice(0, assigneeCount)
 
+    const startedAt = startedAtForStatus(status)
     await prisma.task.create({
       data: {
         title,
         status,
         priority: randomItem(allPriorities),
-        progress: progressForStatus(status),
+        startedAt,
+        approvedAt: approvedAtForStatus(status, startedAt),
         organisationId: organisation.id,
         projectId: randomItem(allProjects).id,
         taskTypeId: randomItem(allTaskTypes).id,
