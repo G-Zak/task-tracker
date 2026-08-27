@@ -46,10 +46,7 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
     page: rawSearchParams.page || '1',
   })
 
-  // Un manager voit toutes les tâches de l'organisation. Un simple collaborateur ne voit
-  // que les tâches qui lui sont assignées ou rattachées à un projet dont il est membre.
-  // La vue Kanban n'est pas paginée (un board affiche toutes les colonnes en une fois),
-  // la vue Liste garde sa pagination par page de 10.
+
   const { tasks: rawTasks, pagination } = await getFilteredTasks(user.organisationId, {
     searchQuery: filters.q,
     status: filters.status,
@@ -60,7 +57,6 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
     restrictToUserId: canCreateTask ? undefined : user.id,
   })
 
-  // Sur sa page, un collaborateur voit ses propres tâches assignées remonter en priorité.
   const tasks = canCreateTask
     ? rawTasks
     : [...rawTasks].sort((a, b) => {
@@ -98,7 +94,7 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
     title: task.title,
     status: task.status as TaskStatus,
     priority: task.priority,
-    progress: task.progress,
+    startedAt: task.startedAt,
     project: task.project ? { id: task.project.id, name: task.project.name } : null,
     assignees: task.assignees.map((assignee) => ({
       id: assignee.id,
@@ -232,7 +228,6 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
                     orgSlug={orgSlug}
                     currentStatus={task.status}
                     currentPriority={task.priority}
-                    currentProgress={task.progress}
                     canEditPriority={canCreateTask}
                   />
                 )}

@@ -127,8 +127,9 @@ model Task{
   description   String?
   status        TaskStatus @default(TODO)
   priority      TaskPriority @default(MEDIUM)
-  progress      Int      @default(0)
   dueDate       DateTime?
+  startedAt     DateTime?
+  approvedAt    DateTime?
   
   organisationId String
   organisation   Organisation @relation(fields: [organisationId], references: [id])

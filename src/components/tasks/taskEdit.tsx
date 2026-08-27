@@ -14,16 +14,14 @@ interface TaskQuickEditProps {
     orgSlug: string
     currentStatus: TaskStatus
     currentPriority: TaskPriority
-    currentProgress: number
     canEditPriority: boolean
 }
 
-export function TaskQuickEdit({ taskId, orgSlug, currentStatus, currentPriority, currentProgress, canEditPriority }: TaskQuickEditProps) {
+export function TaskQuickEdit({ taskId, orgSlug, currentStatus, currentPriority, canEditPriority }: TaskQuickEditProps) {
     const [isPending, startTransition] = useTransition()
     const [error, setError] = useState<string | null>(null)
-    const [progress, setProgress] = useState(currentProgress)
 
-    const handleUpdate = (field: 'status' | 'priority' | 'progress', value: string | number) => {
+    const handleUpdate = (field: 'status' | 'priority', value: string) => {
         setError(null)
 
         startTransition(async () => {
@@ -88,25 +86,6 @@ export function TaskQuickEdit({ taskId, orgSlug, currentStatus, currentPriority,
                         )}
                     </div>
                 </div>
-            </div>
-
-            <div className="pt-1">
-                <div className="flex items-center justify-between mb-2">
-                    <Label>Progression</Label>
-                    <span className="text-xs font-semibold text-zinc-700">{progress}%</span>
-                </div>
-                <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={progress}
-                    disabled={isPending}
-                    onChange={(e) => setProgress(Number(e.target.value))}
-                    onMouseUp={(e) => handleUpdate('progress', Number(e.currentTarget.value))}
-                    onTouchEnd={(e) => handleUpdate('progress', Number(e.currentTarget.value))}
-                    className="w-full accent-zinc-900 disabled:opacity-50"
-                />
             </div>
         </div>
     )

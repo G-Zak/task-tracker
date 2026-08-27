@@ -1,18 +1,19 @@
 'use client'
 
 import { useMemo, useState, useTransition } from 'react'
-import { FolderKanban, Lock } from 'lucide-react'
+import { FolderKanban, Lock, Timer } from 'lucide-react'
 import { updateTaskMetrics } from '@/src/actions/task'
 import { TaskStatus, TaskPriority } from '@/src/generated/client'
 import { taskStatusLabels, taskPriorityLabels, taskPriorityStyles } from '@/src/lib/labels'
 import { taskStatusSolidStyles } from '@/src/lib/status-colors'
+import { formatElapsedSince } from '@/src/lib/elapsed-time'
 
 export interface KanbanTask {
   id: string
   title: string
   status: TaskStatus
   priority: TaskPriority
-  progress: number
+  startedAt: Date | null
   project: { id: string; name: string } | null
   assignees: { id: string; firstName: string; lastName: string }[]
   editable: boolean
@@ -104,56 +105,58 @@ export function KanbanBoard({ orgSlug, initialTasks, columns }: KanbanBoardProps
                   </div>
                 )}
 
-                {columnTasks.map((task) => (
-                  <div
-                    key={task.id}
-                    draggable={task.editable}
-                    onDragStart={() => setDraggedTaskId(task.id)}
-                    onDragEnd={() => setDraggedTaskId(null)}
-                    className={`rounded-xl border border-zinc-200 bg-white p-3 shadow-sm transition-shadow space-y-2 ${
-                      task.editable ? 'cursor-grab active:cursor-grabbing hover:shadow-md' : 'cursor-default opacity-90'
-                    } ${draggedTaskId === task.id ? 'opacity-40' : ''}`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md uppercase ring-1 ring-inset ${taskPriorityStyles[task.priority]}`}
-                      >
-                        {taskPriorityLabels[task.priority]}
-                      </span>
-                      {!task.editable && <Lock className="h-3 w-3 shrink-0 text-zinc-300" />}
-                    </div>
+                {columnTasks.map((task) => {
+                  const elapsed = formatElapsedSince(task.startedAt)
 
-                    <p className="text-sm font-medium text-zinc-900 leading-snug">{task.title}</p>
-
-                    {task.project && (
-                      <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                        <FolderKanban className="h-3.5 w-3.5 text-zinc-400" />
-                        <span className="truncate">{task.project.name}</span>
+                  return (
+                    <div
+                      key={task.id}
+                      draggable={task.editable}
+                      onDragStart={() => setDraggedTaskId(task.id)}
+                      onDragEnd={() => setDraggedTaskId(null)}
+                      className={`rounded-xl border border-zinc-200 bg-white p-3 shadow-sm transition-shadow space-y-2 ${
+                        task.editable ? 'cursor-grab active:cursor-grabbing hover:shadow-md' : 'cursor-default opacity-90'
+                      } ${draggedTaskId === task.id ? 'opacity-40' : ''}`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md uppercase ring-1 ring-inset ${taskPriorityStyles[task.priority]}`}
+                        >
+                          {taskPriorityLabels[task.priority]}
+                        </span>
+                        {!task.editable && <Lock className="h-3 w-3 shrink-0 text-zinc-300" />}
                       </div>
-                    )}
 
-                    <div className="h-1.5 w-full rounded-full bg-zinc-100 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-primary transition-all"
-                        style={{ width: `${task.progress}%` }}
-                      />
-                    </div>
+                      <p className="text-sm font-medium text-zinc-900 leading-snug">{task.title}</p>
 
-                    {task.assignees.length > 0 && (
-                      <div className="flex -space-x-1.5">
-                        {task.assignees.map((assignee) => (
-                          <div
-                            key={assignee.id}
-                            title={`${assignee.firstName} ${assignee.lastName}`}
-                            className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-semibold text-white ring-2 ring-white"
-                          >
-                            {assignee.firstName.charAt(0).toUpperCase()}
-                          </div>
-                        ))}
+                      {task.project && (
+                        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+                          <FolderKanban className="h-3.5 w-3.5 text-zinc-400" />
+                          <span className="truncate">{task.project.name}</span>
+                        </div>
+                      )}
+
+                      <div className={`flex items-center gap-1.5 text-xs ${elapsed ? 'font-medium text-zinc-600' : 'text-zinc-400'}`}>
+                        <Timer className={`h-3.5 w-3.5 ${elapsed ? 'text-zinc-400' : 'text-zinc-300'}`} />
+                        <span>{elapsed ?? 'Non démarrée'}</span>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      {task.assignees.length > 0 && (
+                        <div className="flex -space-x-1.5">
+                          {task.assignees.map((assignee) => (
+                            <div
+                              key={assignee.id}
+                              title={`${assignee.firstName} ${assignee.lastName}`}
+                              className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-semibold text-white ring-2 ring-white"
+                            >
+                              {assignee.firstName.charAt(0).toUpperCase()}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )
