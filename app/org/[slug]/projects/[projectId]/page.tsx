@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUserSession, canAccessProject } from '@/src/lib/rbac'
 import { Role } from '@/src/generated/client'
 import { redirect, notFound } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Sparkles } from 'lucide-react'
 import { AddMemberModal } from '@/src/components/projects/AddMemberModal'
 import { RemoveMemberButton } from '@/src/components/projects/RemoveMemberButton'
 import { DeleteProjectButton } from '@/src/components/projects/DeleteProjectButton'
@@ -133,6 +133,15 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         
         {/* ACTION BUTTONS */}
         <div className="flex items-center gap-2">
+          {canEdit && (
+            <a
+              href={`/org/${orgSlug}/projects/${projectId}/report`}
+              className="flex items-center gap-1.5 px-4 py-2 bg-violet-50 text-violet-700 rounded-lg hover:bg-violet-100 transition text-sm font-medium"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Rapport IA
+            </a>
+          )}
           {canEdit && (
             <a
               href={`/org/${orgSlug}/projects/${projectId}/edit`}

@@ -6,50 +6,66 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
 })
 
+// Jeu de données 100% fictif — noms, entreprises et personnes n'existent pas et ne désignent
+// aucune organisation ou personne réelle. Seul le positionnement métier (orchestration
+// d'écosystèmes intelligents, IA multimodale & AIoT, équipements connectés, infrastructure
+// souveraine ; santé, industrie X.0, territoires intelligents, banque/assurance) reflète
+// l'activité réelle d'ABA Technology, pour que la démo reste cohérente avec la marque.
 const MOROCCAN_FIRST_NAMES = [
-  'Youssef', 'Amine', 'Karim', 'Omar', 'Yassine', 'Anas', 'Mehdi', 'Reda',
-  'Soufiane', 'Ayoub', 'Ilyas', 'Rachid', 'Nabil', 'Othmane', 'Adil',
-  'Fatima Zahra', 'Salma', 'Imane', 'Khadija', 'Meriem', 'Sara', 'Nour',
-  'Hajar', 'Ghita', 'Zineb', 'Lamiae', 'Asmae', 'Rania', 'Kenza', 'Loubna',
+  'Hamza', 'Tarik', 'Bilal', 'Mounir', 'Hicham', 'Younes', 'Marouane', 'Aziz',
+  'Faycal', 'Driss', 'Walid', 'Samir', 'Hatim', 'Abderrahim',
+  'Wafaa', 'Btissam', 'Nadia', 'Latifa', 'Siham', 'Malak', 'Chaimae',
+  'Yasmine', 'Amal', 'Douae', 'Manal', 'Hanane', 'Karima', 'Ouiam',
 ]
 
 const MOROCCAN_LAST_NAMES = [
-  'Bennani', 'Alaoui', 'Tazi', 'Idrissi', 'El Amrani', 'Chraibi', 'Berrada',
-  'Fassi', 'Cherkaoui', 'Benjelloun', 'Squalli', 'Lahlou', 'Guessous',
-  'Bouzidi', 'Sbai', 'Ziani', 'Rahmouni', 'Kabbaj', 'Moussaoui', 'Tahiri',
+  'Alami', 'Belhaj', 'Toumi', 'Mansouri', 'Skalli', 'Naciri', 'Sekkat',
+  'Filali', 'Ouazzani', 'Benkirane', 'Zerouali', 'Haddaoui', 'Belkadi',
+  'Sahli', 'Ghazi', 'Bensouda', 'Lamrani',
 ]
 
 const CLIENT_NAME_POOL = [
-  { name: 'Maroc Telecom', domain: 'iam.ma' },
-  { name: 'Bank Al-Maghrib', domain: 'bkam.ma' },
-  { name: 'Royal Air Maroc', domain: 'royalairmaroc.com' },
-  { name: 'Marjane Holding', domain: 'marjane.ma' },
-  { name: 'CDG Capital', domain: 'cdgcapital.ma' },
-  { name: 'ONCF', domain: 'oncf.ma' },
-  { name: 'ADM - Autoroutes du Maroc', domain: 'adm.co.ma' },
-  { name: 'Attijariwafa Bank', domain: 'attijariwafa.com' },
-  { name: 'Managem Group', domain: 'managemgroup.com' },
-  { name: 'Akdital Santé', domain: 'akdital.ma' },
+  { name: 'Nova Fintech Labs', domain: 'novafintech.io' },
+  { name: 'GreenGrid Energy', domain: 'greengrid-energy.com' },
+  { name: 'MedAlliance Group', domain: 'medalliance-group.com' },
+  { name: 'Portalis Logistics', domain: 'portalis-logistics.com' },
+  { name: 'Assurcap Mutuelle', domain: 'assurcap.ma' },
+  { name: 'TerraSense Agritech', domain: 'terrasense.io' },
+  { name: 'Office Régional des Infrastructures', domain: 'ori-infra.ma' },
+  { name: 'Cedrus Industrial Partners', domain: 'cedrus-partners.com' },
+  { name: 'Aurika Biotech', domain: 'aurika-biotech.com' },
+  { name: 'Meridian Capital Trust', domain: 'meridian-capital.ma' },
 ]
 
 const TASK_TITLE_POOL = [
-  'Automatiser les tests de charge du cluster edge',
+  // Health-Tech & Biotechnologie
+  'Déployer les capteurs de télésurveillance à domicile',
+  'Valider la conformité réglementaire des données patients',
+  'Intégrer l IA de triage pour les urgences distantes',
+  'Calibrer les capteurs biométriques portables',
+  'Auditer la sécurité des dossiers médicaux électroniques',
+  // Industrie X.0 & Supply Chain
+  'Modéliser le jumeau numérique de la ligne d assemblage',
+  'Déployer les agents de maintenance prédictive',
+  'Optimiser les itinéraires logistiques multi-sites',
+  'Automatiser le contrôle qualité par vision embarquée',
+  'Cartographier les capteurs IoT du site industriel',
+  // Territoires intelligents
+  'Déployer le réseau LoRaWAN pour l éclairage intelligent',
+  'Intégrer les capteurs de qualité de l air urbains',
+  'Concevoir le tableau de bord énergétique municipal',
+  'Sécuriser les communications des infrastructures critiques',
+  'Tester la résilience du réseau en cas de coupure',
+  // Banque & Assurance
+  'Entraîner le modèle de détection de fraude',
+  'Auditer la conformité des flux de paiement',
+  'Chiffrer les échanges inter-agences',
+  'Déployer l assistant IA de conformité réglementaire',
+  'Migrer l infrastructure vers le cloud souverain',
+  // Transverse / orchestration
+  'Documenter l API d intégration partenaires',
+  'Former les équipes terrain aux nouveaux outils',
   'Refondre le pipeline CI/CD des modèles embarqués',
-  'Auditer la conformité RGPD des flux clients',
-  'Mettre en place la supervision temps réel des capteurs',
-  'Réduire la latence du moteur d inférence embarqué',
-  'Cartographier les dépendances de l infrastructure souveraine',
-  'Rédiger la documentation d intégration API partenaires',
-  'Stabiliser le déploiement multi-région',
-  'Concevoir le tableau de bord de suivi des flottes',
-  'Chiffrer les échanges inter-services critiques',
-  'Optimiser le stockage des séries temporelles capteurs',
-  'Mettre à jour le firmware des unités mobiles',
-  'Industrialiser le pipeline d étiquetage des données',
-  'Renforcer les tests de résilience réseau',
-  'Migrer la base de configuration vers le cloud souverain',
-  'Former les équipes terrain au nouveau tableau de bord',
-  'Corriger les alertes faux positifs du monitoring',
   'Préparer l audit de sécurité trimestriel',
 ]
 
@@ -99,13 +115,13 @@ async function main() {
 
   const organisation = await prisma.organisation.create({
     data: {
-      name: 'ABA Technology - Nextronic',
+      name: 'ABA Technology',
     },
   })
 
-  const taskTypeHardware = await prisma.taskType.create({
+  const taskTypeIoT = await prisma.taskType.create({
     data: {
-      name: 'Engineering & Hardware',
+      name: 'Équipements connectés & IoT',
       color: '#1e3a8a',
       organisationId: organisation.id,
     },
@@ -113,16 +129,24 @@ async function main() {
 
   const taskTypeAI = await prisma.taskType.create({
     data: {
-      name: 'IA de bord & modèles',
+      name: 'IA multimodale & AIoT',
       color: '#7c3aed',
       organisationId: organisation.id,
     },
   })
 
-  const taskTypeInfra = await prisma.taskType.create({
+  const taskTypeSovereign = await prisma.taskType.create({
     data: {
-      name: 'Sovereign Infrastructure',
+      name: 'Écosystème souverain',
       color: '#10b981',
+      organisationId: organisation.id,
+    },
+  })
+
+  const taskTypeOrchestration = await prisma.taskType.create({
+    data: {
+      name: 'Orchestration & intégration',
+      color: '#ea580c',
       organisationId: organisation.id,
     },
   })
@@ -142,7 +166,7 @@ async function main() {
     data: {
       email: 'manager@abatechnology.com',
       firstName: 'Hamza',
-      lastName: 'Radi',
+      lastName: 'Alami',
       passwordHash: passwordHash,
       role: Role.PROJECT_MANAGER,
       organisationId: organisation.id,
@@ -151,9 +175,9 @@ async function main() {
 
   const teamMember = await prisma.user.create({
     data: {
-      email: 'hind@abatechnology.com',
-      firstName: 'Hind',
-      lastName: 'Rahimi',
+      email: 'nadia@abatechnology.com',
+      firstName: 'Nadia',
+      lastName: 'Mansouri',
       passwordHash: passwordHash,
       role: Role.USER,
       organisationId: organisation.id,
@@ -163,8 +187,8 @@ async function main() {
   const teamLead = await prisma.user.create({
     data: {
       email: 'lead@abatechnology.com',
-      firstName: 'Karim',
-      lastName: 'Tazi',
+      firstName: 'Wafaa',
+      lastName: 'Belhaj',
       passwordHash: passwordHash,
       role: Role.TEAM_LEADER,
       organisationId: organisation.id,
@@ -174,8 +198,8 @@ async function main() {
   const collaborator = await prisma.user.create({
     data: {
       email: 'user@abatechnology.com',
-      firstName: 'Yassine',
-      lastName: 'El Amrani',
+      firstName: 'Tarik',
+      lastName: 'Skalli',
       passwordHash: passwordHash,
       role: Role.USER,
       organisationId: organisation.id,
@@ -185,7 +209,7 @@ async function main() {
   const usedEmails = new Set([
     'admin@abatechnology.com',
     'manager@abatechnology.com',
-    'hind@abatechnology.com',
+    'nadia@abatechnology.com',
     'lead@abatechnology.com',
     'user@abatechnology.com',
   ])
@@ -218,26 +242,46 @@ async function main() {
     fakeUsers.push(user)
   }
 
-  const clientHealth = await prisma.client.create({
+  // Une "viewer" pour couvrir ce rôle dans la démo (aucun compte n'en portait avant).
+  const viewer = await prisma.user.create({
     data: {
-      name: 'FM6SS (Fondation Mohammed VI)',
-      email: 'contact@fm6ss.ma',
+      email: 'viewer@abatechnology.com',
+      firstName: 'Karima',
+      lastName: 'Ghazi',
+      passwordHash,
+      role: Role.VIEWER,
       organisationId: organisation.id,
     },
   })
 
-  const clientCloud = await prisma.client.create({
+  const clientHealth = await prisma.client.create({
     data: {
-      name: 'Numspot',
-      email: 'infra@numspot.fr',
+      name: 'CareLoop Health Network',
+      email: 'contact@careloop-health.org',
       organisationId: organisation.id,
     },
   })
 
   const clientIndustry = await prisma.client.create({
     data: {
-      name: 'OCP Mining Division',
-      email: 'operations@ocp.ma',
+      name: 'Atlas Minerals Group',
+      email: 'operations@atlas-minerals.com',
+      organisationId: organisation.id,
+    },
+  })
+
+  const clientTerritory = await prisma.client.create({
+    data: {
+      name: 'Métropole de Ravelin',
+      email: 'infrastructures@ravelin-metropole.ma',
+      organisationId: organisation.id,
+    },
+  })
+
+  const clientBank = await prisma.client.create({
+    data: {
+      name: 'Banque Solivia',
+      email: 'conformite@banque-solivia.ma',
       organisationId: organisation.id,
     },
   })
@@ -255,8 +299,8 @@ async function main() {
 
   await prisma.team.create({
     data: {
-      name: 'ABA Sovereignty & Hardware',
-      description: 'Équipe matériel et systèmes embarqués',
+      name: 'Équipe Équipements Connectés & Souveraineté',
+      description: 'Matériel embarqué, IoT et infrastructures souveraines',
       organisationId: organisation.id,
       leaderId: teamLead.id,
       members: {
@@ -267,8 +311,8 @@ async function main() {
 
   await prisma.team.create({
     data: {
-      name: 'ABA Fusion AI Agents',
-      description: 'Équipe IA et automatisation des flux',
+      name: 'Équipe IA Multimodale & AIoT',
+      description: 'Modèles d\'IA embarqués et orchestration des flux intelligents',
       organisationId: organisation.id,
       leaderId: projectManager.id,
       members: {
@@ -279,8 +323,8 @@ async function main() {
 
   const projectHealth = await prisma.project.create({
     data: {
-      name: 'Mobile Medical Units - ABA Life',
-      description: 'Déploiement d une santé connectée pour les zones isolées.',
+      name: 'Réseau IoT de Télésurveillance Médicale',
+      description: 'Déploiement d\'un réseau de capteurs connectés pour le suivi à distance des patients en zones isolées.',
       status: ProjectStatus.IN_PROGRESS,
       organisationId: organisation.id,
       clientId: clientHealth.id,
@@ -292,8 +336,8 @@ async function main() {
 
   const projectIndustry = await prisma.project.create({
     data: {
-      name: 'Digital Twin & AI Agents - Mining',
-      description: 'Intelligence opérationnelle et orchestration de jumeaux numériques.',
+      name: 'Jumeau Numérique de la Chaîne d\'Approvisionnement',
+      description: 'Orchestration de jumeaux numériques et d\'agents IA pour la maintenance prédictive du site industriel.',
       status: ProjectStatus.PLANNING,
       organisationId: organisation.id,
       clientId: clientIndustry.id,
@@ -303,22 +347,35 @@ async function main() {
     },
   })
 
-  const projectCloud = await prisma.project.create({
+  const projectTerritory = await prisma.project.create({
     data: {
-      name: 'Sovereign AI Cloud - Numspot',
-      description: 'Infrastructure souveraine et sécurisée pour les systèmes critiques.',
+      name: 'Infrastructures Urbaines Intelligentes',
+      description: 'Réseau IoT bas-débit pour l\'éclairage, la qualité de l\'air et la supervision énergétique de la métropole.',
+      status: ProjectStatus.IN_PROGRESS,
+      organisationId: organisation.id,
+      clientId: clientTerritory.id,
+      members: {
+        connect: [{ id: teamLead.id }, { id: fakeUsers[1].id }],
+      },
+    },
+  })
+
+  const projectBank = await prisma.project.create({
+    data: {
+      name: 'Plateforme IA Souveraine de Conformité',
+      description: 'Détection de fraude et conformité réglementaire sur une infrastructure cloud souveraine et sécurisée.',
       status: ProjectStatus.ON_HOLD,
       organisationId: organisation.id,
-      clientId: clientCloud.id,
+      clientId: clientBank.id,
       members: {
-        connect: [{ id: admin.id }, { id: fakeUsers[1].id }],
+        connect: [{ id: admin.id }, { id: fakeUsers[2].id }],
       },
     },
   })
 
   await prisma.projectNote.create({
     data: {
-      content: 'La phase de découverte initiale est terminée et le périmètre a été validé.',
+      content: 'La phase de découverte initiale est terminée et le périmètre a été validé avec le client.',
       projectId: projectHealth.id,
       authorId: admin.id,
     },
@@ -326,67 +383,88 @@ async function main() {
 
   const tasks = [
     {
-      title: 'Intégrer les capteurs IoT de télémédecine',
+      title: 'Déployer les capteurs de télésurveillance à domicile',
       status: TaskStatus.DONE,
       priority: TaskPriority.HIGH,
       projectId: projectHealth.id,
-      taskTypeId: taskTypeHardware.id,
+      taskTypeId: taskTypeIoT.id,
     },
     {
-      title: 'Valider les contrôles de confidentialité des données de santé',
+      title: 'Valider la conformité réglementaire des données patients',
       status: TaskStatus.IN_PROGRESS,
       priority: TaskPriority.CRITICAL,
       projectId: projectHealth.id,
-      taskTypeId: taskTypeInfra.id,
+      taskTypeId: taskTypeSovereign.id,
     },
     {
-      title: 'Tester la connectivité edge dans les zones isolées',
+      title: 'Intégrer l IA de triage pour les urgences distantes',
       status: TaskStatus.TODO,
       priority: TaskPriority.HIGH,
       projectId: projectHealth.id,
-      taskTypeId: taskTypeHardware.id,
+      taskTypeId: taskTypeAI.id,
     },
     {
-      title: 'Modéliser le pipeline d ingestion des données IA de bord',
+      title: 'Modéliser le jumeau numérique de la ligne d assemblage',
       status: TaskStatus.DONE,
       priority: TaskPriority.MEDIUM,
       projectId: projectIndustry.id,
       taskTypeId: taskTypeAI.id,
     },
     {
-      title: 'Déployer les agents d orchestration pour la maintenance prédictive',
+      title: 'Déployer les agents de maintenance prédictive',
       status: TaskStatus.IN_PROGRESS,
       priority: TaskPriority.CRITICAL,
       projectId: projectIndustry.id,
       taskTypeId: taskTypeAI.id,
     },
     {
-      title: 'Optimiser le LLM multimodal pour les terminaux contraints',
+      title: 'Optimiser les itinéraires logistiques multi-sites',
       status: TaskStatus.TODO,
       priority: TaskPriority.MEDIUM,
       projectId: projectIndustry.id,
+      taskTypeId: taskTypeOrchestration.id,
+    },
+    {
+      title: 'Déployer le réseau LoRaWAN pour l éclairage intelligent',
+      status: TaskStatus.DONE,
+      priority: TaskPriority.HIGH,
+      projectId: projectTerritory.id,
+      taskTypeId: taskTypeIoT.id,
+    },
+    {
+      title: 'Intégrer les capteurs de qualité de l air urbains',
+      status: TaskStatus.IN_PROGRESS,
+      priority: TaskPriority.MEDIUM,
+      projectId: projectTerritory.id,
+      taskTypeId: taskTypeIoT.id,
+    },
+    {
+      title: 'Sécuriser les communications des infrastructures critiques',
+      status: TaskStatus.TODO,
+      priority: TaskPriority.CRITICAL,
+      projectId: projectTerritory.id,
+      taskTypeId: taskTypeSovereign.id,
+    },
+    {
+      title: 'Entraîner le modèle de détection de fraude',
+      status: TaskStatus.DONE,
+      priority: TaskPriority.HIGH,
+      projectId: projectBank.id,
       taskTypeId: taskTypeAI.id,
     },
     {
-      title: 'Concevoir l architecture réseau souveraine',
-      status: TaskStatus.DONE,
-      priority: TaskPriority.HIGH,
-      projectId: projectCloud.id,
-      taskTypeId: taskTypeInfra.id,
-    },
-    {
-      title: 'Isoler les environnements d exécution critiques',
+      title: 'Auditer la conformité des flux de paiement',
       status: TaskStatus.TODO,
       priority: TaskPriority.CRITICAL,
-      projectId: projectCloud.id,
-      taskTypeId: taskTypeInfra.id,
+      projectId: projectBank.id,
+      taskTypeId: taskTypeSovereign.id,
     },
     {
-      title: 'Documenter le parcours d onboarding pour Fusion AI Academy',
+      title: 'Migrer l infrastructure vers le cloud souverain',
       status: TaskStatus.TODO,
       priority: TaskPriority.LOW,
-      projectId: projectCloud.id,
-      taskTypeId: taskTypeInfra.id,
+      projectId: projectBank.id,
+      taskTypeId: taskTypeSovereign.id,
     },
   ]
 
@@ -409,9 +487,9 @@ async function main() {
     })
   }
 
-  const allUsers = [admin, projectManager, teamMember, teamLead, collaborator, ...fakeUsers]
-  const allProjects = [projectHealth, projectIndustry, projectCloud]
-  const allTaskTypes = [taskTypeHardware, taskTypeAI, taskTypeInfra]
+  const allUsers = [admin, projectManager, teamMember, teamLead, collaborator, viewer, ...fakeUsers]
+  const allProjects = [projectHealth, projectIndustry, projectTerritory, projectBank]
+  const allTaskTypes = [taskTypeIoT, taskTypeAI, taskTypeSovereign, taskTypeOrchestration]
   const allStatuses = Object.values(TaskStatus)
   const allPriorities = Object.values(TaskPriority)
 

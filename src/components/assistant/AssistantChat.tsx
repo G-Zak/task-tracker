@@ -127,7 +127,7 @@ export function AssistantChat() {
                     <div className="flex justify-start">
                         <div className="flex items-center gap-2 rounded-2xl bg-zinc-100 px-4 py-2.5 text-sm text-zinc-500">
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            L&apos;assistant réfléchit... (modèle local, jusqu&apos;à une minute)
+                            L&apos;assistant réfléchit... (modèle local, jusqu&apos;à quelques minutes)
                         </div>
                     </div>
                 )}
