@@ -58,7 +58,8 @@ export const ModelName = {
   Project: 'Project',
   Task: 'Task',
   TaskType: 'TaskType',
-  ProjectNote: 'ProjectNote'
+  ProjectNote: 'ProjectNote',
+  KnowledgeChunk: 'KnowledgeChunk'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -179,6 +180,19 @@ export const ProjectNoteScalarFieldEnum = {
 } as const
 
 export type ProjectNoteScalarFieldEnum = (typeof ProjectNoteScalarFieldEnum)[keyof typeof ProjectNoteScalarFieldEnum]
+
+
+export const KnowledgeChunkScalarFieldEnum = {
+  id: 'id',
+  organisationId: 'organisationId',
+  sourceType: 'sourceType',
+  sourceId: 'sourceId',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type KnowledgeChunkScalarFieldEnum = (typeof KnowledgeChunkScalarFieldEnum)[keyof typeof KnowledgeChunkScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -87,6 +87,7 @@ async function main() {
   const passwordHash = await bcrypt.hash('admin1234', salt)
   console.log('Démarrage du seed de démonstration...')
 
+  await prisma.knowledgeChunk.deleteMany()
   await prisma.projectNote.deleteMany()
   await prisma.task.deleteMany()
   await prisma.team.deleteMany()

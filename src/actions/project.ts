@@ -4,6 +4,7 @@ import { Role } from "@/src/generated/client"
 import { authorizeRole } from "@/src/lib/rbac" // Utilise authorizeRole partout !
 import { prisma } from "@/lib/prisma"
 import { projectSchema, ProjectFormValues } from "@/src/validations/project.schema"
+import { indexProject, removeFromIndex } from "@/src/services/rag.service"
 import { revalidatePath } from 'next/cache'
 
 export async function createProject(data: ProjectFormValues, orgSlug: string) {
@@ -34,6 +35,7 @@ export async function createProject(data: ProjectFormValues, orgSlug: string) {
         })
 
         revalidatePath(`/org/${orgSlug}/projects`)
+        await indexProject(newProject.id)
 
         return { success: true, project: newProject }
     } catch (error: any) {
@@ -79,6 +81,7 @@ export async function updateProject(projectId: string, data: ProjectFormValues, 
 
         revalidatePath(`/org/${orgSlug}/projects/${projectId}`)
         revalidatePath(`/org/${orgSlug}/projects`)
+        await indexProject(projectId)
 
         return { success: true, project: updated }
     } catch (error: any) {
@@ -175,6 +178,7 @@ export async function deleteProject(projectId: string, orgSlug: string) {
         })
 
         revalidatePath(`/org/${orgSlug}/projects`)
+        await removeFromIndex('PROJECT', projectId)
 
         return { success: true }
     } catch (error: any) {

@@ -81,3 +81,8 @@ export type TaskType = Prisma.TaskTypeModel
  * 
  */
 export type ProjectNote = Prisma.ProjectNoteModel
+/**
+ * Model KnowledgeChunk
+ * 
+ */
+export type KnowledgeChunk = Prisma.KnowledgeChunkModel
