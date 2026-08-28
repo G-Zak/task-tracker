@@ -22,10 +22,16 @@ export async function upsertClient(data: ClientFormValues, orgSlug: string) {
         const { id, name, email } = parsedData.data
 
         if (id) {
+            const existing = await prisma.client.findUnique({ where: { id } })
+            if (!existing || existing.organisationId !== user.organisationId) {
+                return { error: 'Client introuvable ou accès refusé.' }
+            }
+
             await prisma.client.update({
                 where: {id},
                 data: {name, email}
             })
+            revalidatePath(`/org/${orgSlug}/clients/${id}`)
         } else {
             await prisma.client.create({
                 data: {name: parsedData.data.name,
@@ -33,7 +39,7 @@ export async function upsertClient(data: ClientFormValues, orgSlug: string) {
                         organisationId: user.organisationId}
             })
         }
-         revalidatePath(`/org/${orgSlug}/dashboard/clients`)
+         revalidatePath(`/org/${orgSlug}/clients`)
          return {success: true}
     } catch (error) {
         return { error: 'Une erreur est survenue lors de l\'enregistrement du client.' }
@@ -50,9 +56,11 @@ export async function deleteClient(clientId: string, orgSlug: string) {
             include: {projects: true}
         })
 
+        if (!client || client.organisationId !== user.organisationId) {
+            return { error: 'Client introuvable ou accès refusé.' }
+        }
 
-
-        if (client && client.projects.length > 0){
+        if (client.projects.length > 0){
             return { error: 'Impossible de supprimer un client qui a des projets associés.' }
         }
         
@@ -60,7 +68,7 @@ export async function deleteClient(clientId: string, orgSlug: string) {
             where: { id: clientId }
         })
 
-        revalidatePath(`/org/${orgSlug}/dashboard/clients`)
+        revalidatePath(`/org/${orgSlug}/clients`)
         return {success: true}
     } catch (error) {
         return { error: 'Une erreur est survenue lors de la suppression du client.' }
