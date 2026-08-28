@@ -1,9 +1,7 @@
 import { prisma } from '@/src/lib/prisma'
 import { Role } from '@/generated/enums'
 import { searchKnowledge, type KnowledgeSourceType } from '@/src/services/rag.service'
-
-const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434'
-const OLLAMA_CHAT_MODEL = process.env.OLLAMA_CHAT_MODEL ?? 'deepseek-r1:8b'
+import { ollamaChat, type OllamaChatMessage } from '@/src/lib/ollama-chat'
 
 export interface AssistantMessage {
     role: 'user' | 'assistant'
@@ -72,30 +70,6 @@ export async function computeAssistantScope(user: { id: string; organisationId: 
     }
 }
 
-interface OllamaChatMessage {
-    role: 'system' | 'user' | 'assistant'
-    content: string
-}
-
-async function chat(messages: OllamaChatMessage[]): Promise<string | null> {
-    try {
-        const res = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            body: JSON.stringify({ model: OLLAMA_CHAT_MODEL, messages, stream: false, think: false }),
-            // Modèle de raisonnement local, lent sur ce matériel (mesuré : 20-70s par réponse) —
-            // délai généreux plutôt qu'un timeout serré qui couperait des réponses valides.
-            signal: AbortSignal.timeout(120_000),
-        })
-        if (!res.ok) return null
-
-        const data = await res.json()
-        const content = data.message?.content
-        return typeof content === 'string' ? content.trim() : null
-    } catch {
-        return null
-    }
-}
 
 export async function askAssistant(params: {
     organisationId: string
@@ -132,7 +106,7 @@ export async function askAssistant(params: {
         { role: 'user', content: question },
     ]
 
-    const answer = await chat(messages)
+    const answer = await ollamaChat(messages)
 
     if (!answer) {
         return {

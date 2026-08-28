@@ -37,8 +37,9 @@ export interface ClientDetail {
 
 // Un projet "en retard" au sens client : sa date de fin est dépassée sans qu'il soit
 // terminé/annulé — même logique que "tâche en retard" côté dashboard (US-027), transposée
-// au seul champ de délai que porte Project (endDate).
-function isProjectOverdue(status: ProjectStatus, endDate: Date | null, now: Date): boolean {
+// au seul champ de délai que porte Project (endDate). Exportée : réutilisée telle quelle par
+// les rapports IA (US-043) plutôt que redéfinie une deuxième fois.
+export function isProjectOverdue(status: ProjectStatus, endDate: Date | null, now: Date): boolean {
     return !!endDate && endDate < now && status !== ProjectStatus.COMPLETED && status !== ProjectStatus.CANCELLED
 }
 
