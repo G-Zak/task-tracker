@@ -172,6 +172,7 @@ export type OrganisationWhereInput = {
   projects?: Prisma.ProjectListRelationFilter
   tasks?: Prisma.TaskListRelationFilter
   taskTypes?: Prisma.TaskTypeListRelationFilter
+  knowledgeChunks?: Prisma.KnowledgeChunkListRelationFilter
 }
 
 export type OrganisationOrderByWithRelationInput = {
@@ -184,6 +185,7 @@ export type OrganisationOrderByWithRelationInput = {
   projects?: Prisma.ProjectOrderByRelationAggregateInput
   tasks?: Prisma.TaskOrderByRelationAggregateInput
   taskTypes?: Prisma.TaskTypeOrderByRelationAggregateInput
+  knowledgeChunks?: Prisma.KnowledgeChunkOrderByRelationAggregateInput
 }
 
 export type OrganisationWhereUniqueInput = Prisma.AtLeast<{
@@ -199,6 +201,7 @@ export type OrganisationWhereUniqueInput = Prisma.AtLeast<{
   projects?: Prisma.ProjectListRelationFilter
   tasks?: Prisma.TaskListRelationFilter
   taskTypes?: Prisma.TaskTypeListRelationFilter
+  knowledgeChunks?: Prisma.KnowledgeChunkListRelationFilter
 }, "id">
 
 export type OrganisationOrderByWithAggregationInput = {
@@ -229,6 +232,7 @@ export type OrganisationCreateInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutOrganisationInput
   tasks?: Prisma.TaskCreateNestedManyWithoutOrganisationInput
   taskTypes?: Prisma.TaskTypeCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationUncheckedCreateInput = {
@@ -241,6 +245,7 @@ export type OrganisationUncheckedCreateInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutOrganisationInput
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutOrganisationInput
   taskTypes?: Prisma.TaskTypeUncheckedCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationUpdateInput = {
@@ -253,6 +258,7 @@ export type OrganisationUpdateInput = {
   projects?: Prisma.ProjectUpdateManyWithoutOrganisationNestedInput
   tasks?: Prisma.TaskUpdateManyWithoutOrganisationNestedInput
   taskTypes?: Prisma.TaskTypeUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationUncheckedUpdateInput = {
@@ -265,6 +271,7 @@ export type OrganisationUncheckedUpdateInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutOrganisationNestedInput
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutOrganisationNestedInput
   taskTypes?: Prisma.TaskTypeUncheckedUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationCreateManyInput = {
@@ -400,6 +407,20 @@ export type OrganisationUpdateOneRequiredWithoutTaskTypesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganisationUpdateToOneWithWhereWithoutTaskTypesInput, Prisma.OrganisationUpdateWithoutTaskTypesInput>, Prisma.OrganisationUncheckedUpdateWithoutTaskTypesInput>
 }
 
+export type OrganisationCreateNestedOneWithoutKnowledgeChunksInput = {
+  create?: Prisma.XOR<Prisma.OrganisationCreateWithoutKnowledgeChunksInput, Prisma.OrganisationUncheckedCreateWithoutKnowledgeChunksInput>
+  connectOrCreate?: Prisma.OrganisationCreateOrConnectWithoutKnowledgeChunksInput
+  connect?: Prisma.OrganisationWhereUniqueInput
+}
+
+export type OrganisationUpdateOneRequiredWithoutKnowledgeChunksNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganisationCreateWithoutKnowledgeChunksInput, Prisma.OrganisationUncheckedCreateWithoutKnowledgeChunksInput>
+  connectOrCreate?: Prisma.OrganisationCreateOrConnectWithoutKnowledgeChunksInput
+  upsert?: Prisma.OrganisationUpsertWithoutKnowledgeChunksInput
+  connect?: Prisma.OrganisationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganisationUpdateToOneWithWhereWithoutKnowledgeChunksInput, Prisma.OrganisationUpdateWithoutKnowledgeChunksInput>, Prisma.OrganisationUncheckedUpdateWithoutKnowledgeChunksInput>
+}
+
 export type OrganisationCreateWithoutUsersInput = {
   id?: string
   name: string
@@ -409,6 +430,7 @@ export type OrganisationCreateWithoutUsersInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutOrganisationInput
   tasks?: Prisma.TaskCreateNestedManyWithoutOrganisationInput
   taskTypes?: Prisma.TaskTypeCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationUncheckedCreateWithoutUsersInput = {
@@ -420,6 +442,7 @@ export type OrganisationUncheckedCreateWithoutUsersInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutOrganisationInput
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutOrganisationInput
   taskTypes?: Prisma.TaskTypeUncheckedCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationCreateOrConnectWithoutUsersInput = {
@@ -447,6 +470,7 @@ export type OrganisationUpdateWithoutUsersInput = {
   projects?: Prisma.ProjectUpdateManyWithoutOrganisationNestedInput
   tasks?: Prisma.TaskUpdateManyWithoutOrganisationNestedInput
   taskTypes?: Prisma.TaskTypeUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationUncheckedUpdateWithoutUsersInput = {
@@ -458,6 +482,7 @@ export type OrganisationUncheckedUpdateWithoutUsersInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutOrganisationNestedInput
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutOrganisationNestedInput
   taskTypes?: Prisma.TaskTypeUncheckedUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationCreateWithoutClientsInput = {
@@ -469,6 +494,7 @@ export type OrganisationCreateWithoutClientsInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutOrganisationInput
   tasks?: Prisma.TaskCreateNestedManyWithoutOrganisationInput
   taskTypes?: Prisma.TaskTypeCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationUncheckedCreateWithoutClientsInput = {
@@ -480,6 +506,7 @@ export type OrganisationUncheckedCreateWithoutClientsInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutOrganisationInput
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutOrganisationInput
   taskTypes?: Prisma.TaskTypeUncheckedCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationCreateOrConnectWithoutClientsInput = {
@@ -507,6 +534,7 @@ export type OrganisationUpdateWithoutClientsInput = {
   projects?: Prisma.ProjectUpdateManyWithoutOrganisationNestedInput
   tasks?: Prisma.TaskUpdateManyWithoutOrganisationNestedInput
   taskTypes?: Prisma.TaskTypeUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationUncheckedUpdateWithoutClientsInput = {
@@ -518,6 +546,7 @@ export type OrganisationUncheckedUpdateWithoutClientsInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutOrganisationNestedInput
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutOrganisationNestedInput
   taskTypes?: Prisma.TaskTypeUncheckedUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationCreateWithoutTeamsInput = {
@@ -529,6 +558,7 @@ export type OrganisationCreateWithoutTeamsInput = {
   projects?: Prisma.ProjectCreateNestedManyWithoutOrganisationInput
   tasks?: Prisma.TaskCreateNestedManyWithoutOrganisationInput
   taskTypes?: Prisma.TaskTypeCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationUncheckedCreateWithoutTeamsInput = {
@@ -540,6 +570,7 @@ export type OrganisationUncheckedCreateWithoutTeamsInput = {
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutOrganisationInput
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutOrganisationInput
   taskTypes?: Prisma.TaskTypeUncheckedCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationCreateOrConnectWithoutTeamsInput = {
@@ -567,6 +598,7 @@ export type OrganisationUpdateWithoutTeamsInput = {
   projects?: Prisma.ProjectUpdateManyWithoutOrganisationNestedInput
   tasks?: Prisma.TaskUpdateManyWithoutOrganisationNestedInput
   taskTypes?: Prisma.TaskTypeUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationUncheckedUpdateWithoutTeamsInput = {
@@ -578,6 +610,7 @@ export type OrganisationUncheckedUpdateWithoutTeamsInput = {
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutOrganisationNestedInput
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutOrganisationNestedInput
   taskTypes?: Prisma.TaskTypeUncheckedUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationCreateWithoutProjectsInput = {
@@ -589,6 +622,7 @@ export type OrganisationCreateWithoutProjectsInput = {
   teams?: Prisma.TeamCreateNestedManyWithoutOrganisationInput
   tasks?: Prisma.TaskCreateNestedManyWithoutOrganisationInput
   taskTypes?: Prisma.TaskTypeCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationUncheckedCreateWithoutProjectsInput = {
@@ -600,6 +634,7 @@ export type OrganisationUncheckedCreateWithoutProjectsInput = {
   teams?: Prisma.TeamUncheckedCreateNestedManyWithoutOrganisationInput
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutOrganisationInput
   taskTypes?: Prisma.TaskTypeUncheckedCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationCreateOrConnectWithoutProjectsInput = {
@@ -627,6 +662,7 @@ export type OrganisationUpdateWithoutProjectsInput = {
   teams?: Prisma.TeamUpdateManyWithoutOrganisationNestedInput
   tasks?: Prisma.TaskUpdateManyWithoutOrganisationNestedInput
   taskTypes?: Prisma.TaskTypeUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationUncheckedUpdateWithoutProjectsInput = {
@@ -638,6 +674,7 @@ export type OrganisationUncheckedUpdateWithoutProjectsInput = {
   teams?: Prisma.TeamUncheckedUpdateManyWithoutOrganisationNestedInput
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutOrganisationNestedInput
   taskTypes?: Prisma.TaskTypeUncheckedUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationCreateWithoutTasksInput = {
@@ -649,6 +686,7 @@ export type OrganisationCreateWithoutTasksInput = {
   teams?: Prisma.TeamCreateNestedManyWithoutOrganisationInput
   projects?: Prisma.ProjectCreateNestedManyWithoutOrganisationInput
   taskTypes?: Prisma.TaskTypeCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationUncheckedCreateWithoutTasksInput = {
@@ -660,6 +698,7 @@ export type OrganisationUncheckedCreateWithoutTasksInput = {
   teams?: Prisma.TeamUncheckedCreateNestedManyWithoutOrganisationInput
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutOrganisationInput
   taskTypes?: Prisma.TaskTypeUncheckedCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationCreateOrConnectWithoutTasksInput = {
@@ -687,6 +726,7 @@ export type OrganisationUpdateWithoutTasksInput = {
   teams?: Prisma.TeamUpdateManyWithoutOrganisationNestedInput
   projects?: Prisma.ProjectUpdateManyWithoutOrganisationNestedInput
   taskTypes?: Prisma.TaskTypeUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationUncheckedUpdateWithoutTasksInput = {
@@ -698,6 +738,7 @@ export type OrganisationUncheckedUpdateWithoutTasksInput = {
   teams?: Prisma.TeamUncheckedUpdateManyWithoutOrganisationNestedInput
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutOrganisationNestedInput
   taskTypes?: Prisma.TaskTypeUncheckedUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationCreateWithoutTaskTypesInput = {
@@ -709,6 +750,7 @@ export type OrganisationCreateWithoutTaskTypesInput = {
   teams?: Prisma.TeamCreateNestedManyWithoutOrganisationInput
   projects?: Prisma.ProjectCreateNestedManyWithoutOrganisationInput
   tasks?: Prisma.TaskCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationUncheckedCreateWithoutTaskTypesInput = {
@@ -720,6 +762,7 @@ export type OrganisationUncheckedCreateWithoutTaskTypesInput = {
   teams?: Prisma.TeamUncheckedCreateNestedManyWithoutOrganisationInput
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutOrganisationInput
   tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutOrganisationInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedCreateNestedManyWithoutOrganisationInput
 }
 
 export type OrganisationCreateOrConnectWithoutTaskTypesInput = {
@@ -747,6 +790,7 @@ export type OrganisationUpdateWithoutTaskTypesInput = {
   teams?: Prisma.TeamUpdateManyWithoutOrganisationNestedInput
   projects?: Prisma.ProjectUpdateManyWithoutOrganisationNestedInput
   tasks?: Prisma.TaskUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUpdateManyWithoutOrganisationNestedInput
 }
 
 export type OrganisationUncheckedUpdateWithoutTaskTypesInput = {
@@ -758,6 +802,71 @@ export type OrganisationUncheckedUpdateWithoutTaskTypesInput = {
   teams?: Prisma.TeamUncheckedUpdateManyWithoutOrganisationNestedInput
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutOrganisationNestedInput
   tasks?: Prisma.TaskUncheckedUpdateManyWithoutOrganisationNestedInput
+  knowledgeChunks?: Prisma.KnowledgeChunkUncheckedUpdateManyWithoutOrganisationNestedInput
+}
+
+export type OrganisationCreateWithoutKnowledgeChunksInput = {
+  id?: string
+  name: string
+  createdAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutOrganisationInput
+  clients?: Prisma.ClientCreateNestedManyWithoutOrganisationInput
+  teams?: Prisma.TeamCreateNestedManyWithoutOrganisationInput
+  projects?: Prisma.ProjectCreateNestedManyWithoutOrganisationInput
+  tasks?: Prisma.TaskCreateNestedManyWithoutOrganisationInput
+  taskTypes?: Prisma.TaskTypeCreateNestedManyWithoutOrganisationInput
+}
+
+export type OrganisationUncheckedCreateWithoutKnowledgeChunksInput = {
+  id?: string
+  name: string
+  createdAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutOrganisationInput
+  clients?: Prisma.ClientUncheckedCreateNestedManyWithoutOrganisationInput
+  teams?: Prisma.TeamUncheckedCreateNestedManyWithoutOrganisationInput
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutOrganisationInput
+  tasks?: Prisma.TaskUncheckedCreateNestedManyWithoutOrganisationInput
+  taskTypes?: Prisma.TaskTypeUncheckedCreateNestedManyWithoutOrganisationInput
+}
+
+export type OrganisationCreateOrConnectWithoutKnowledgeChunksInput = {
+  where: Prisma.OrganisationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganisationCreateWithoutKnowledgeChunksInput, Prisma.OrganisationUncheckedCreateWithoutKnowledgeChunksInput>
+}
+
+export type OrganisationUpsertWithoutKnowledgeChunksInput = {
+  update: Prisma.XOR<Prisma.OrganisationUpdateWithoutKnowledgeChunksInput, Prisma.OrganisationUncheckedUpdateWithoutKnowledgeChunksInput>
+  create: Prisma.XOR<Prisma.OrganisationCreateWithoutKnowledgeChunksInput, Prisma.OrganisationUncheckedCreateWithoutKnowledgeChunksInput>
+  where?: Prisma.OrganisationWhereInput
+}
+
+export type OrganisationUpdateToOneWithWhereWithoutKnowledgeChunksInput = {
+  where?: Prisma.OrganisationWhereInput
+  data: Prisma.XOR<Prisma.OrganisationUpdateWithoutKnowledgeChunksInput, Prisma.OrganisationUncheckedUpdateWithoutKnowledgeChunksInput>
+}
+
+export type OrganisationUpdateWithoutKnowledgeChunksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutOrganisationNestedInput
+  clients?: Prisma.ClientUpdateManyWithoutOrganisationNestedInput
+  teams?: Prisma.TeamUpdateManyWithoutOrganisationNestedInput
+  projects?: Prisma.ProjectUpdateManyWithoutOrganisationNestedInput
+  tasks?: Prisma.TaskUpdateManyWithoutOrganisationNestedInput
+  taskTypes?: Prisma.TaskTypeUpdateManyWithoutOrganisationNestedInput
+}
+
+export type OrganisationUncheckedUpdateWithoutKnowledgeChunksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutOrganisationNestedInput
+  clients?: Prisma.ClientUncheckedUpdateManyWithoutOrganisationNestedInput
+  teams?: Prisma.TeamUncheckedUpdateManyWithoutOrganisationNestedInput
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutOrganisationNestedInput
+  tasks?: Prisma.TaskUncheckedUpdateManyWithoutOrganisationNestedInput
+  taskTypes?: Prisma.TaskTypeUncheckedUpdateManyWithoutOrganisationNestedInput
 }
 
 
@@ -772,6 +881,7 @@ export type OrganisationCountOutputType = {
   projects: number
   tasks: number
   taskTypes: number
+  knowledgeChunks: number
 }
 
 export type OrganisationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -781,6 +891,7 @@ export type OrganisationCountOutputTypeSelect<ExtArgs extends runtime.Types.Exte
   projects?: boolean | OrganisationCountOutputTypeCountProjectsArgs
   tasks?: boolean | OrganisationCountOutputTypeCountTasksArgs
   taskTypes?: boolean | OrganisationCountOutputTypeCountTaskTypesArgs
+  knowledgeChunks?: boolean | OrganisationCountOutputTypeCountKnowledgeChunksArgs
 }
 
 /**
@@ -835,6 +946,13 @@ export type OrganisationCountOutputTypeCountTaskTypesArgs<ExtArgs extends runtim
   where?: Prisma.TaskTypeWhereInput
 }
 
+/**
+ * OrganisationCountOutputType without action
+ */
+export type OrganisationCountOutputTypeCountKnowledgeChunksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.KnowledgeChunkWhereInput
+}
+
 
 export type OrganisationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -846,6 +964,7 @@ export type OrganisationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   projects?: boolean | Prisma.Organisation$projectsArgs<ExtArgs>
   tasks?: boolean | Prisma.Organisation$tasksArgs<ExtArgs>
   taskTypes?: boolean | Prisma.Organisation$taskTypesArgs<ExtArgs>
+  knowledgeChunks?: boolean | Prisma.Organisation$knowledgeChunksArgs<ExtArgs>
   _count?: boolean | Prisma.OrganisationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["organisation"]>
 
@@ -875,6 +994,7 @@ export type OrganisationInclude<ExtArgs extends runtime.Types.Extensions.Interna
   projects?: boolean | Prisma.Organisation$projectsArgs<ExtArgs>
   tasks?: boolean | Prisma.Organisation$tasksArgs<ExtArgs>
   taskTypes?: boolean | Prisma.Organisation$taskTypesArgs<ExtArgs>
+  knowledgeChunks?: boolean | Prisma.Organisation$knowledgeChunksArgs<ExtArgs>
   _count?: boolean | Prisma.OrganisationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrganisationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -889,6 +1009,7 @@ export type $OrganisationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     projects: Prisma.$ProjectPayload<ExtArgs>[]
     tasks: Prisma.$TaskPayload<ExtArgs>[]
     taskTypes: Prisma.$TaskTypePayload<ExtArgs>[]
+    knowledgeChunks: Prisma.$KnowledgeChunkPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1294,6 +1415,7 @@ export interface Prisma__OrganisationClient<T, Null = never, ExtArgs extends run
   projects<T extends Prisma.Organisation$projectsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organisation$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tasks<T extends Prisma.Organisation$tasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organisation$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   taskTypes<T extends Prisma.Organisation$taskTypesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organisation$taskTypesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TaskTypePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  knowledgeChunks<T extends Prisma.Organisation$knowledgeChunksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organisation$knowledgeChunksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KnowledgeChunkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1860,6 +1982,30 @@ export type Organisation$taskTypesArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.TaskTypeScalarFieldEnum | Prisma.TaskTypeScalarFieldEnum[]
+}
+
+/**
+ * Organisation.knowledgeChunks
+ */
+export type Organisation$knowledgeChunksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the KnowledgeChunk
+   */
+  select?: Prisma.KnowledgeChunkSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the KnowledgeChunk
+   */
+  omit?: Prisma.KnowledgeChunkOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.KnowledgeChunkInclude<ExtArgs> | null
+  where?: Prisma.KnowledgeChunkWhereInput
+  orderBy?: Prisma.KnowledgeChunkOrderByWithRelationInput | Prisma.KnowledgeChunkOrderByWithRelationInput[]
+  cursor?: Prisma.KnowledgeChunkWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.KnowledgeChunkScalarFieldEnum | Prisma.KnowledgeChunkScalarFieldEnum[]
 }
 
 /**

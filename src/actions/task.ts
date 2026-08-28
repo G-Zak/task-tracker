@@ -5,6 +5,7 @@ import { authorizeRole, getCurrentUserSession } from '@/src/lib/rbac'
 import { Role, TaskStatus } from '@/src/generated/client'
 import { taskSchema, TaskFormValues, updateTaskMetricsSchema, UpdateTaskMetricsValues } from '@/src/validations/task.schema'
 import { computeTaskTimestampUpdates } from '@/src/lib/task-timestamps'
+import { indexTask, removeFromIndex } from '@/src/services/rag.service'
 import { revalidatePath } from 'next/cache'
 
 function revalidateTaskViews(orgSlug: string, taskId?: string, projectId?: string | null) {
@@ -54,6 +55,7 @@ export async function createTask(values: TaskFormValues, orgSlug: string): Promi
         })
 
         revalidateTaskViews(orgSlug, task.id, projectId)
+        await indexTask(task.id)
 
         return { success: true, action: 'create', data: { id: task.id } }
     } catch (error: any) {
@@ -102,6 +104,7 @@ export async function updateTask(taskId: string, values: TaskFormValues, orgSlug
         })
 
         revalidateTaskViews(orgSlug, taskId, projectId)
+        await indexTask(taskId)
 
         return { success: true, action: 'update' }
     } catch (error: any) {
@@ -154,6 +157,7 @@ export async function updateTaskMetrics(values: UpdateTaskMetricsValues, orgSlug
         })
 
         revalidateTaskViews(orgSlug, taskId, task.projectId)
+        await indexTask(taskId)
 
         return { success: true }
     } catch (error: any) {
@@ -178,6 +182,7 @@ export async function deleteTask(taskId: string, orgSlug: string): Promise<{ suc
         })
 
         revalidateTaskViews(orgSlug, taskId, task.projectId)
+        await removeFromIndex('TASK', taskId)
 
         return { success: true }
     } catch (error: any) {

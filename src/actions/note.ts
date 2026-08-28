@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUserSession, canAccessProject } from '@/src/lib/rbac'
 import { noteSchema, NoteFormValues } from '@/src/validations/note.schema'
 import { Role } from '@/generated/client'
+import { indexProjectNote, removeFromIndex } from '@/src/services/rag.service'
 import { revalidatePath } from 'next/cache'
 
 // Notifie le serveur temps réel (US-033) après une écriture réussie. Ce serveur est un
@@ -52,7 +53,7 @@ export async function createProjectNote(projectId: string, data: NoteFormValues,
             throw new Error("Vous n'êtes pas membre de ce projet")
         }
 
-        await prisma.projectNote.create({
+        const note = await prisma.projectNote.create({
             data: {
                 content: parsedData.data.content,
                 projectId,
@@ -62,6 +63,7 @@ export async function createProjectNote(projectId: string, data: NoteFormValues,
 
         revalidatePath(`/org/${orgSlug}/projects/${projectId}`)
         await notifyRealtime(projectId, 'note:created')
+        await indexProjectNote(note.id)
 
         return { success: true }
     } catch (error: any) {
@@ -96,6 +98,7 @@ export async function deleteProjectNote(noteId: string, orgSlug: string) {
 
         revalidatePath(`/org/${orgSlug}/projects/${note.project.id}`)
         await notifyRealtime(note.project.id, 'note:deleted')
+        await removeFromIndex('PROJECT_NOTE', noteId)
 
         return { success: true }
     } catch (error: any) {

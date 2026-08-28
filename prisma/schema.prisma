@@ -52,6 +52,7 @@ model Organisation{
   projects  Project[]
   tasks     Task[]
   taskTypes TaskType[]
+  knowledgeChunks KnowledgeChunk[]
 }
 
 model User{
@@ -172,4 +173,26 @@ model  ProjectNote{
 
   authorId      String?
   author        User?        @relation(fields: [authorId], references: [id])
+}
+
+// Index vectoriel pour l'assistant IA (US-041). Le champ `embedding` est un type Postgres
+// (pgvector) non représentable nativement par Prisma Client : lu/écrit uniquement via
+// $queryRaw/$executeRaw dans src/services/rag.service.ts, jamais via l'API Prisma standard.
+model KnowledgeChunk{
+  id             String   @id @default(uuid())
+
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+
+  sourceType     String   // "PROJECT" | "TASK" | "PROJECT_NOTE"
+  sourceId       String
+  content        String
+
+  embedding      Unsupported("vector(768)")?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([sourceType, sourceId])
+  @@index([organisationId])
 }
