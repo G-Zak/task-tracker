@@ -1,4 +1,5 @@
 import { prisma } from '@/src/lib/prisma'
+import { Prisma } from '@/generated/client'
 
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434'
 const OLLAMA_EMBEDDING_MODEL = process.env.OLLAMA_EMBEDDING_MODEL ?? 'nomic-embed-text'
@@ -154,23 +155,56 @@ export async function indexProjectNote(noteId: string): Promise<void> {
     })
 }
 
+export interface KnowledgeScope {
+    projectIds: string[]
+    taskIds: string[]
+    noteIds: string[]
+}
+
 // Recherche par similarité, strictement scopée à une organisation (US-041, critère "aucune
 // fuite cross-organisation") : le filtre `organisationId` fait partie de la clause WHERE
 // elle-même, jamais un post-filtrage applicatif — aucune requête ne peut donc renvoyer un
 // chunk d'une autre organisation, quelle que soit sa proximité vectorielle avec la question.
-export async function searchKnowledge(organisationId: string, query: string, limit = 5): Promise<KnowledgeMatch[]> {
+//
+// `scope` (US-042) ajoute une deuxième restriction, optionnelle, au même niveau (dans la
+// clause WHERE, pas en post-filtrage) : un rôle non-manager ne peut faire remonter que des
+// chunks dont la source figure dans les ensembles de projets/tâches/notes qu'il a le droit de
+// voir par ailleurs dans l'app — même règle de visibilité que `task.service.ts`, pas une
+// nouvelle politique d'accès inventée pour l'assistant.
+export async function searchKnowledge(
+    organisationId: string,
+    query: string,
+    limit = 5,
+    scope: KnowledgeScope | null = null
+): Promise<KnowledgeMatch[]> {
     const embedding = await embed(query)
     if (!embedding) return []
 
     const vectorLiteral = toVectorLiteral(embedding)
 
-    const rows = await prisma.$queryRaw<Array<{ sourceType: string; sourceId: string; content: string; distance: number }>>`
-        SELECT "sourceType", "sourceId", "content", (embedding <=> ${vectorLiteral}::vector) AS distance
-        FROM "KnowledgeChunk"
-        WHERE "organisationId" = ${organisationId} AND embedding IS NOT NULL
-        ORDER BY embedding <=> ${vectorLiteral}::vector
-        LIMIT ${limit}
-    `
+    const rows = await prisma.$queryRaw<Array<{ sourceType: string; sourceId: string; content: string; distance: number }>>(
+        scope
+            ? Prisma.sql`
+                SELECT "sourceType", "sourceId", "content", (embedding <=> ${vectorLiteral}::vector) AS distance
+                FROM "KnowledgeChunk"
+                WHERE "organisationId" = ${organisationId}
+                  AND embedding IS NOT NULL
+                  AND (
+                    ("sourceType" = 'PROJECT' AND "sourceId" = ANY(${scope.projectIds}::text[]))
+                    OR ("sourceType" = 'TASK' AND "sourceId" = ANY(${scope.taskIds}::text[]))
+                    OR ("sourceType" = 'PROJECT_NOTE' AND "sourceId" = ANY(${scope.noteIds}::text[]))
+                  )
+                ORDER BY embedding <=> ${vectorLiteral}::vector
+                LIMIT ${limit}
+              `
+            : Prisma.sql`
+                SELECT "sourceType", "sourceId", "content", (embedding <=> ${vectorLiteral}::vector) AS distance
+                FROM "KnowledgeChunk"
+                WHERE "organisationId" = ${organisationId} AND embedding IS NOT NULL
+                ORDER BY embedding <=> ${vectorLiteral}::vector
+                LIMIT ${limit}
+              `
+    )
 
     return rows.map((row) => ({
         sourceType: row.sourceType as KnowledgeSourceType,
