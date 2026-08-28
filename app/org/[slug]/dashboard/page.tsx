@@ -62,7 +62,9 @@ export default async function DashboardPage() {
         <div className={isManagerOrAdmin ? 'lg:col-span-2' : ''}>
           <TaskTrendChart data={weeklyTrend} />
         </div>
-        {isManagerOrAdmin && <WorkloadChart data={workload} />}
+        {isManagerOrAdmin && (
+          <WorkloadChart data={workload.map((member) => ({ id: member.userId, name: member.name, activeTaskCount: member.activeTaskCount }))} />
+        )}
       </div>
     </div>
   )

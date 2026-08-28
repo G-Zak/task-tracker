@@ -1,8 +1,9 @@
 import { prisma } from '@/src/lib/prisma'
 import { Prisma } from '@/generated/client'
 import { TaskStatus } from '@/generated/enums'
+import { periodStart, type Period } from '@/src/lib/period'
 
-export type TimesheetPeriod = 'week' | 'month' | 'quarter' | 'all'
+export type TimesheetPeriod = Period
 export type TimesheetGroupBy = 'user' | 'project'
 
 export interface TimesheetEntry {
@@ -35,15 +36,6 @@ interface TimesheetFilters {
     userId?: string
     groupBy: TimesheetGroupBy
     restrictToUserId?: string
-}
-
-function periodStart(period: TimesheetPeriod): Date | null {
-    if (period === 'all') return null
-
-    const days = period === 'week' ? 7 : period === 'month' ? 30 : 90
-    const start = new Date()
-    start.setDate(start.getDate() - days)
-    return start
 }
 
 export async function getTimesheet(filters: TimesheetFilters): Promise<TimesheetResult> {
