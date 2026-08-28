@@ -4,6 +4,7 @@ import { getOrgStatistics } from '@/src/services/statistics.service'
 import { statisticsFilterSchema } from '@/src/validations/statistics.schema'
 import { Role } from '@/src/generated/client'
 import { StatisticsFilters } from '@/src/components/statistics/StatisticsFilters'
+import { ExportStatisticsButton } from '@/src/components/statistics/ExportStatisticsButton'
 import { TaskStatusBreakdown } from '@/src/components/dashboard/TaskStatusBreakdown'
 import { WorkloadChart } from '@/src/components/dashboard/WorkloadChart'
 import { BarChart3, Target, CheckCircle2, AlertTriangle } from 'lucide-react'
@@ -11,12 +12,26 @@ import { redirect } from 'next/navigation'
 
 interface PageProps {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ period?: string; projectId?: string; clientId?: string }>
+  searchParams: Promise<{
+    period?: string
+    from?: string
+    to?: string
+    projectId?: string
+    clientId?: string
+    teamId?: string
+  }>
 }
 
 // Même trois rôles que la barre latérale (navigationConfig) pour "Statistiques", désormais
 // appliqués côté serveur — même raisonnement que sur /teams (US-035) et /clients (US-036).
 const VIEWER_ROLES: Role[] = [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER]
+
+const periodSummaryLabels: Record<string, string> = {
+  week: 'Cette semaine',
+  month: 'Ce mois-ci',
+  quarter: 'Ce trimestre',
+  custom: 'Période personnalisée',
+}
 
 function onTimeRateTone(rate: number | null) {
   if (rate === null) return { border: 'border-zinc-200/80', bg: 'bg-white', text: 'text-zinc-900', label: 'text-zinc-500' }
@@ -35,16 +50,22 @@ export default async function StatisticsPage({ params, searchParams }: PageProps
 
   const filters = statisticsFilterSchema.parse({
     period: rawSearchParams.period,
+    from: rawSearchParams.from,
+    to: rawSearchParams.to,
     projectId: rawSearchParams.projectId,
     clientId: rawSearchParams.clientId,
+    teamId: rawSearchParams.teamId,
   })
 
-  const [stats, projects, clients] = await Promise.all([
+  const [stats, projects, clients, teams] = await Promise.all([
     getOrgStatistics({
       organisationId: user.organisationId,
       period: filters.period,
+      customFrom: filters.period === 'custom' && filters.from ? new Date(filters.from) : undefined,
+      customTo: filters.period === 'custom' && filters.to ? new Date(filters.to) : undefined,
       projectId: filters.projectId,
       clientId: filters.clientId,
+      teamId: filters.teamId,
     }),
     prisma.project.findMany({
       where: { organisationId: user.organisationId },
@@ -56,28 +77,50 @@ export default async function StatisticsPage({ params, searchParams }: PageProps
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
     }),
+    prisma.team.findMany({
+      where: { organisationId: user.organisationId },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    }),
   ])
 
   const tone = onTimeRateTone(stats.onTimeRate)
 
+  const filterSummaryParts = [
+    filters.period === 'custom'
+      ? `Du ${filters.from || '…'} au ${filters.to || '…'}`
+      : periodSummaryLabels[filters.period],
+    filters.projectId ? `Projet : ${projects.find((p) => p.id === filters.projectId)?.name ?? filters.projectId}` : null,
+    filters.clientId ? `Client : ${clients.find((c) => c.id === filters.clientId)?.name ?? filters.clientId}` : null,
+    filters.teamId ? `Équipe : ${teams.find((t) => t.id === filters.teamId)?.name ?? filters.teamId}` : null,
+  ].filter((part): part is string => Boolean(part))
+
   return (
     <div className="space-y-8">
-      <div className="border-b border-zinc-200/80 pb-5">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="h-6 w-6 text-zinc-700" />
-          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Statistiques</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/80 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-6 w-6 text-zinc-700" />
+            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Statistiques</h1>
+          </div>
+          <p className="mt-1 text-sm text-zinc-500">
+            Vue d&apos;ensemble de l&apos;activité de l&apos;organisation pour piloter la charge et les délais.
+          </p>
         </div>
-        <p className="mt-1 text-sm text-zinc-500">
-          Vue d&apos;ensemble de l&apos;activité de l&apos;organisation pour piloter la charge et les délais.
-        </p>
+
+        <ExportStatisticsButton stats={stats} filterSummary={filterSummaryParts.join(' · ')} />
       </div>
 
       <StatisticsFilters
         projects={projects}
         clients={clients}
+        teams={teams}
         currentPeriod={filters.period}
+        currentFrom={filters.from}
+        currentTo={filters.to}
         currentProjectId={filters.projectId}
         currentClientId={filters.clientId}
+        currentTeamId={filters.teamId}
       />
 
       <div className="grid gap-4 lg:grid-cols-3">
