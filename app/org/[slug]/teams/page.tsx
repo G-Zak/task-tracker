@@ -1,8 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserSession } from '@/src/lib/rbac'
+import { getTeamSummaries } from '@/src/services/team.service'
 import { Role } from '@/src/generated/client'
-import { Users, Crown } from 'lucide-react'
+import { teamStatusLabels, teamStatusStyles } from '@/src/lib/team-status'
+import { Users, Crown, ListTodo, AlertTriangle } from 'lucide-react'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { TeamCreateModal } from '@/src/components/teams/TeamCreateModal'
 import { EditTeamModal } from '@/src/components/teams/EditTeamModal'
 import { DeleteTeamButton } from '@/src/components/teams/DeleteTeamButton'
@@ -11,23 +14,22 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
+// Réservé à ADMIN/PROJECT_MANAGER/TEAM_LEADER : c'est l'énoncé même de cette story ("en tant
+// qu'ADMIN, PROJECT_MANAGER ou TEAM_LEADER, je veux voir..."), contrairement à US-034 qui ne
+// définissait aucune règle de visibilité (seules les mutations y étaient limitées).
+const VIEWER_ROLES: Role[] = [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER]
+
 export default async function TeamsPage({ params }: PageProps) {
   const { slug: orgSlug } = await params
 
   const user = await getCurrentUserSession()
   if (!user) redirect('/authentication')
+  if (!VIEWER_ROLES.includes(user.role)) redirect(`/org/${orgSlug}/dashboard`)
 
   const canManageTeams = user.role === Role.ADMIN || user.role === Role.PROJECT_MANAGER
 
   const [teams, membersRaw] = await Promise.all([
-    prisma.team.findMany({
-      where: { organisationId: user.organisationId },
-      include: {
-        leader: { select: { id: true, firstName: true, lastName: true } },
-        members: { select: { id: true, firstName: true, lastName: true } },
-      },
-      orderBy: { name: 'asc' },
-    }),
+    getTeamSummaries(user.organisationId),
     prisma.user.findMany({
       where: { organisationId: user.organisationId },
       select: { id: true, firstName: true, lastName: true, role: true },
@@ -49,7 +51,7 @@ export default async function TeamsPage({ params }: PageProps) {
             <Users className="h-6 w-6 text-zinc-700" />
             <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Équipes</h1>
           </div>
-          <p className="mt-1 text-sm text-zinc-500">Organisation des utilisateurs par pôle de travail.</p>
+          <p className="mt-1 text-sm text-zinc-500">Organisation et charge de travail par pôle de travail.</p>
         </div>
 
         {canManageTeams && <TeamCreateModal orgSlug={orgSlug} members={members} />}
@@ -75,7 +77,9 @@ export default async function TeamsPage({ params }: PageProps) {
               className="flex flex-col rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md"
             >
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-zinc-900 leading-tight">{team.name}</h3>
+                <Link href={`/org/${orgSlug}/teams/${team.id}`} className="min-w-0 hover:underline">
+                  <h3 className="font-semibold text-zinc-900 leading-tight truncate">{team.name}</h3>
+                </Link>
                 {canManageTeams && (
                   <div className="flex items-center gap-0.5 shrink-0 -mr-1.5 -mt-1">
                     <EditTeamModal
@@ -85,7 +89,7 @@ export default async function TeamsPage({ params }: PageProps) {
                         id: team.id,
                         name: team.name,
                         description: team.description ?? '',
-                        leaderId: team.leaderId ?? '',
+                        leaderId: team.leader?.id ?? '',
                         memberIds: team.members.map((member) => member.id),
                       }}
                     />
@@ -94,7 +98,13 @@ export default async function TeamsPage({ params }: PageProps) {
                 )}
               </div>
 
-              {team.description && <p className="mt-1.5 text-xs text-zinc-500 line-clamp-2">{team.description}</p>}
+              <span
+                className={`mt-2 inline-flex w-fit items-center rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ring-1 ring-inset ${teamStatusStyles[team.status]}`}
+              >
+                {teamStatusLabels[team.status]}
+              </span>
+
+              {team.description && <p className="mt-2 text-xs text-zinc-500 line-clamp-2">{team.description}</p>}
 
               {team.leader && (
                 <div className="mt-3 flex w-fit items-center gap-1.5 rounded-full bg-amber-50 px-2 py-1 text-xs text-amber-700 ring-1 ring-inset ring-amber-600/20">
@@ -125,6 +135,19 @@ export default async function TeamsPage({ params }: PageProps) {
                       </div>
                     )}
                   </div>
+                )}
+              </div>
+
+              <div className="mt-3 flex items-center gap-4 text-xs text-zinc-500">
+                <span className="flex items-center gap-1.5">
+                  <ListTodo className="h-3.5 w-3.5 text-zinc-400" />
+                  {team.activeTaskCount} active{team.activeTaskCount > 1 ? 's' : ''}
+                </span>
+                {team.overdueTaskCount > 0 && (
+                  <span className="flex items-center gap-1.5 text-red-600">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    {team.overdueTaskCount} en retard
+                  </span>
                 )}
               </div>
             </div>

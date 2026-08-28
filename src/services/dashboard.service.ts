@@ -63,7 +63,7 @@ export interface DashboardKpis {
 }
 
 const ACTIVE_PROJECT_STATUSES: ProjectStatus[] = [ProjectStatus.PLANNING, ProjectStatus.IN_PROGRESS]
-const CLOSED_TASK_STATUSES: TaskStatus[] = [TaskStatus.DONE, TaskStatus.CANCELLED]
+export const CLOSED_TASK_STATUSES: TaskStatus[] = [TaskStatus.DONE, TaskStatus.CANCELLED]
 
 export async function getDashboardKpis({ organisationId, restrictToUserId }: DashboardScope): Promise<DashboardKpis> {
     const projectWhere: Prisma.ProjectWhereInput = {
