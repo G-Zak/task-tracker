@@ -1,42 +1,39 @@
-import { prisma } from '@/lib/prisma'
-import { ClientForm } from '@/components/clients/ClientForm'
-import { DeleteClientButton } from '@/components/clients/DeleteClientButton'
 import { getCurrentUserSession } from '@/src/lib/rbac'
+import { getClientSummaries } from '@/src/services/client.service'
+import { ClientForm } from '@/components/clients/ClientForm'
+import { ClientFilters } from '@/src/components/clients/ClientFilters'
+import { DeleteClientButton } from '@/components/clients/DeleteClientButton'
 import { Role } from '@/src/generated/client'
-import { Search, Building2, FolderKanban, Mail, ShieldAlert } from 'lucide-react'
+import { Building2, FolderKanban, CheckCircle2, AlertTriangle, ShieldAlert } from 'lucide-react'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 
 interface PageProps {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ q?: string }>
+  searchParams: Promise<{ q?: string; atRisk?: string }>
 }
+
+// Même périmètre que la barre latérale (navigationConfig) pour "Clients" : ADMIN, PROJECT_MANAGER,
+// TEAM_LEADER — et désormais appliqué côté serveur, pas seulement en masquant le lien du menu
+// (cohérent avec la garde ajoutée sur /teams en US-035).
+const VIEWER_ROLES: Role[] = [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER]
 
 export default async function ClientsPage({ params, searchParams }: PageProps) {
   const { slug: orgSlug } = await params
-  const { q: searchQuery } = await searchParams
-  
+  const { q: searchQuery, atRisk } = await searchParams
+
   const user = await getCurrentUserSession()
   if (!user) redirect('/authentication')
+  if (!VIEWER_ROLES.includes(user.role)) redirect(`/org/${orgSlug}/dashboard`)
 
   const canManageClients = user.role === Role.ADMIN || user.role === Role.PROJECT_MANAGER
+  const atRiskOnly = atRisk === '1'
 
-  const clients = await prisma.client.findMany({
-    where: {
-      organisationId: user.organisationId,
-      ...(searchQuery ? {
-        OR: [
-          { name: { contains: searchQuery, mode: 'insensitive' } },
-          { email: { contains: searchQuery, mode: 'insensitive' } }
-        ]
-      } : {})
-    },
-    include: {
-      projects: {
-        select: { id: true }
-      } 
-    },
-    orderBy: { name: 'asc' }
-  })
+  const allClients = await getClientSummaries(user.organisationId, searchQuery)
+
+  const clients = atRiskOnly
+    ? allClients.filter((client) => client.overdueProjectCount > 0).sort((a, b) => b.overdueProjectCount - a.overdueProjectCount)
+    : allClients
 
   return (
     <div className="space-y-8">
@@ -51,25 +48,15 @@ export default async function ClientsPage({ params, searchParams }: PageProps) {
             Portefeuille des comptes commanditaires et suivi des partenariats.
           </p>
         </div>
-
-        {/* Barre de recherche */}
-        <form className="relative flex items-center">
-          <Search className="absolute left-3.5 h-4 w-4 text-zinc-400 pointer-events-none" />
-          <input 
-            type="text" 
-            name="q" 
-            defaultValue={searchQuery}
-            placeholder="Rechercher par nom ou email..." 
-            className="w-full sm:w-72 rounded-xl border border-zinc-200 bg-white pl-10 pr-4 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 shadow-sm transition-all focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
-          />
-        </form>
       </div>
 
       {/* Grille principale : Liste + Formulaire */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 items-start">
-        
+
         {/* Colonne Liste des Clients (2 Cols sur écran large) */}
         <div className="lg:col-span-2 space-y-4">
+          <ClientFilters currentSearch={searchQuery} atRiskOnly={atRiskOnly} />
+
           <div className="flex items-center justify-between px-1">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
               Comptes enregistrés ({clients.length})
@@ -79,61 +66,66 @@ export default async function ClientsPage({ params, searchParams }: PageProps) {
           {clients.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-white p-12 text-center shadow-sm">
               <div className="rounded-full bg-zinc-100 p-3 text-zinc-500 mb-3">
-                <Building2 className="h-6 w-6" />
+                {atRiskOnly ? <ShieldAlert className="h-6 w-6" /> : <Building2 className="h-6 w-6" />}
               </div>
-              <h3 className="font-semibold text-zinc-900">Aucun client trouvé</h3>
+              <h3 className="font-semibold text-zinc-900">
+                {atRiskOnly ? 'Aucun client à risque' : 'Aucun client trouvé'}
+              </h3>
               <p className="mt-1 text-sm text-zinc-500 max-w-sm">
-                {searchQuery 
-                  ? `Aucun résultat ne correspond à la recherche "${searchQuery}".` 
-                  : "Aucun client n'est encore enregistré pour cette organisation."}
+                {atRiskOnly
+                  ? "Aucun client n'a de projet en retard pour le moment."
+                  : searchQuery
+                    ? `Aucun résultat ne correspond à la recherche "${searchQuery}".`
+                    : "Aucun client n'est encore enregistré pour cette organisation."}
               </p>
             </div>
           ) : (
             <div className="grid gap-3">
-              {clients.map((client) => {
-                const projectCount = client.projects.length
-
-                return (
-                  <div 
-                    key={client.id} 
-                    className="group relative flex items-center justify-between rounded-xl border border-zinc-200/80 bg-white p-4 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md"
-                  >
-                    <div className="flex items-start gap-3.5">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 font-semibold text-zinc-700 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                        {client.name.substring(0, 2).toUpperCase()}
-                      </div>
-
-                      <div className="space-y-1">
-                        <h3 className="font-semibold text-zinc-900 leading-none">
-                          {client.name}
-                        </h3>
-                        <div className="flex items-center gap-2 text-xs text-zinc-500">
-                          <Mail className="h-3.5 w-3.5 text-zinc-400" />
-                          <span>{client.email}</span>
-                        </div>
-                      </div>
+              {clients.map((client) => (
+                <div
+                  key={client.id}
+                  className="group relative flex items-center justify-between rounded-xl border border-zinc-200/80 bg-white p-4 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md"
+                >
+                  <div className="flex items-start gap-3.5 min-w-0">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100 font-semibold text-zinc-700 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      {client.name.substring(0, 2).toUpperCase()}
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      {/* Badge Nombre de Projets */}
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2.5 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10">
-                        <FolderKanban className="h-3.5 w-3.5 text-purple-600" />
-                        {projectCount} {projectCount > 1 ? 'projets' : 'projet'}
-                      </span>
+                    <div className="min-w-0 space-y-1">
+                      <Link href={`/org/${orgSlug}/clients/${client.id}`} className="hover:underline">
+                        <h3 className="font-semibold text-zinc-900 leading-none truncate">{client.name}</h3>
+                      </Link>
+                      {client.email && <p className="text-xs text-zinc-500 truncate">{client.email}</p>}
 
-                      {/* Bouton de Suppression (Réservé aux PM & ADMIN) */}
-                      {canManageClients && (
-                        <DeleteClientButton 
-                          clientId={client.id}
-                          clientName={client.name}
-                          orgSlug={orgSlug}
-                          hasProjects={projectCount > 0}
-                        />
-                      )}
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1">
+                        <span className="flex items-center gap-1 text-[11px] text-zinc-500">
+                          <FolderKanban className="h-3 w-3 text-zinc-400" />
+                          {client.activeProjectCount} actif{client.activeProjectCount > 1 ? 's' : ''}
+                        </span>
+                        <span className="flex items-center gap-1 text-[11px] text-zinc-500">
+                          <CheckCircle2 className="h-3 w-3 text-zinc-400" />
+                          {client.completedProjectCount} terminé{client.completedProjectCount > 1 ? 's' : ''}
+                        </span>
+                        {client.overdueProjectCount > 0 && (
+                          <span className="flex items-center gap-1 text-[11px] font-medium text-red-600">
+                            <AlertTriangle className="h-3 w-3" />
+                            {client.overdueProjectCount} en retard
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                )
-              })}
+
+                  {canManageClients && (
+                    <DeleteClientButton
+                      clientId={client.id}
+                      clientName={client.name}
+                      orgSlug={orgSlug}
+                      hasProjects={client.projectCount > 0}
+                    />
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>
