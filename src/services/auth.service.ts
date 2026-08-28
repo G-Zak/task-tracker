@@ -18,7 +18,18 @@ export async function validateCredentials(email: string, passwordPlain: string){
         return null
     }
 
-    const {passwordHash, ...userWithoutPassword} = user
+    // Vérifié après le mot de passe, pas avant : un identifiant/mot de passe correct sur un
+    // compte désactivé doit produire un message explicite plutôt que "identifiants incorrects".
+    if (!user.isActive) {
+        throw new Error('Ce compte a été désactivé. Contactez un administrateur.')
+    }
+
+    const updatedUser = await prisma.user.update({
+        where: { id: user.id },
+        data: { lastLoginAt: new Date() },
+    })
+
+    const {passwordHash, ...userWithoutPassword} = updatedUser
 
     return userWithoutPassword
 
