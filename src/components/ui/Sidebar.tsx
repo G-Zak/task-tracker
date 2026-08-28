@@ -19,6 +19,7 @@ import {
   BarChart3,
   UserCog,
   User,
+  Sparkles,
 } from 'lucide-react'
 
 const ICON_MAP: Record<string, any> = {
@@ -32,6 +33,7 @@ const ICON_MAP: Record<string, any> = {
   BarChart3,
   UserCog,
   User,
+  Sparkles,
 }
 
 interface SidebarUser {

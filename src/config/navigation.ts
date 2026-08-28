@@ -43,6 +43,12 @@ export const navigationConfig: NavigationItem[] = [
         allowedRoles: [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER, Role.USER, Role.VIEWER]
     },
     {
+        name: 'Assistant IA',
+        href: '/assistant',
+        icon: 'Sparkles',
+        allowedRoles: [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER, Role.USER, Role.VIEWER]
+    },
+    {
         name: 'Equipes',
         href: '/teams',
         icon: 'Users',
