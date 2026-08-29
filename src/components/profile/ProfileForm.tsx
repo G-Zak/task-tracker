@@ -46,7 +46,7 @@ export function ProfileForm({ orgSlug, user }: ProfileFormProps) {
 
             const result = await updateProfile(values, orgSlug)
 
-            if (result.error) {
+            if ('error' in result) {
                 setError(result.error)
                 return
             }

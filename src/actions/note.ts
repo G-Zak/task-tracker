@@ -2,10 +2,13 @@
 
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserSession, canAccessProject } from '@/src/lib/rbac'
+import { isOwnedByOrg, ownershipErrorMessage } from '@/src/lib/ownership'
+import { catchActionError } from '@/src/lib/action-error'
 import { noteSchema, NoteFormValues } from '@/src/validations/note.schema'
 import { Role } from '@/generated/client'
 import { indexProjectNote, removeFromIndex } from '@/src/services/rag.service'
 import { revalidatePath } from 'next/cache'
+import { after } from 'next/server'
 
 // Notifie le serveur temps réel (US-033) après une écriture réussie. Ce serveur est un
 // process séparé et optionnel : son indisponibilité ne doit jamais faire échouer la
@@ -37,7 +40,8 @@ export async function createProjectNote(projectId: string, data: NoteFormValues,
 
         const parsedData = noteSchema.safeParse(data)
         if (!parsedData.success) {
-            return { error: parsedData.error.issues[0]?.message || 'Données invalides' }
+            const message: string = parsedData.error.issues[0]?.message ?? 'Données invalides'
+            return { error: message }
         }
 
         const project = await prisma.project.findUnique({
@@ -45,9 +49,7 @@ export async function createProjectNote(projectId: string, data: NoteFormValues,
             include: { members: { select: { id: true } } },
         })
 
-        if (!project || project.organisationId !== user.organisationId) {
-            throw new Error('Projet introuvable ou accès refusé')
-        }
+        if (!isOwnedByOrg(project, user.organisationId)) throw new Error(ownershipErrorMessage('Projet'))
 
         if (!canAccessProject(user, project.members.map((m) => m.id))) {
             throw new Error("Vous n'êtes pas membre de ce projet")
@@ -63,11 +65,11 @@ export async function createProjectNote(projectId: string, data: NoteFormValues,
 
         revalidatePath(`/org/${orgSlug}/projects/${projectId}`)
         await notifyRealtime(projectId, 'note:created')
-        await indexProjectNote(note.id)
+        after(() => indexProjectNote(note.id))
 
         return { success: true }
-    } catch (error: any) {
-        return { error: error.message || "Une erreur est survenue lors de l'envoi du message." }
+    } catch (error) {
+        return catchActionError(error, "Une erreur est survenue lors de l'envoi du message.")
     }
 }
 
@@ -83,9 +85,8 @@ export async function deleteProjectNote(noteId: string, orgSlug: string) {
             include: { project: true },
         })
 
-        if (!note || !note.project || note.project.organisationId !== user.organisationId) {
-            throw new Error('Message introuvable ou accès refusé')
-        }
+        if (!note) throw new Error(ownershipErrorMessage('Message'))
+        if (!isOwnedByOrg(note.project, user.organisationId)) throw new Error(ownershipErrorMessage('Message'))
 
         const isAuthor = note.authorId === user.id
         const canModerate = user.role === Role.ADMIN || user.role === Role.PROJECT_MANAGER
@@ -98,10 +99,10 @@ export async function deleteProjectNote(noteId: string, orgSlug: string) {
 
         revalidatePath(`/org/${orgSlug}/projects/${note.project.id}`)
         await notifyRealtime(note.project.id, 'note:deleted')
-        await removeFromIndex('PROJECT_NOTE', noteId)
+        after(() => removeFromIndex('PROJECT_NOTE', noteId))
 
         return { success: true }
-    } catch (error: any) {
-        return { error: error.message || 'Une erreur est survenue lors de la suppression du message.' }
+    } catch (error) {
+        return catchActionError(error, 'Une erreur est survenue lors de la suppression du message.')
     }
 }

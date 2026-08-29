@@ -64,38 +64,38 @@ export async function getTeamSummaries(organisationId: string): Promise<TeamSumm
 
     const now = new Date()
 
-    return Promise.all(
-        teams.map(async (team) => {
-            const memberIds = team.members.map((member) => member.id)
+    // Une requête pour toute l'organisation plutôt que 2 count() par équipe (2N requêtes pour N
+    // équipes) — même pattern que statistics.service.ts (US-037) : les tâches actives sont
+    // chargées une fois, puis réparties par équipe en mémoire. Un `some()` par tâche/équipe pour
+    // préserver la sémantique d'origine (une tâche compte une fois par équipe dès qu'un de ses
+    // assignés en fait partie, jamais une fois par assigné).
+    const activeTasks = await prisma.task.findMany({
+        where: { organisationId, status: { notIn: CLOSED_TASK_STATUSES } },
+        select: { dueDate: true, assignees: { select: { id: true } } },
+    })
 
-            const [activeTaskCount, overdueTaskCount] =
-                memberIds.length === 0
-                    ? [0, 0]
-                    : await Promise.all([
-                          prisma.task.count({
-                              where: { assignees: { some: { id: { in: memberIds } } }, status: { notIn: CLOSED_TASK_STATUSES } },
-                          }),
-                          prisma.task.count({
-                              where: {
-                                  assignees: { some: { id: { in: memberIds } } },
-                                  status: { notIn: CLOSED_TASK_STATUSES },
-                                  dueDate: { lt: now },
-                              },
-                          }),
-                      ])
+    return teams.map((team) => {
+        const memberIds = new Set(team.members.map((member) => member.id))
 
-            return {
-                id: team.id,
-                name: team.name,
-                description: team.description,
-                leader: team.leader,
-                members: team.members,
-                activeTaskCount,
-                overdueTaskCount,
-                status: computeTeamStatus(memberIds.length, activeTaskCount, overdueTaskCount),
-            }
-        })
-    )
+        let activeTaskCount = 0
+        let overdueTaskCount = 0
+        for (const task of activeTasks) {
+            if (!task.assignees.some((assignee) => memberIds.has(assignee.id))) continue
+            activeTaskCount += 1
+            if (task.dueDate && task.dueDate < now) overdueTaskCount += 1
+        }
+
+        return {
+            id: team.id,
+            name: team.name,
+            description: team.description,
+            leader: team.leader,
+            members: team.members,
+            activeTaskCount,
+            overdueTaskCount,
+            status: computeTeamStatus(memberIds.size, activeTaskCount, overdueTaskCount),
+        }
+    })
 }
 
 export async function getTeamDetail(teamId: string, organisationId: string): Promise<TeamDetail | null> {

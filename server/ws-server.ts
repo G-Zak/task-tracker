@@ -6,21 +6,19 @@ import { createServer, type IncomingMessage } from 'node:http'
 import { WebSocket, WebSocketServer } from 'ws'
 import { prisma } from '@/lib/prisma'
 import { canAccessProject } from '@/lib/rbac'
-import type { Role } from '@/generated/client'
+import { decodeSession } from '@/lib/session'
 
 const PORT = Number(process.env.WS_PORT ?? 4001)
 const BROADCAST_SECRET = process.env.WS_BROADCAST_SECRET ?? ''
 
-interface SessionUser {
-    id: string
-    role: Role
-    organisationId: string
-}
-
 // projectId -> connexions ouvertes sur ce fil de discussion
 const rooms = new Map<string, Set<WebSocket>>()
 
-function parseSessionCookie(cookieHeader: string | undefined): SessionUser | null {
+// Process séparé de Next.js (voir en-tête du fichier) : le cookie est désormais signé
+// (src/lib/session.ts), donc décodé/vérifié ici plutôt que JSON.parse en clair. La partie "cet
+// utilisateur est-il toujours actif/approuvé" est revérifiée juste après, via Prisma, plutôt que
+// de faire confiance à ce que contenait le cookie au moment où il a été signé.
+function parseSessionCookie(cookieHeader: string | undefined) {
     if (!cookieHeader) return null
 
     const entry = cookieHeader
@@ -30,12 +28,7 @@ function parseSessionCookie(cookieHeader: string | undefined): SessionUser | nul
 
     if (!entry) return null
 
-    try {
-        const raw = decodeURIComponent(entry.slice('session_user='.length))
-        return JSON.parse(raw)
-    } catch {
-        return null
-    }
+    return decodeSession(decodeURIComponent(entry.slice('session_user='.length)))
 }
 
 interface BroadcastPayload {
@@ -102,13 +95,29 @@ httpServer.on('upgrade', async (req, socket, head) => {
     try {
         const url = new URL(req.url ?? '', `http://localhost:${PORT}`)
         const projectId = url.searchParams.get('projectId')
-        const user = parseSessionCookie(req.headers.cookie)
+        const payload = parseSessionCookie(req.headers.cookie)
 
-        if (!projectId || !user) {
+        if (!projectId || !payload) {
             socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
             socket.destroy()
             return
         }
+
+        // Revérifié en base plutôt que de faire confiance au cookie signé : un compte désactivé
+        // depuis la signature du cookie ne doit pas pouvoir ouvrir un canal temps réel (même
+        // logique que getCurrentUserSession() côté Next.js, src/lib/rbac.ts).
+        const liveUser = await prisma.user.findUnique({
+            where: { id: payload.id },
+            select: { id: true, role: true, organisationId: true, isActive: true, isApproved: true },
+        })
+
+        if (!liveUser || !liveUser.isActive || !liveUser.isApproved) {
+            socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
+            socket.destroy()
+            return
+        }
+
+        const user = liveUser
 
         const project = await prisma.project.findUnique({
             where: { id: projectId },

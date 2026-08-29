@@ -2,6 +2,7 @@
 
 import { Role } from '@/src/generated/client'
 import { authorizeRole } from '@/src/lib/rbac'
+import { catchActionError } from '@/src/lib/action-error'
 import { generateProjectReport } from '@/src/services/report.service'
 
 export async function generateProjectReportAction(projectId: string) {
@@ -12,7 +13,7 @@ export async function generateProjectReportAction(projectId: string) {
         if (!report) return { error: 'Projet introuvable ou accès refusé.' }
 
         return { success: true as const, report }
-    } catch (error: any) {
-        return { error: error.message || "Une erreur est survenue lors de la génération du rapport." }
+    } catch (error) {
+        return catchActionError(error, "Une erreur est survenue lors de la génération du rapport.")
     }
 }

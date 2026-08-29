@@ -25,7 +25,7 @@ export function LoginForm({ currentUser }: LoginFormProps) {
 	const [switchingAccount, setSwitchingAccount] = useState(false)
 
 	useEffect(() => {
-		if (state?.success && state.orgSlug) {
+		if (state && 'success' in state) {
 			router.push(`/org/${state.orgSlug}/dashboard`)
 			router.refresh()
 		}
@@ -141,7 +141,9 @@ export function LoginForm({ currentUser }: LoginFormProps) {
 								</p>
 							)}
 
-							{state?.error && <div className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">{state.error}</div>}
+							{state && 'error' in state && (
+							<div className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">{state.error}</div>
+						)}
 
 							<div className="space-y-1">
 								<label className="text-sm font-medium text-zinc-700" htmlFor="email">

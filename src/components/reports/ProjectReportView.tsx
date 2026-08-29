@@ -70,7 +70,7 @@ export function ProjectReportView({ projectId, projectName }: ProjectReportViewP
                     {isPending ? (
                         <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            Génération en cours... (modèle local, jusqu&apos;à quelques minutes)
+                            Génération en cours... (modèle local, généralement moins de deux minutes)
                         </>
                     ) : (
                         <>

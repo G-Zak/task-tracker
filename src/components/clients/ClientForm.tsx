@@ -28,7 +28,7 @@ export function ClientForm({ orgSlug, initialData, onSuccess }: ClientFormProps)
       setError(null)
       const result = await upsertClient(data, orgSlug)
       
-      if (result.error) {
+      if ('error' in result) {
         setError(result.error)
       } else {
         if (!initialData) reset() // Vide le formulaire si c'est une création

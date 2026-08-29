@@ -25,7 +25,7 @@ export function RemoveMemberButton({
     startTransition(async () => {
       try {
         const result = await removeMemberFromProject(projectId, memberId, orgSlug)
-        if (result.error) {
+        if ('error' in result) {
           setError(result.error)
         } else {
           setShowConfirm(false)

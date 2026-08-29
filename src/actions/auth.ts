@@ -7,6 +7,9 @@ import { registerSchema } from '@/validations/register.schema'
 import { Role } from '@/generated/client'
 import { authorizeRole } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
+import { encodeSession } from '@/lib/session'
+import { isRateLimited, recordFailedAttempt, clearAttempts } from '@/lib/rate-limit'
+import { catchActionError } from '@/lib/action-error'
 
 export async function loginAction(prevState: any, formData: FormData) {
 	const email = formData.get('email') as string
@@ -16,15 +19,30 @@ export async function loginAction(prevState: any, formData: FormData) {
 		return { error: 'Veullez remplir tous les champs.' }
 	}
 
+	const rateLimitKey = email.toLowerCase().trim()
+	if (isRateLimited(rateLimitKey)) {
+		return { error: 'Trop de tentatives de connexion pour ce compte. Réessayez dans quelques minutes.' }
+	}
+
 	try {
 		const user = await validateCredentials(email, password)
 
 		if (!user) {
+			recordFailedAttempt(rateLimitKey)
 			return { error: 'Identifiants incorrects.' }
 		}
 
+		clearAttempts(rateLimitKey)
+
 		const cookieStore = await cookies()
-		cookieStore.set('session_user', JSON.stringify(user), {
+		cookieStore.set('session_user', encodeSession({
+			id: user.id,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			email: user.email,
+			role: user.role,
+			organisationId: user.organisationId,
+		}), {
 			httpOnly: true,
 			secure: process.env.NODE_ENV === 'production',
 			maxAge: 60 * 60 * 24,
@@ -38,8 +56,8 @@ export async function loginAction(prevState: any, formData: FormData) {
 		const organisation = await prisma.organisation.findUnique({ where: { id: user.organisationId } })
 
 		return { success: true, orgSlug: organisation?.name ?? user.organisationId }
-	} catch (error: any) {
-		return { error: error.message || 'Une erreur est survenue lors de la connexion.' }
+	} catch (error) {
+		return catchActionError(error, 'Une erreur est survenue lors de la connexion.')
 	}
 }
 
@@ -59,8 +77,8 @@ export async function registerAction(prevState: any, formData: FormData) {
 	try {
 		await registerAccount(parsed.data)
 		return { success: true }
-	} catch (error: any) {
-		return { error: error.message || "Une erreur est survenue lors de l'inscription." }
+	} catch (error) {
+		return catchActionError(error, "Une erreur est survenue lors de l'inscription.")
 	}
 }
 
@@ -98,7 +116,7 @@ export async function createTaskAction(formData: FormData) {
 		})
 
 		return { success: true, task: newTask }
-	} catch (error: any) {
-		return { error: error.message || 'Une erreur est survenue lors de la création de la tâche.' }
+	} catch (error) {
+		return catchActionError(error, 'Une erreur est survenue lors de la création de la tâche.')
 	}
 }

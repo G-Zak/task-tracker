@@ -1,6 +1,7 @@
 'use server'
 
 import { getCurrentUserSession } from '@/src/lib/rbac'
+import { catchActionError } from '@/src/lib/action-error'
 import { askAssistant, computeAssistantScope, type AssistantMessage } from '@/src/services/assistant.service'
 
 export async function askAssistantAction(question: string, history: AssistantMessage[]) {
@@ -21,7 +22,7 @@ export async function askAssistantAction(question: string, history: AssistantMes
         })
 
         return { success: true as const, ...result }
-    } catch (error: any) {
-        return { error: error.message || "Une erreur est survenue lors de l'interrogation de l'assistant." }
+    } catch (error) {
+        return catchActionError(error, "Une erreur est survenue lors de l'interrogation de l'assistant.")
     }
 }

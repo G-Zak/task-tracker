@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import { FolderKanban, Lock, Timer } from 'lucide-react'
 import { updateTaskMetrics } from '@/src/actions/task'
-import { TaskStatus, TaskPriority } from '@/src/generated/client'
+import type { TaskStatus, TaskPriority } from '@/src/generated/client'
 import { taskStatusLabels, taskPriorityLabels, taskPriorityStyles } from '@/src/lib/labels'
 import { taskStatusSolidStyles } from '@/src/lib/status-colors'
 import { formatElapsedSince } from '@/src/lib/elapsed-time'

@@ -3,6 +3,8 @@
 import { prisma } from '@/lib/prisma'
 import { Role } from '@/generated/client'
 import { authorizeRole } from '@/lib/rbac'
+import { isOwnedByOrg, ownershipErrorMessage } from '@/lib/ownership'
+import { catchActionError } from '@/lib/action-error'
 import { clientSchema, ClientFormValues } from '@/validations/client.schema'
 import { revalidatePath } from 'next/cache'
 
@@ -23,9 +25,7 @@ export async function upsertClient(data: ClientFormValues, orgSlug: string) {
 
         if (id) {
             const existing = await prisma.client.findUnique({ where: { id } })
-            if (!existing || existing.organisationId !== user.organisationId) {
-                return { error: 'Client introuvable ou accès refusé.' }
-            }
+            if (!isOwnedByOrg(existing, user.organisationId)) return { error: ownershipErrorMessage('Client') }
 
             await prisma.client.update({
                 where: {id},
@@ -42,7 +42,7 @@ export async function upsertClient(data: ClientFormValues, orgSlug: string) {
          revalidatePath(`/org/${orgSlug}/clients`)
          return {success: true}
     } catch (error) {
-        return { error: 'Une erreur est survenue lors de l\'enregistrement du client.' }
+        return catchActionError(error, "Une erreur est survenue lors de l'enregistrement du client.")
     }
 }
 
@@ -56,9 +56,7 @@ export async function deleteClient(clientId: string, orgSlug: string) {
             include: {projects: true}
         })
 
-        if (!client || client.organisationId !== user.organisationId) {
-            return { error: 'Client introuvable ou accès refusé.' }
-        }
+        if (!isOwnedByOrg(client, user.organisationId)) return { error: ownershipErrorMessage('Client') }
 
         if (client.projects.length > 0){
             return { error: 'Impossible de supprimer un client qui a des projets associés.' }
@@ -71,6 +69,6 @@ export async function deleteClient(clientId: string, orgSlug: string) {
         revalidatePath(`/org/${orgSlug}/clients`)
         return {success: true}
     } catch (error) {
-        return { error: 'Une erreur est survenue lors de la suppression du client.' }
+        return catchActionError(error, 'Une erreur est survenue lors de la suppression du client.')
     }
 }

@@ -59,7 +59,7 @@ export function ProjectDiscussion({ projectId, orgSlug, notes, canPost, currentU
 
     startTransition(async () => {
       const result = await createProjectNote(projectId, { content }, orgSlug)
-      if (result.error) {
+      if ('error' in result) {
         setError(result.error)
       } else {
         setContent('')

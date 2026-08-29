@@ -29,7 +29,7 @@ export function DeleteClientButton({ clientId, clientName, orgSlug, hasProjects 
     startTransition(async () => {
       setError(null)
       const res = await deleteClient(clientId, orgSlug)
-      if (res?.error) {
+      if ('error' in res) {
         setError(res.error)
         setTimeout(() => setError(null), 3500)
       }

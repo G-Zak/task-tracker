@@ -25,7 +25,7 @@ export function DeleteProjectButton({ projectId, projectName, orgSlug }: DeleteP
       setError(null)
       const res = await deleteProject(projectId, orgSlug)
 
-      if (res?.error) {
+      if ('error' in res) {
         setError(res.error)
         setTimeout(() => setError(null), 3500)
         return

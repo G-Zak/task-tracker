@@ -5,9 +5,10 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { NavigationItem } from '@/src/config/navigation'
 import { roleLabels } from '@/src/lib/labels'
-import { Role } from '@/src/generated/client'
+import type { Role } from '@/src/generated/client'
 import { logoutAction } from '@/src/actions/auth'
-import { Menu, X, Timer, LogOut } from 'lucide-react'
+import { BrandMark } from '@/src/components/branding/BrandMark'
+import { Menu, X, Timer, LogOut, type LucideIcon } from 'lucide-react'
 import {
   LayoutDashboard,
   FolderKanban,
@@ -22,7 +23,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
   FolderKanban,
   CheckSquare,
@@ -48,26 +49,19 @@ interface SidebarProps {
   user: SidebarUser
 }
 
-export function Sidebar({ items, orgSlug, user }: SidebarProps) {
-  const pathname = usePathname()
-  const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
-  const [isLoggingOut, startLogout] = useTransition()
+interface NavLinksProps {
+  items: NavigationItem[]
+  basePath: string
+  pathname: string
+  onNavigate: () => void
+}
 
-  const basePath = `/org/${orgSlug}`
-  const initial = user.firstName.charAt(0).toUpperCase()
-
-  const handleLogout = () => {
-    startLogout(async () => {
-      const result = await logoutAction()
-      if (result.success) {
-        router.push('/authentication')
-        router.refresh()
-      }
-    })
-  }
-
-  const NavLinks = () => (
+// Composant à part plutôt que déclaré dans le corps de Sidebar : une fonction-composant définie
+// pendant le rendu d'un autre composant est recréée à chaque rendu, ce qui force React à
+// démonter/remonter tous les liens de navigation à chaque interaction (perte de focus, re-montage
+// inutile) au lieu de simplement les mettre à jour.
+function NavLinks({ items, basePath, pathname, onNavigate }: NavLinksProps) {
+  return (
     <>
       {items.map((item) => {
         const fullHref = `${basePath}${item.href}`
@@ -78,7 +72,7 @@ export function Sidebar({ items, orgSlug, user }: SidebarProps) {
           <Link
             key={item.href}
             href={fullHref}
-            onClick={() => setIsOpen(false)}
+            onClick={onNavigate}
             className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
               isActive
                 ? 'bg-primary text-primary-foreground shadow-sm'
@@ -92,15 +86,37 @@ export function Sidebar({ items, orgSlug, user }: SidebarProps) {
       })}
     </>
   )
+}
+
+export function Sidebar({ items, orgSlug, user }: SidebarProps) {
+  const pathname = usePathname()
+  const router = useRouter()
+  const [isOpen, setIsOpen] = useState(false)
+  const [isLoggingOut, startLogout] = useTransition()
+
+  const basePath = `/org/${orgSlug}`
+  const initial = user.firstName.charAt(0).toUpperCase()
+  // orgSlug est désormais garanti égal à organisation.name (validé dans le layout parent avant
+  // rendu, voir app/org/[slug]/layout.tsx) — utilisable directement comme nom d'organisation
+  // affiché, plutôt que la chaîne "ABA Technology" auparavant codée en dur ici.
+  const organisationName = orgSlug
+
+  const handleLogout = () => {
+    startLogout(async () => {
+      const result = await logoutAction()
+      if (result.success) {
+        router.push('/authentication')
+        router.refresh()
+      }
+    })
+  }
 
   return (
     <>
       {/* Bouton Mobile de la Topbar (Masqué sur Desktop) */}
       <div className="flex h-16 items-center border-b border-zinc-200 bg-white/80 backdrop-blur-sm shadow-sm px-4 md:hidden justify-between w-full fixed top-0 z-40">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-            TT
-          </div>
+          <BrandMark size="sm" />
           <span className="font-bold text-zinc-900 text-lg">TaskTracker</span>
         </div>
         <button
@@ -122,17 +138,15 @@ export function Sidebar({ items, orgSlug, user }: SidebarProps) {
         }`}
       >
         <div className="mb-6 hidden md:flex items-center gap-2.5 px-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold shadow-sm">
-            TT
-          </div>
+          <BrandMark size="md" />
           <div>
             <span className="font-bold text-zinc-900 text-base tracking-tight leading-none block">TaskTracker</span>
-            <p className="text-xs text-zinc-400 mt-0.5">ABA Technology</p>
+            <p className="text-xs text-zinc-400 mt-0.5">{organisationName}</p>
           </div>
         </div>
 
         <nav className="space-y-1 flex flex-col overflow-y-auto flex-1">
-          <NavLinks />
+          <NavLinks items={items} basePath={basePath} pathname={pathname} onNavigate={() => setIsOpen(false)} />
         </nav>
 
         <div className="mt-4 shrink-0 space-y-3">

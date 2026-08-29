@@ -2,11 +2,14 @@
 
 import { prisma } from '@/lib/prisma'
 import { authorizeRole, getCurrentUserSession } from '@/src/lib/rbac'
+import { isOwnedByOrg, ownershipErrorMessage } from '@/src/lib/ownership'
+import { catchActionError } from '@/src/lib/action-error'
 import { Role, TaskStatus } from '@/src/generated/client'
 import { taskSchema, TaskFormValues, updateTaskMetricsSchema, UpdateTaskMetricsValues } from '@/src/validations/task.schema'
 import { computeTaskTimestampUpdates } from '@/src/lib/task-timestamps'
 import { indexTask, removeFromIndex } from '@/src/services/rag.service'
 import { revalidatePath } from 'next/cache'
+import { after } from 'next/server'
 
 function revalidateTaskViews(orgSlug: string, taskId?: string, projectId?: string | null) {
     revalidatePath(`/org/${orgSlug}/dashboard`)
@@ -55,11 +58,14 @@ export async function createTask(values: TaskFormValues, orgSlug: string): Promi
         })
 
         revalidateTaskViews(orgSlug, task.id, projectId)
-        await indexTask(task.id)
+        // after() plutôt que await : l'indexation RAG (appel réseau à Ollama pour l'embedding)
+        // n'a pas besoin de retarder la réponse envoyée au client — même mécanique appliquée dans
+        // project.ts et note.ts (voir Application-Analysis-2026-08-28.md §4.1).
+        after(() => indexTask(task.id))
 
         return { success: true, action: 'create', data: { id: task.id } }
-    } catch (error: any) {
-        return { error: 'Une erreur est survenue lors de la création de la tâche.' }
+    } catch (error) {
+        return catchActionError(error, 'Une erreur est survenue lors de la création de la tâche.')
     }
 }
 
@@ -104,11 +110,11 @@ export async function updateTask(taskId: string, values: TaskFormValues, orgSlug
         })
 
         revalidateTaskViews(orgSlug, taskId, projectId)
-        await indexTask(taskId)
+        after(() => indexTask(taskId))
 
         return { success: true, action: 'update' }
-    } catch (error: any) {
-        return { error: 'Une erreur est survenue lors de la mise à jour de la tâche.' }
+    } catch (error) {
+        return catchActionError(error, 'Une erreur est survenue lors de la mise à jour de la tâche.')
     }
 }
 
@@ -157,11 +163,11 @@ export async function updateTaskMetrics(values: UpdateTaskMetricsValues, orgSlug
         })
 
         revalidateTaskViews(orgSlug, taskId, task.projectId)
-        await indexTask(taskId)
+        after(() => indexTask(taskId))
 
         return { success: true }
-    } catch (error: any) {
-        return { error: 'Impossible de mettre à jour la tâche.' }
+    } catch (error) {
+        return catchActionError(error, 'Impossible de mettre à jour la tâche.')
     }
 }
 
@@ -173,19 +179,17 @@ export async function deleteTask(taskId: string, orgSlug: string): Promise<{ suc
             where: { id: taskId },
         })
 
-        if (!task || task.organisationId !== user.organisationId) {
-            return { error: 'Tâche introuvable ou accès refusé.' }
-        }
+        if (!isOwnedByOrg(task, user.organisationId)) return { error: ownershipErrorMessage('Tâche') }
 
         await prisma.task.delete({
             where: { id: taskId },
         })
 
         revalidateTaskViews(orgSlug, taskId, task.projectId)
-        await removeFromIndex('TASK', taskId)
+        after(() => removeFromIndex('TASK', taskId))
 
         return { success: true }
-    } catch (error: any) {
-        return { error: 'Une erreur est survenue lors de la suppression de la tâche.' }
+    } catch (error) {
+        return catchActionError(error, 'Une erreur est survenue lors de la suppression de la tâche.')
     }
 }

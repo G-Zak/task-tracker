@@ -71,7 +71,7 @@ export function ProjectForm({
         ? await updateProject(project.id, data, orgSlug)
         : await createProject(data, orgSlug)
 
-      if (res.error) {
+      if ('error' in res) {
         setError(res.error)
         return
       }

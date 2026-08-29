@@ -6,6 +6,8 @@ import * as bcrypt from 'bcrypt'
 import { prisma } from '@/lib/prisma'
 import { Role } from '@/src/generated/client'
 import { authorizeRole } from '@/src/lib/rbac'
+import { isOwnedByOrg, ownershipErrorMessage } from '@/src/lib/ownership'
+import { catchActionError } from '@/src/lib/action-error'
 import { inviteUserSchema, InviteUserFormValues } from '@/src/validations/user.schema'
 import { revalidatePath } from 'next/cache'
 
@@ -51,8 +53,8 @@ export async function inviteUser(data: InviteUserFormValues, orgSlug: string) {
         revalidatePath(`/org/${orgSlug}/users`)
 
         return { success: true, temporaryPassword }
-    } catch (error: any) {
-        return { error: error.message || "Une erreur est survenue lors de l'invitation." }
+    } catch (error) {
+        return catchActionError(error, "Une erreur est survenue lors de l'invitation.")
     }
 }
 
@@ -65,17 +67,15 @@ export async function updateUserRole(userId: string, role: Role, orgSlug: string
         }
 
         const target = await prisma.user.findUnique({ where: { id: userId } })
-        if (!target || target.organisationId !== admin.organisationId) {
-            return { error: 'Utilisateur introuvable ou accès refusé.' }
-        }
+        if (!isOwnedByOrg(target, admin.organisationId)) return { error: ownershipErrorMessage('Utilisateur') }
 
         await prisma.user.update({ where: { id: userId }, data: { role } })
 
         revalidatePath(`/org/${orgSlug}/users`)
 
         return { success: true }
-    } catch (error: any) {
-        return { error: error.message || 'Une erreur est survenue lors de la modification du rôle.' }
+    } catch (error) {
+        return catchActionError(error, 'Une erreur est survenue lors de la modification du rôle.')
     }
 }
 
@@ -88,17 +88,15 @@ export async function setUserActive(userId: string, isActive: boolean, orgSlug: 
         }
 
         const target = await prisma.user.findUnique({ where: { id: userId } })
-        if (!target || target.organisationId !== admin.organisationId) {
-            return { error: 'Utilisateur introuvable ou accès refusé.' }
-        }
+        if (!isOwnedByOrg(target, admin.organisationId)) return { error: ownershipErrorMessage('Utilisateur') }
 
         await prisma.user.update({ where: { id: userId }, data: { isActive } })
 
         revalidatePath(`/org/${orgSlug}/users`)
 
         return { success: true }
-    } catch (error: any) {
-        return { error: error.message || "Une erreur est survenue lors de la mise à jour du compte." }
+    } catch (error) {
+        return catchActionError(error, "Une erreur est survenue lors de la mise à jour du compte.")
     }
 }
 
@@ -109,17 +107,15 @@ export async function approveUser(userId: string, orgSlug: string) {
         const admin = await authorizeRole(Role.ADMIN)
 
         const target = await prisma.user.findUnique({ where: { id: userId } })
-        if (!target || target.organisationId !== admin.organisationId) {
-            return { error: 'Utilisateur introuvable ou accès refusé.' }
-        }
+        if (!isOwnedByOrg(target, admin.organisationId)) return { error: ownershipErrorMessage('Utilisateur') }
 
         await prisma.user.update({ where: { id: userId }, data: { isApproved: true } })
 
         revalidatePath(`/org/${orgSlug}/users`)
 
         return { success: true }
-    } catch (error: any) {
-        return { error: error.message || "Une erreur est survenue lors de l'approbation du compte." }
+    } catch (error) {
+        return catchActionError(error, "Une erreur est survenue lors de l'approbation du compte.")
     }
 }
 
@@ -131,9 +127,7 @@ export async function rejectUser(userId: string, orgSlug: string) {
         const admin = await authorizeRole(Role.ADMIN)
 
         const target = await prisma.user.findUnique({ where: { id: userId } })
-        if (!target || target.organisationId !== admin.organisationId) {
-            return { error: 'Utilisateur introuvable ou accès refusé.' }
-        }
+        if (!isOwnedByOrg(target, admin.organisationId)) return { error: ownershipErrorMessage('Utilisateur') }
         if (target.isApproved) {
             return { error: 'Ce compte est déjà approuvé.' }
         }
@@ -143,7 +137,7 @@ export async function rejectUser(userId: string, orgSlug: string) {
         revalidatePath(`/org/${orgSlug}/users`)
 
         return { success: true }
-    } catch (error: any) {
-        return { error: error.message || "Une erreur est survenue lors du rejet du compte." }
+    } catch (error) {
+        return catchActionError(error, "Une erreur est survenue lors du rejet du compte.")
     }
 }

@@ -2,10 +2,13 @@
 
 import { Role } from "@/src/generated/client"
 import { authorizeRole } from "@/src/lib/rbac" // Utilise authorizeRole partout !
+import { isOwnedByOrg, ownershipErrorMessage } from "@/src/lib/ownership"
+import { catchActionError } from "@/src/lib/action-error"
 import { prisma } from "@/lib/prisma"
 import { projectSchema, ProjectFormValues } from "@/src/validations/project.schema"
 import { indexProject, removeFromIndex } from "@/src/services/rag.service"
 import { revalidatePath } from 'next/cache'
+import { after } from 'next/server'
 
 export async function createProject(data: ProjectFormValues, orgSlug: string) {
     try {
@@ -35,12 +38,11 @@ export async function createProject(data: ProjectFormValues, orgSlug: string) {
         })
 
         revalidatePath(`/org/${orgSlug}/projects`)
-        await indexProject(newProject.id)
+        after(() => indexProject(newProject.id))
 
         return { success: true, project: newProject }
-    } catch (error: any) {
-        // Utilise error.message plutôt que error brut pour éviter les soucis de sérialisation
-        return { error: error.message || 'Une erreur est survenue lors de la création du projet.' } 
+    } catch (error) {
+        return catchActionError(error, 'Une erreur est survenue lors de la création du projet.')
     }
 }
 
@@ -60,9 +62,7 @@ export async function updateProject(projectId: string, data: ProjectFormValues, 
             where: { id: projectId },
         })
 
-        if (!existing || existing.organisationId !== user.organisationId) {
-            throw new Error('Projet introuvable ou accès refusé')
-        }
+        if (!isOwnedByOrg(existing, user.organisationId)) throw new Error(ownershipErrorMessage('Projet'))
 
         const updated = await prisma.project.update({
             where: { id: projectId },
@@ -81,11 +81,11 @@ export async function updateProject(projectId: string, data: ProjectFormValues, 
 
         revalidatePath(`/org/${orgSlug}/projects/${projectId}`)
         revalidatePath(`/org/${orgSlug}/projects`)
-        await indexProject(projectId)
+        after(() => indexProject(projectId))
 
         return { success: true, project: updated }
-    } catch (error: any) {
-        return { error: error.message || 'Une erreur est survenue lors de la modification du projet.' }
+    } catch (error) {
+        return catchActionError(error, 'Une erreur est survenue lors de la modification du projet.')
     }
 }
 
@@ -99,9 +99,7 @@ export async function addMemberToProject(projectId: string, userId: string, orgS
             include: { members: true }
         })
 
-        if (!project || project.organisationId !== user.organisationId) {
-            throw new Error('Projet introuvable ou accès refusé')
-        }
+        if (!isOwnedByOrg(project, user.organisationId)) throw new Error(ownershipErrorMessage('Projet'))
 
         const isAlreadyMember = project.members.some(m => m.id === userId)
         if (isAlreadyMember) {
@@ -120,8 +118,8 @@ export async function addMemberToProject(projectId: string, userId: string, orgS
         revalidatePath(`/org/${orgSlug}/projects/${projectId}`)
 
         return { success: true }
-    } catch (error: any) {
-        return { error: error.message || "Une erreur est survenue lors de l'ajout du membre." }
+    } catch (error) {
+        return catchActionError(error, "Une erreur est survenue lors de l'ajout du membre.")
     }
 }
 
@@ -135,9 +133,7 @@ export async function removeMemberFromProject(projectId: string, userId: string,
             include: { members: true }
         })
 
-        if (!project || project.organisationId !== user.organisationId) {
-            throw new Error('Projet introuvable ou accès refusé')
-        }
+        if (!isOwnedByOrg(project, user.organisationId)) throw new Error(ownershipErrorMessage('Projet'))
 
         const isMember = project.members.some(m => m.id === userId)
         if (!isMember) {
@@ -156,8 +152,8 @@ export async function removeMemberFromProject(projectId: string, userId: string,
         revalidatePath(`/org/${orgSlug}/projects/${projectId}`)
 
         return { success: true }
-    } catch (error: any) {
-        return { error: error.message || "Une erreur est survenue lors de la suppression du membre." }
+    } catch (error) {
+        return catchActionError(error, "Une erreur est survenue lors de la suppression du membre.")
     }
 }
 
@@ -169,19 +165,17 @@ export async function deleteProject(projectId: string, orgSlug: string) {
             where: { id: projectId }
         })
 
-        if (!project || project.organisationId !== user.organisationId) {
-            throw new Error('Projet introuvable ou accès refusé')
-        }
+        if (!isOwnedByOrg(project, user.organisationId)) throw new Error(ownershipErrorMessage('Projet'))
 
         await prisma.project.delete({
             where: { id: projectId },
         })
 
         revalidatePath(`/org/${orgSlug}/projects`)
-        await removeFromIndex('PROJECT', projectId)
+        after(() => removeFromIndex('PROJECT', projectId))
 
         return { success: true }
-    } catch (error: any) {
-        return { error: error.message || 'Une erreur est survenue lors de la suppression du projet.' }
+    } catch (error) {
+        return catchActionError(error, 'Une erreur est survenue lors de la suppression du projet.')
     }
 }

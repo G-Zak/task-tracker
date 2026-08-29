@@ -3,6 +3,8 @@
 import { prisma } from '@/lib/prisma'
 import { Role } from '@/src/generated/client'
 import { authorizeRole } from '@/src/lib/rbac'
+import { isOwnedByOrg, ownershipErrorMessage } from '@/src/lib/ownership'
+import { catchActionError } from '@/src/lib/action-error'
 import { teamSchema, TeamFormValues } from '@/src/validations/team.schema'
 import { revalidatePath } from 'next/cache'
 
@@ -38,8 +40,8 @@ export async function createTeam(data: TeamFormValues, orgSlug: string) {
 
         revalidatePath(`/org/${orgSlug}/teams`)
         return { success: true }
-    } catch (error: any) {
-        return { error: error.message || "Une erreur est survenue lors de la création de l'équipe." }
+    } catch (error) {
+        return catchActionError(error, "Une erreur est survenue lors de la création de l'équipe.")
     }
 }
 
@@ -53,9 +55,7 @@ export async function updateTeam(teamId: string, data: TeamFormValues, orgSlug: 
         }
 
         const existing = await prisma.team.findUnique({ where: { id: teamId } })
-        if (!existing || existing.organisationId !== user.organisationId) {
-            throw new Error('Équipe introuvable ou accès refusé')
-        }
+        if (!isOwnedByOrg(existing, user.organisationId)) throw new Error(ownershipErrorMessage('Équipe'))
 
         const { name, description, leaderId, memberIds } = parsed.data
 
@@ -71,8 +71,8 @@ export async function updateTeam(teamId: string, data: TeamFormValues, orgSlug: 
 
         revalidatePath(`/org/${orgSlug}/teams`)
         return { success: true }
-    } catch (error: any) {
-        return { error: error.message || "Une erreur est survenue lors de la modification de l'équipe." }
+    } catch (error) {
+        return catchActionError(error, "Une erreur est survenue lors de la modification de l'équipe.")
     }
 }
 
@@ -81,15 +81,13 @@ export async function deleteTeam(teamId: string, orgSlug: string) {
         const user = await authorizeRole(Role.PROJECT_MANAGER)
 
         const existing = await prisma.team.findUnique({ where: { id: teamId } })
-        if (!existing || existing.organisationId !== user.organisationId) {
-            throw new Error('Équipe introuvable ou accès refusé')
-        }
+        if (!isOwnedByOrg(existing, user.organisationId)) throw new Error(ownershipErrorMessage('Équipe'))
 
         await prisma.team.delete({ where: { id: teamId } })
 
         revalidatePath(`/org/${orgSlug}/teams`)
         return { success: true }
-    } catch (error: any) {
-        return { error: error.message || "Une erreur est survenue lors de la suppression de l'équipe." }
+    } catch (error) {
+        return catchActionError(error, "Une erreur est survenue lors de la suppression de l'équipe.")
     }
 }

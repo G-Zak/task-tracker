@@ -44,7 +44,7 @@ export function AddMemberModal({
     startTransition(async () => {
       try {
         const result = await addMemberToProject(projectId, selectedUserId, orgSlug)
-        if (result.error) {
+        if ('error' in result) {
           setError(result.error)
         } else {
           setIsOpen(false)

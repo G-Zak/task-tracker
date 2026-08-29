@@ -2,6 +2,7 @@ import { getCurrentUserSession } from '@/src/lib/rbac'
 import { navigationConfig } from '@/src/config/navigation'
 import { Sidebar } from '@/src/components/ui/Sidebar'
 import { Role } from '@/src/generated/client'
+import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 
 interface OrgLayoutProps {
@@ -11,10 +12,24 @@ interface OrgLayoutProps {
 
 export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   const user = await getCurrentUserSession()
-  const { slug: orgSlug } = await params
+  const { slug: rawSlug } = await params
+  // Next.js ne décode pas systématiquement `params.slug` (constaté directement : un slug contenant
+  // un espace revient encore percent-encodé, ex. "ABA%20Technology") — décodé explicitement pour
+  // comparer à `organisation.name`, sans quoi la redirection ci-dessous boucle indéfiniment sur
+  // elle-même (le slug "corrigé" ne matche alors jamais la comparaison suivante).
+  const orgSlug = decodeURIComponent(rawSlug)
 
   if (!user || !user.role) {
     redirect('/authentication')
+  }
+
+  // [slug] n'était jusqu'ici jamais validé contre la session : n'importe quelle chaîne rendait la
+  // page (voir Application-Analysis-2026-08-28.md §1.1). Un utilisateur connecté ne doit naviguer
+  // que dans le slug de sa propre organisation, même si l'URL est modifiée à la main.
+  const organisation = await prisma.organisation.findUnique({ where: { id: user.organisationId } })
+  const expectedSlug = organisation?.name ?? user.organisationId
+  if (orgSlug !== expectedSlug) {
+    redirect(`/org/${encodeURIComponent(expectedSlug)}/dashboard`)
   }
 
   const filteredNavigation = navigationConfig.filter((item) =>

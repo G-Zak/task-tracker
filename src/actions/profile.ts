@@ -4,6 +4,8 @@ import { cookies } from 'next/headers'
 import * as bcrypt from 'bcrypt'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserSession } from '@/lib/rbac'
+import { encodeSession } from '@/lib/session'
+import { catchActionError, isPrismaErrorCode } from '@/lib/action-error'
 import { profileSchema, ProfileFormValues } from '@/src/validations/profile.schema'
 import { revalidatePath } from 'next/cache'
 
@@ -46,12 +48,18 @@ export async function updateProfile(data: ProfileFormValues, orgSlug: string) {
             },
         })
 
-        // Le cookie de session porte une copie de firstName/lastName/email/role (US-006) :
-        // sans le rafraîchir ici, le reste de l'app (header, sidebar...) afficherait les
-        // anciennes valeurs jusqu'à la prochaine connexion.
-        const { passwordHash, ...userWithoutPassword } = updated
+        // Rafraîchi par cohérence, même si getCurrentUserSession() revérifie désormais l'utilisateur
+        // en base à chaque requête (src/lib/rbac.ts) plutôt que de faire confiance au cookie —
+        // seul `id` y est encore réellement lu, mais le garder à jour évite toute ambiguïté.
         const cookieStore = await cookies()
-        cookieStore.set('session_user', JSON.stringify(userWithoutPassword), {
+        cookieStore.set('session_user', encodeSession({
+            id: updated.id,
+            firstName: updated.firstName,
+            lastName: updated.lastName,
+            email: updated.email,
+            role: updated.role,
+            organisationId: updated.organisationId,
+        }), {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             maxAge: 60 * 60 * 24,
@@ -62,10 +70,10 @@ export async function updateProfile(data: ProfileFormValues, orgSlug: string) {
         revalidatePath(`/org/${orgSlug}/profile`)
 
         return { success: true }
-    } catch (error: any) {
-        if (error.code === 'P2002') {
+    } catch (error) {
+        if (isPrismaErrorCode(error, 'P2002')) {
             return { error: 'Cet e-mail est déjà utilisé par un autre compte.' }
         }
-        return { error: error.message || 'Une erreur est survenue lors de la mise à jour du profil.' }
+        return catchActionError(error, 'Une erreur est survenue lors de la mise à jour du profil.')
     }
 }

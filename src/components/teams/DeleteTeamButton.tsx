@@ -20,7 +20,7 @@ export function DeleteTeamButton({ teamId, teamName, orgSlug }: DeleteTeamButton
         startTransition(async () => {
             setError(null)
             const res = await deleteTeam(teamId, orgSlug)
-            if (res?.error) {
+            if ('error' in res) {
                 setError(res.error)
                 setTimeout(() => setError(null), 3500)
             }

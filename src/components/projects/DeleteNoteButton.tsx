@@ -22,7 +22,7 @@ export function DeleteNoteButton({ noteId, orgSlug }: DeleteNoteButtonProps) {
       setError(null)
       const res = await deleteProjectNote(noteId, orgSlug)
 
-      if (res.error) {
+      if ('error' in res) {
         setError(res.error)
         setTimeout(() => setError(null), 3500)
       }
