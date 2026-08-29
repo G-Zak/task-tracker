@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { getCurrentUserSession } from '@/src/lib/rbac'
 import { Role } from '@/src/generated/client'
-import { UserCog } from 'lucide-react'
+import { UserCog, Hourglass } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { InviteUserModal } from '@/src/components/users/InviteUserModal'
 import { UserRow } from '@/src/components/users/UserRow'
+import { PendingUserRow } from '@/src/components/users/PendingUserRow'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -19,19 +20,33 @@ export default async function UsersPage({ params }: PageProps) {
   // déjà "Utilisateurs" qu'à ce rôle, désormais aussi appliqué côté serveur.
   if (user.role !== Role.ADMIN) redirect(`/org/${orgSlug}/dashboard`)
 
-  const users = await prisma.user.findMany({
-    where: { organisationId: user.organisationId },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      role: true,
-      isActive: true,
-      lastLoginAt: true,
-    },
-    orderBy: [{ isActive: 'desc' }, { firstName: 'asc' }],
-  })
+  const [users, pendingUsers] = await Promise.all([
+    prisma.user.findMany({
+      where: { organisationId: user.organisationId, isApproved: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        isActive: true,
+        lastLoginAt: true,
+      },
+      orderBy: [{ isActive: 'desc' }, { firstName: 'asc' }],
+    }),
+    prisma.user.findMany({
+      where: { organisationId: user.organisationId, isApproved: false },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    }),
+  ])
 
   return (
     <div className="space-y-8">
@@ -48,6 +63,22 @@ export default async function UsersPage({ params }: PageProps) {
 
         <InviteUserModal orgSlug={orgSlug} />
       </div>
+
+      {pendingUsers.length > 0 && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/60 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-5 py-3">
+            <Hourglass className="h-4 w-4 text-amber-700" />
+            <h2 className="text-sm font-semibold text-amber-800">
+              Demandes d&apos;inscription en attente ({pendingUsers.length})
+            </h2>
+          </div>
+          <ul className="divide-y divide-amber-100">
+            {pendingUsers.map((row) => (
+              <PendingUserRow key={row.id} user={row} orgSlug={orgSlug} />
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden">
         <div className="overflow-x-auto">

@@ -2,11 +2,11 @@
 
 import { cookies } from 'next/headers'
 
-import { validateCredentials } from '@/services/auth.service'
+import { validateCredentials, registerAccount } from '@/services/auth.service'
+import { registerSchema } from '@/validations/register.schema'
 import { Role } from '@/generated/client'
 import { authorizeRole } from '@/lib/rbac'
 import { prisma } from '@/lib/prisma'
-import { error } from 'console'
 
 export async function loginAction(prevState: any, formData: FormData) {
 	const email = formData.get('email') as string
@@ -32,9 +32,35 @@ export async function loginAction(prevState: any, formData: FormData) {
 			path: '/',
 		})
 
-		return { success: true, orgSlug: 'ABA Technplogy - NEXTRONIC' }
+		// Dérivé de l'organisation réelle plutôt qu'une valeur figée : la seule organisation créée
+		// par le seed s'appelle désormais "ABA Technology" (voir prisma/seed.ts), pas la chaîne
+		// historique codée en dur ici.
+		const organisation = await prisma.organisation.findUnique({ where: { id: user.organisationId } })
+
+		return { success: true, orgSlug: organisation?.name ?? user.organisationId }
 	} catch (error: any) {
 		return { error: error.message || 'Une erreur est survenue lors de la connexion.' }
+	}
+}
+
+export async function registerAction(prevState: any, formData: FormData) {
+	const parsed = registerSchema.safeParse({
+		firstName: formData.get('firstName'),
+		lastName: formData.get('lastName'),
+		email: formData.get('email'),
+		password: formData.get('password'),
+		role: formData.get('role'),
+	})
+
+	if (!parsed.success) {
+		return { error: parsed.error.issues[0]?.message || 'Données invalides.' }
+	}
+
+	try {
+		await registerAccount(parsed.data)
+		return { success: true }
+	} catch (error: any) {
+		return { error: error.message || "Une erreur est survenue lors de l'inscription." }
 	}
 }
 

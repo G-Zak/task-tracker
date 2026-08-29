@@ -44,6 +44,7 @@ export async function inviteUser(data: InviteUserFormValues, orgSlug: string) {
                 role,
                 passwordHash,
                 organisationId: admin.organisationId,
+                isApproved: true, // créé directement par un ADMIN — pas de passage par la file d'approbation
             },
         })
 
@@ -98,5 +99,51 @@ export async function setUserActive(userId: string, isActive: boolean, orgSlug: 
         return { success: true }
     } catch (error: any) {
         return { error: error.message || "Une erreur est survenue lors de la mise à jour du compte." }
+    }
+}
+
+// Approuve un compte issu de l'inscription libre (registerAccount, src/services/auth.service.ts) —
+// tant que ce n'est pas fait, validateCredentials refuse la connexion.
+export async function approveUser(userId: string, orgSlug: string) {
+    try {
+        const admin = await authorizeRole(Role.ADMIN)
+
+        const target = await prisma.user.findUnique({ where: { id: userId } })
+        if (!target || target.organisationId !== admin.organisationId) {
+            return { error: 'Utilisateur introuvable ou accès refusé.' }
+        }
+
+        await prisma.user.update({ where: { id: userId }, data: { isApproved: true } })
+
+        revalidatePath(`/org/${orgSlug}/users`)
+
+        return { success: true }
+    } catch (error: any) {
+        return { error: error.message || "Une erreur est survenue lors de l'approbation du compte." }
+    }
+}
+
+// Rejette une demande d'inscription en attente. Le compte n'a jamais eu accès à l'application,
+// donc il est supprimé plutôt que marqué "rejeté" — la personne peut refaire une demande avec la
+// même adresse e-mail si besoin.
+export async function rejectUser(userId: string, orgSlug: string) {
+    try {
+        const admin = await authorizeRole(Role.ADMIN)
+
+        const target = await prisma.user.findUnique({ where: { id: userId } })
+        if (!target || target.organisationId !== admin.organisationId) {
+            return { error: 'Utilisateur introuvable ou accès refusé.' }
+        }
+        if (target.isApproved) {
+            return { error: 'Ce compte est déjà approuvé.' }
+        }
+
+        await prisma.user.delete({ where: { id: userId } })
+
+        revalidatePath(`/org/${orgSlug}/users`)
+
+        return { success: true }
+    } catch (error: any) {
+        return { error: error.message || "Une erreur est survenue lors du rejet du compte." }
     }
 }

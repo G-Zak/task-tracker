@@ -11,13 +11,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  if (request.nextUrl.pathname === '/authentication' && sessionCookie) {
-    try {
-      const orgName = 'abatechnology'
-      return NextResponse.redirect(new URL(`/org/${orgName}/dashboard`, request.url))
-    } catch {
-    }
-  }
+  // Pas de redirection automatique hors de /authentication pour un visiteur déjà connecté : ça
+  // empêchait toute tentative de connexion avec un AUTRE compte tant qu'une session existait déjà
+  // (le formulaire ne s'affichait jamais, la nouvelle tentative n'atteignait jamais loginAction).
+  // La page /authentication gère elle-même l'affichage "déjà connecté" et le changement de compte.
 
   return NextResponse.next()
 }

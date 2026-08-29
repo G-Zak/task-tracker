@@ -63,6 +63,7 @@ model User{
   passwordHash       String
   role           Role    @default(USER)
   isActive       Boolean  @default(true)
+  isApproved     Boolean  @default(true)
   createdAt      DateTime @default(now())
   avatarUrl      String?
   lastLoginAt    DateTime?
