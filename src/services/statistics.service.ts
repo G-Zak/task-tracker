@@ -1,13 +1,10 @@
 import { prisma } from '@/src/lib/prisma'
 import { Prisma } from '@/generated/client'
-import { TaskStatus } from '@/generated/enums'
-import { taskStatusOptions } from '@/src/lib/labels'
+import { TaskStatus, TaskPriority } from '@/generated/enums'
+import { taskStatusOptions, taskPriorityOptions } from '@/src/lib/labels'
 import { CLOSED_TASK_STATUSES } from '@/src/services/dashboard.service'
 import { periodStart } from '@/src/lib/period'
 
-// Options distinctes de `Period` (src/lib/period.ts) : cette story (US-038) remplace "Toute la
-// période" par une plage personnalisée, un choix propre aux statistiques — les Feuilles de
-// temps (US-032) gardent leurs quatre options d'origine, inchangées.
 export type StatisticsPeriod = 'week' | 'month' | 'quarter' | 'custom'
 
 export interface TeamWorkloadStat {
@@ -16,13 +13,23 @@ export interface TeamWorkloadStat {
     activeTaskCount: number
 }
 
+export interface ProjectVolumeStat {
+    id: string | null
+    name: string
+    count: number
+}
+
 export interface OrgStatistics {
     tasksByStatus: Record<TaskStatus, number>
+    tasksByPriority: Record<TaskPriority, number>
     totalTasks: number
     onTimeCount: number
     lateCount: number
     onTimeRate: number | null
+    overdueCount: number
+    avgCompletionMs: number | null
     teamWorkload: TeamWorkloadStat[]
+    projectVolume: ProjectVolumeStat[]
 }
 
 interface StatisticsFilters {
@@ -37,8 +44,6 @@ interface StatisticsFilters {
 
 function resolvePeriodRange(period: StatisticsPeriod, customFrom?: Date, customTo?: Date): { start: Date | null; end: Date | null } {
     if (period === 'custom') {
-        // Borne de fin exclusive fixée au lendemain pour inclure toute la journée "to"
-        // (un <input type="date"> ne porte que la date, pas d'heure).
         const end = customTo ? new Date(customTo.getTime() + 24 * 60 * 60 * 1000) : null
         return { start: customFrom ?? null, end }
     }
@@ -76,9 +81,12 @@ export async function getOrgStatistics(filters: StatisticsFilters): Promise<OrgS
             where,
             select: {
                 status: true,
+                priority: true,
                 dueDate: true,
                 approvedAt: true,
+                startedAt: true,
                 assignees: { select: { id: true } },
+                project: { select: { id: true, name: true } },
             },
         }),
         prisma.team.findMany({
@@ -93,27 +101,50 @@ export async function getOrgStatistics(filters: StatisticsFilters): Promise<OrgS
         return acc
     }, {} as Record<TaskStatus, number>)
 
-    // "Respect des délais" : parmi les tâches TERMINÉES qui avaient une échéance, combien ont été
-    // validées (approvedAt, US-030) avant ou à cette échéance. Une tâche sans dueDate n'entre dans
-    // aucun des deux compteurs — impossible de juger un respect de délai sans délai à respecter.
+    const tasksByPriority = taskPriorityOptions.reduce((acc, priority) => {
+        acc[priority] = 0
+        return acc
+    }, {} as Record<TaskPriority, number>)
+
     let onTimeCount = 0
     let lateCount = 0
+    let overdueCount = 0
+    let completionMsTotal = 0
+    let completedWithDuration = 0
+    const now = new Date()
+    const projectVolumeMap = new Map<string, ProjectVolumeStat>()
 
     for (const task of tasks) {
         tasksByStatus[task.status] = (tasksByStatus[task.status] ?? 0) + 1
+        tasksByPriority[task.priority] = (tasksByPriority[task.priority] ?? 0) + 1
 
         if (task.status === TaskStatus.DONE && task.dueDate) {
             if (task.approvedAt && task.approvedAt <= task.dueDate) onTimeCount++
             else lateCount++
         }
+
+        if (task.dueDate && task.dueDate < now && !CLOSED_TASK_STATUSES.includes(task.status)) {
+            overdueCount++
+        }
+
+        if (task.status === TaskStatus.DONE && task.startedAt && task.approvedAt) {
+            completionMsTotal += task.approvedAt.getTime() - task.startedAt.getTime()
+            completedWithDuration++
+        }
+
+        const key = task.project?.id ?? '__none__'
+        const existing = projectVolumeMap.get(key)
+        if (existing) {
+            existing.count++
+        } else {
+            projectVolumeMap.set(key, { id: task.project?.id ?? null, name: task.project?.name ?? 'Sans projet', count: 1 })
+        }
     }
 
     const ratedTotal = onTimeCount + lateCount
     const onTimeRate = ratedTotal === 0 ? null : Math.round((onTimeCount / ratedTotal) * 100)
+    const avgCompletionMs = completedWithDuration === 0 ? null : Math.round(completionMsTotal / completedWithDuration)
 
-    // Charge par équipe : réutilise le même ensemble de tâches déjà filtré (période/projet/client/
-    // équipe) plutôt que de relancer une requête par équipe — possible ici parce que les tâches
-    // sont déjà chargées en mémoire pour la répartition par statut ci-dessus.
     const teamWorkload: TeamWorkloadStat[] = teams
         .map((team) => {
             const memberIds = new Set(team.members.map((member) => member.id))
@@ -125,12 +156,18 @@ export async function getOrgStatistics(filters: StatisticsFilters): Promise<OrgS
         })
         .sort((a, b) => b.activeTaskCount - a.activeTaskCount)
 
+    const projectVolume = Array.from(projectVolumeMap.values()).sort((a, b) => b.count - a.count)
+
     return {
         tasksByStatus,
+        tasksByPriority,
         totalTasks: tasks.length,
         onTimeCount,
         lateCount,
         onTimeRate,
+        overdueCount,
+        avgCompletionMs,
         teamWorkload,
+        projectVolume,
     }
 }

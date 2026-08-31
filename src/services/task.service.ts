@@ -8,8 +8,6 @@ interface TaskFilterParams {
     projectId?: string
     page?: number
     pageSize?: number
-    // Un simple collaborateur ne doit voir que les tâches qui lui sont assignées
-    // ou rattachées à un projet dont il est membre.
     restrictToUserId?: string
 }
 

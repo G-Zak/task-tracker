@@ -1,6 +1,7 @@
 import { Users, FolderKanban, CheckSquare, Crown } from 'lucide-react'
 import type { MyTask } from '@/src/services/dashboard.service'
-import { taskStatusLabels } from '@/src/lib/labels'
+import type { ProjectStatus } from '@/generated/enums'
+import { taskStatusLabels, projectStatusLabels } from '@/src/lib/labels'
 import { taskStatusStyles, projectStatusStyles } from '@/src/lib/status-colors'
 
 interface TeamSummary {
@@ -11,7 +12,7 @@ interface TeamSummary {
 interface ProjectSummary {
     id: string
     name: string
-    status: string
+    status: ProjectStatus
 }
 
 interface ProfileSummaryProps {
@@ -65,9 +66,9 @@ export function ProfileSummary({ teams, ledTeams, projects, myTasks }: ProfileSu
                             <li key={project.id} className="flex items-center justify-between gap-2 text-sm">
                                 <span className="text-zinc-900 truncate">{project.name}</span>
                                 <span
-                                    className={`shrink-0 inline-block px-1.5 py-0.5 text-[10px] font-semibold rounded uppercase ring-1 ring-inset ${projectStatusStyles[project.status] ?? 'bg-zinc-100 text-zinc-600 ring-zinc-600/10'}`}
+                                    className={`font-data shrink-0 inline-block rounded-[5px] px-2 py-1 text-[10px] font-medium ${projectStatusStyles[project.status] ?? 'bg-sand-100 text-ink-500'}`}
                                 >
-                                    {project.status}
+                                    {projectStatusLabels[project.status]}
                                 </span>
                             </li>
                         ))}
@@ -89,7 +90,7 @@ export function ProfileSummary({ teams, ledTeams, projects, myTasks }: ProfileSu
                             <li key={task.id} className="flex items-center justify-between gap-2 text-sm">
                                 <span className="text-zinc-900 truncate">{task.title}</span>
                                 <span
-                                    className={`shrink-0 inline-block px-1.5 py-0.5 text-[10px] font-semibold rounded uppercase ring-1 ring-inset ${taskStatusStyles[task.status] ?? 'bg-zinc-100 text-zinc-600 ring-zinc-600/10'}`}
+                                    className={`font-data shrink-0 inline-block rounded-[5px] px-2 py-1 text-[10px] font-medium ${taskStatusStyles[task.status] ?? 'bg-sand-100 text-ink-500'}`}
                                 >
                                     {taskStatusLabels[task.status]}
                                 </span>

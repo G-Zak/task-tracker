@@ -48,9 +48,6 @@ export async function updateProfile(data: ProfileFormValues, orgSlug: string) {
             },
         })
 
-        // Rafraîchi par cohérence, même si getCurrentUserSession() revérifie désormais l'utilisateur
-        // en base à chaque requête (src/lib/rbac.ts) plutôt que de faire confiance au cookie —
-        // seul `id` y est encore réellement lu, mais le garder à jour évite toute ambiguïté.
         const cookieStore = await cookies()
         cookieStore.set('session_user', encodeSession({
             id: updated.id,

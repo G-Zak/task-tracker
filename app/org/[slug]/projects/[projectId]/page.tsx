@@ -8,6 +8,7 @@ import { RemoveMemberButton } from '@/src/components/projects/RemoveMemberButton
 import { DeleteProjectButton } from '@/src/components/projects/DeleteProjectButton'
 import { ProjectDiscussion } from '@/src/components/projects/ProjectDiscussion'
 import { projectStatusStyles } from '@/src/lib/status-colors'
+import { projectStatusLabels } from '@/src/lib/labels'
 
 interface PageProps {
   params: Promise<{ slug: string; projectId: string }>
@@ -16,12 +17,11 @@ interface PageProps {
 export default async function ProjectDetailPage({ params }: PageProps) {
 
     const { slug: orgSlug, projectId } = await params
-  
-  
+
+
   const user = await getCurrentUserSession()
   if (!user) redirect('/authentication')
-  
-  
+
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
@@ -119,8 +119,8 @@ export default async function ProjectDetailPage({ params }: PageProps) {
               {project.name}
             </h1>
             <div className="mt-1 flex items-center gap-2">
-              <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-md uppercase ring-1 ring-inset ${projectStatusStyles[project.status] ?? 'bg-zinc-100 text-zinc-600 ring-zinc-600/10'}`}>
-                {project.status}
+              <span className={`font-data inline-block rounded-[5px] px-2 py-1 text-xs font-medium ${projectStatusStyles[project.status] ?? 'bg-sand-100 text-ink-500'}`}>
+                {projectStatusLabels[project.status]}
               </span>
               {project.client && (
                 <span className="text-xs text-zinc-500">

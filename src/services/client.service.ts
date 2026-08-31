@@ -35,10 +35,6 @@ export interface ClientDetail {
     totalTimeSpentMs: number
 }
 
-// Un projet "en retard" au sens client : sa date de fin est dépassée sans qu'il soit
-// terminé/annulé — même logique que "tâche en retard" côté dashboard (US-027), transposée
-// au seul champ de délai que porte Project (endDate). Exportée : réutilisée telle quelle par
-// les rapports IA (US-043) plutôt que redéfinie une deuxième fois.
 export function isProjectOverdue(status: ProjectStatus, endDate: Date | null, now: Date): boolean {
     return !!endDate && endDate < now && status !== ProjectStatus.COMPLETED && status !== ProjectStatus.CANCELLED
 }
@@ -107,9 +103,6 @@ export async function getClientDetail(clientId: string, organisationId: string):
     const activeProjectCount = projects.filter((project) => ACTIVE_PROJECT_STATUSES.includes(project.status)).length
     const completedProjectCount = projects.filter((project) => project.status === ProjectStatus.COMPLETED).length
 
-    // Prochaine échéance : le endDate le plus proche parmi les projets non terminés/annulés,
-    // dans le futur — la deadline "compte client" est celle d'un projet, pas d'une tâche
-    // individuelle (trop granulaire pour une vue de compte).
     const upcoming = projects
         .filter((project) => project.endDate && project.endDate >= now && project.status !== ProjectStatus.COMPLETED && project.status !== ProjectStatus.CANCELLED)
         .sort((a, b) => a.endDate!.getTime() - b.endDate!.getTime())
@@ -118,9 +111,6 @@ export async function getClientDetail(clientId: string, organisationId: string):
         ? { projectId: upcoming[0].id, projectName: upcoming[0].name, endDate: upcoming[0].endDate! }
         : null
 
-    // Temps total passé : somme des durées (startedAt → approvedAt ou maintenant) de toutes
-    // les tâches démarrées sur tous les projets de ce client — même calcul que US-032, agrégé
-    // au niveau client plutôt que par utilisateur/projet.
     let totalTimeSpentMs = 0
     for (const project of client.projects) {
         for (const task of project.tasks) {

@@ -50,10 +50,10 @@ export function LoginForm({ currentUser }: LoginFormProps) {
 				</div>
 
 				<div className="relative z-10 flex items-center gap-3">
-					<BrandMark size="lg" className="bg-white text-primary" />
+					<BrandMark size="lg" className="ring-1 ring-white/25" />
 					<div>
 						<p className="text-lg font-bold leading-tight">ABA Technology</p>
-						<p className="text-xs uppercase tracking-widest text-primary-foreground/70">Groupe NEXTRONIC</p>
+						<p className="text-xs uppercase tracking-widest text-primary-foreground/70">NEXTRONIC</p>
 					</div>
 				</div>
 
@@ -62,7 +62,7 @@ export function LoginForm({ currentUser }: LoginFormProps) {
 						Des solutions technologiques sur mesure, pensées pour vos enjeux réels.
 					</h2>
 					<p className="max-w-md text-sm leading-relaxed text-primary-foreground/80">
-						Santé, Industrie X.0, Territoires intelligents, Banque &amp; Assurance — TaskTracker pilote nos projets de
+						Santé, Industrie 4.0, Territoires intelligents, Banque &amp; Assurance — TaskTracker pilote nos projets de
 						bout en bout, de la conception à la livraison.
 					</p>
 					<ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">

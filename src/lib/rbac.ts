@@ -12,9 +12,6 @@ const ROLE_HIERARCHY: Record<Role, number> = {
     [Role.VIEWER]: 0,
 }
 
-// Un seul aller-retour DB par requête même si getCurrentUserSession() est appelé plusieurs fois
-// dans le même arbre de rendu (layout + page, par exemple) — cache() de React dédoublonne par
-// requête serveur, pas au-delà.
 const fetchLiveUser = cache((userId: string) =>
     prisma.user.findUnique({
         where: { id: userId },
@@ -40,9 +37,6 @@ export async function getCurrentUserSession(){
     const payload = decodeSession(sessionCookie.value)
     if (!payload?.id) return null
 
-    // Revérifié contre la base à chaque requête plutôt que de faire confiance au cookie : un
-    // compte désactivé ou pas encore approuvé perd l'accès immédiatement, pas seulement à la
-    // prochaine connexion (voir Application-Analysis-2026-08-28.md §1.2).
     const liveUser = await fetchLiveUser(payload.id)
     if (!liveUser || !liveUser.isActive || !liveUser.isApproved) return null
 

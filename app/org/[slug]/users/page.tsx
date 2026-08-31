@@ -16,8 +16,6 @@ export default async function UsersPage({ params }: PageProps) {
 
   const user = await getCurrentUserSession()
   if (!user) redirect('/authentication')
-  // Seul ADMIN peut gérer les comptes (US-007) — cohérent avec navigationConfig, qui ne montre
-  // déjà "Utilisateurs" qu'à ce rôle, désormais aussi appliqué côté serveur.
   if (user.role !== Role.ADMIN) redirect(`/org/${orgSlug}/dashboard`)
 
   const [users, pendingUsers] = await Promise.all([
@@ -49,30 +47,32 @@ export default async function UsersPage({ params }: PageProps) {
   ])
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/80 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <UserCog className="h-6 w-6 text-zinc-700" />
-            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Utilisateurs</h1>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-sand-200 pb-5">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-maroon-100 text-maroon-700">
+            <UserCog className="h-4 w-4" />
           </div>
-          <p className="mt-1 text-sm text-zinc-500">
-            Comptes, rôles et accès de l&apos;organisation ({users.length}).
-          </p>
+          <div>
+            <h1 className="font-heading text-[22px] font-bold tracking-tight text-ink-900">Utilisateurs</h1>
+            <p className="mt-0.5 text-[12.5px] text-ink-500">
+              Comptes, rôles et accès de l&apos;organisation ({users.length}).
+            </p>
+          </div>
         </div>
 
         <InviteUserModal orgSlug={orgSlug} />
       </div>
 
       {pendingUsers.length > 0 && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/60 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-5 py-3">
-            <Hourglass className="h-4 w-4 text-amber-700" />
-            <h2 className="text-sm font-semibold text-amber-800">
+        <div className="rounded-2xl border border-status-warning-bg bg-status-warning-bg/60 shadow-[0_1px_2px_rgba(32,22,25,0.04)] overflow-hidden">
+          <div className="flex items-center gap-2 border-b border-status-warning-bg bg-status-warning-bg px-5 py-3">
+            <Hourglass className="h-4 w-4 text-status-warning" />
+            <h2 className="text-sm font-semibold text-status-warning">
               Demandes d&apos;inscription en attente ({pendingUsers.length})
             </h2>
           </div>
-          <ul className="divide-y divide-amber-100">
+          <ul className="divide-y divide-status-warning-bg">
             {pendingUsers.map((row) => (
               <PendingUserRow key={row.id} user={row} orgSlug={orgSlug} />
             ))}
@@ -80,11 +80,11 @@ export default async function UsersPage({ params }: PageProps) {
         </div>
       )}
 
-      <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-sand-200 bg-white shadow-[0_1px_2px_rgba(32,22,25,0.04)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-zinc-100 bg-zinc-50/60 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              <tr className="border-b border-sand-100 bg-sand-50 text-[11px] font-semibold uppercase tracking-wider text-ink-500">
                 <th className="px-5 py-3 font-semibold">Nom</th>
                 <th className="px-0 py-3 font-semibold">Rôle</th>
                 <th className="px-0 py-3 font-semibold">Statut</th>

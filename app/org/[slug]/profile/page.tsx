@@ -35,10 +35,6 @@ export default async function ProfilePage({ params }: PageProps) {
     getMyAssignedTasks(session.organisationId, session.id),
   ])
 
-  // Le cookie de session référence un `id` figé au moment de la connexion, jamais revalidé
-  // contre la base entre-temps. Si ce compte n'existe plus (supprimé, ou base reseedée avec de
-  // nouveaux identifiants), c'est une session périmée — pas une ressource introuvable : on
-  // renvoie vers la connexion plutôt qu'un 404 qui ne dit pas à l'utilisateur quoi faire.
   if (!user) redirect('/authentication')
 
   return (

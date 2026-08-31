@@ -83,10 +83,10 @@ export default function RegisterPage() {
 
 						<div className="grid gap-4 sm:grid-cols-2">
 							<FormField label="Prénom" required error={errors.firstName?.message}>
-								<Input {...register('firstName')} placeholder="Yassine" />
+								<Input {...register('firstName')} placeholder="Prénom" />
 							</FormField>
 							<FormField label="Nom" required error={errors.lastName?.message}>
-								<Input {...register('lastName')} placeholder="El Amrani" />
+								<Input {...register('lastName')} placeholder="Nom" />
 							</FormField>
 						</div>
 

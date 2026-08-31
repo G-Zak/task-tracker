@@ -1,6 +1,6 @@
-import { FolderKanban, AlertTriangle } from 'lucide-react'
+import { FolderKanban, ListTodo, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import type { DashboardKpis as DashboardKpisData } from '@/src/services/dashboard.service'
-import { TaskStatusBreakdown } from '@/src/components/dashboard/TaskStatusBreakdown'
+import { KpiCard } from '@/src/components/dashboard/KpiCard'
 
 interface DashboardKpisProps {
     kpis: DashboardKpisData
@@ -10,37 +10,31 @@ interface DashboardKpisProps {
 export function DashboardKpis({ kpis, scopeLabel }: DashboardKpisProps) {
     const { activeProjects, overdueTasks, tasksByStatus, totalTasks } = kpis
 
+    const closedTasks = (tasksByStatus.DONE ?? 0) + (tasksByStatus.CANCELLED ?? 0)
+    const openTasks = totalTasks - closedTasks
+    const completionRate = totalTasks === 0 ? 0 : Math.round(((tasksByStatus.DONE ?? 0) / totalTasks) * 100)
+
     return (
-        <div className="grid gap-4 lg:grid-cols-3">
-            <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm hover:shadow-md transition-all">
-                <div className="flex items-center gap-2 text-zinc-500">
-                    <FolderKanban className="h-4 w-4" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Projets actifs</span>
-                </div>
-                <p className="mt-3 text-3xl font-bold text-zinc-900">{activeProjects}</p>
-                <p className="mt-1 text-xs text-zinc-500">{scopeLabel}</p>
-            </div>
-
-            <div
-                className={`rounded-2xl border p-6 shadow-sm hover:shadow-md transition-all ${
-                    overdueTasks > 0
-                        ? 'border-red-200/60 bg-red-50/50'
-                        : 'border-zinc-200/80 bg-white'
-                }`}
-            >
-                <div className={`flex items-center gap-2 ${overdueTasks > 0 ? 'text-red-700' : 'text-zinc-500'}`}>
-                    <AlertTriangle className="h-4 w-4" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Tâches en retard</span>
-                </div>
-                <p className={`mt-3 text-3xl font-bold ${overdueTasks > 0 ? 'text-red-700' : 'text-zinc-900'}`}>
-                    {overdueTasks}
-                </p>
-                <p className={`mt-1 text-xs ${overdueTasks > 0 ? 'text-red-600/80' : 'text-zinc-500'}`}>
-                    Échéance dépassée, non terminées
-                </p>
-            </div>
-
-            <TaskStatusBreakdown tasksByStatus={tasksByStatus} totalTasks={totalTasks} className="lg:row-span-2" />
+        <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+            <KpiCard icon={<FolderKanban className="h-3.5 w-3.5" />} label="Projets actifs" value={activeProjects} hint={scopeLabel} delayMs={0} />
+            <KpiCard icon={<ListTodo className="h-3.5 w-3.5" />} label="Tâches ouvertes" value={openTasks} hint="à faire, en cours, à contrôler" delayMs={60} />
+            <KpiCard
+                icon={<AlertTriangle className="h-3.5 w-3.5" />}
+                label="En retard"
+                value={overdueTasks}
+                tone={overdueTasks > 0 ? 'warning' : 'default'}
+                hint={overdueTasks > 0 ? 'nécessitent une action' : 'aucune échéance dépassée'}
+                delayMs={120}
+            />
+            <KpiCard
+                icon={<CheckCircle2 className="h-3.5 w-3.5" />}
+                label="Taux d'achèvement"
+                value={completionRate}
+                suffix="%"
+                tone="success"
+                hint={`${tasksByStatus.DONE ?? 0} tâche(s) terminée(s) / ${totalTasks}`}
+                delayMs={180}
+            />
         </div>
     )
 }

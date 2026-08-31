@@ -81,9 +81,9 @@ export function InviteUserModal({ orgSlug }: InviteUserModalProps) {
                         <button
                             type="button"
                             onClick={close}
-                            className="absolute right-3 top-3 z-10 rounded-lg bg-white p-1.5 shadow-sm hover:bg-zinc-100"
+                            className="absolute right-3 top-3 z-10 rounded-lg bg-white p-1.5 shadow-sm hover:bg-sand-100"
                         >
-                            <X className="h-5 w-5 text-zinc-500" />
+                            <X className="h-5 w-5 text-ink-500" />
                         </button>
 
                         {created ? (

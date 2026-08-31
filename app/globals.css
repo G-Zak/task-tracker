@@ -9,7 +9,31 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-archivo);
+  --font-data: var(--font-plex-mono);
+  --color-sand-0: var(--sand-0);
+  --color-sand-50: var(--sand-50);
+  --color-sand-100: var(--sand-100);
+  --color-sand-200: var(--sand-200);
+  --color-sand-400: var(--sand-400);
+  --color-ink-900: var(--ink-900);
+  --color-ink-700: var(--ink-700);
+  --color-ink-500: var(--ink-500);
+  --color-maroon-700: var(--maroon-700);
+  --color-maroon-600: var(--maroon-600);
+  --color-maroon-500: var(--maroon-500);
+  --color-maroon-100: var(--maroon-100);
+  --color-steel-700: var(--steel-700);
+  --color-steel-600: var(--steel-600);
+  --color-steel-500: var(--steel-500);
+  --color-steel-300: var(--steel-300);
+  --color-steel-100: var(--steel-100);
+  --color-status-success: var(--status-success);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-critical: var(--status-critical);
+  --color-status-critical-bg: var(--status-critical-bg);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -81,6 +105,37 @@
   --sidebar-accent-foreground: #7a1030;
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: #b8395c;
+
+  /* Direction visuelle "console d'opérations" (dashboard/statistiques) — palette approuvée par
+     l'utilisateur sur un prototype interactif avant implémentation. Maroon existant conservé comme
+     unique accent chaud ; steel-* est un second accent froid réservé aux données/graphiques,
+     jamais interchangeable avec maroon ; sand-* remplace le gris neutre pur (zinc) par un neutre
+     légèrement chaud. status-* est sémantique (bon/attention/critique) et volontairement distinct
+     des deux accents. Pas encore de variante .dark pour ces tokens — l'app n'a pas de mode sombre
+     actif (voir Application-Analysis-2026-08-28.md §3.3), à ajouter si ce chantier est repris. */
+  --sand-0: #FBF9F7;
+  --sand-50: #F5F1EE;
+  --sand-100: #ECE5E1;
+  --sand-200: #DDD3CD;
+  --sand-400: #A99C94;
+  --ink-900: #201619;
+  --ink-700: #45363C;
+  --ink-500: #6E5B62;
+  --maroon-700: #6E1329;
+  --maroon-600: #8A1836;
+  --maroon-500: #A82446;
+  --maroon-100: #F3DEE3;
+  --steel-700: #1E3440;
+  --steel-600: #2E4756;
+  --steel-500: #45647A;
+  --steel-300: #93ABB8;
+  --steel-100: #E4ECEF;
+  --status-success: #2E7D5B;
+  --status-success-bg: #E3F1EA;
+  --status-warning: #9C6B21;
+  --status-warning-bg: #F5EBD8;
+  --status-critical: #A02E2E;
+  --status-critical-bg: #F5E1E1;
 }
 
 .dark {
@@ -128,5 +183,26 @@
 
   html {
     @apply font-sans;
+  }
+}
+
+/* Révélation en cascade des cartes du dashboard/statistiques (KpiCard, panneaux) — un seul
+   keyframe partagé plutôt qu'un par composant. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

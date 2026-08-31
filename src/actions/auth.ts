@@ -50,9 +50,6 @@ export async function loginAction(prevState: any, formData: FormData) {
 			path: '/',
 		})
 
-		// Dérivé de l'organisation réelle plutôt qu'une valeur figée : la seule organisation créée
-		// par le seed s'appelle désormais "ABA Technology" (voir prisma/seed.ts), pas la chaîne
-		// historique codée en dur ici.
 		const organisation = await prisma.organisation.findUnique({ where: { id: user.organisationId } })
 
 		return { success: true, orgSlug: organisation?.name ?? user.organisationId }

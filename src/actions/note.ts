@@ -10,9 +10,6 @@ import { indexProjectNote, removeFromIndex } from '@/src/services/rag.service'
 import { revalidatePath } from 'next/cache'
 import { after } from 'next/server'
 
-// Notifie le serveur temps réel (US-033) après une écriture réussie. Ce serveur est un
-// process séparé et optionnel : son indisponibilité ne doit jamais faire échouer la
-// création/suppression d'un message, d'où le try/catch qui avale silencieusement l'erreur.
 async function notifyRealtime(projectId: string, type: 'note:created' | 'note:deleted') {
     try {
         const port = process.env.WS_PORT ?? '4001'
@@ -25,10 +22,7 @@ async function notifyRealtime(projectId: string, type: 'note:created' | 'note:de
             body: JSON.stringify({ projectId, type }),
             signal: AbortSignal.timeout(1500),
         })
-    } catch {
-        // Serveur temps réel indisponible : les autres membres verront le message au
-        // prochain chargement de la page, mais l'écriture elle-même a déjà réussi.
-    }
+    } catch {}
 }
 
 export async function createProjectNote(projectId: string, data: NoteFormValues, orgSlug: string) {

@@ -1,7 +1,7 @@
 'use server'
 
 import { Role } from "@/src/generated/client"
-import { authorizeRole } from "@/src/lib/rbac" // Utilise authorizeRole partout !
+import { authorizeRole } from "@/src/lib/rbac"
 import { isOwnedByOrg, ownershipErrorMessage } from "@/src/lib/ownership"
 import { catchActionError } from "@/src/lib/action-error"
 import { prisma } from "@/lib/prisma"
@@ -12,7 +12,6 @@ import { after } from 'next/server'
 
 export async function createProject(data: ProjectFormValues, orgSlug: string) {
     try {
-        // authorizeRole vérifie déjà si l'user est connecté ET s'il est au moins PM
         const user = await authorizeRole(Role.PROJECT_MANAGER)
 
         const parsedData = projectSchema.safeParse(data)

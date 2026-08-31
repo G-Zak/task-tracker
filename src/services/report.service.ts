@@ -18,7 +18,6 @@ export interface ProjectReport {
     clientName: string | null
     generatedAt: Date
 
-    // Avancement — entièrement dérivé des données réelles, jamais généré par le modèle.
     totalTasks: number
     tasksByStatus: Record<TaskStatus, number>
     progressRate: number | null
@@ -26,13 +25,10 @@ export interface ProjectReport {
     endDate: Date | null
     isProjectOverdue: boolean
 
-    // Risques — même logique, déterministe et vérifiable.
     overdueTasks: ProjectReportRiskItem[]
     blockedTasks: ProjectReportRiskItem[]
     onTimeRate: number | null
 
-    // Recommandations — seule section confiée au LLM local, ancrée sur les faits ci-dessus
-    // et le contexte RAG du projet (US-041), jamais laissée réinventer avancement/risques.
     recommendations: string
 }
 
@@ -52,9 +48,6 @@ async function generateRecommendations(params: {
         select: { id: true },
     })
 
-    // Même mécanisme de portée que le RBAC de l'assistant (US-042, `KnowledgeScope`), réutilisé
-    // ici pour une restriction différente : pas "ce qu'un rôle a le droit de voir", mais "ce qui
-    // appartient à ce projet précis" — la même primitive sert les deux besoins sans modification.
     const scope: KnowledgeScope = {
         projectIds: [params.projectId],
         taskIds: params.taskIds,
@@ -96,7 +89,6 @@ export async function generateProjectReport(projectId: string, organisationId: s
 
     const now = new Date()
 
-    // --- Avancement ---
     const tasksByStatus = taskStatusOptions.reduce((acc, status) => {
         acc[status] = 0
         return acc
@@ -106,7 +98,6 @@ export async function generateProjectReport(projectId: string, organisationId: s
     const totalTasks = project.tasks.length
     const progressRate = totalTasks === 0 ? null : Math.round((tasksByStatus[TaskStatus.DONE] / totalTasks) * 100)
 
-    // --- Risques ---
     const overdueTasks: ProjectReportRiskItem[] = project.tasks
         .filter((task) => task.dueDate && task.dueDate < now && !CLOSED_TASK_STATUSES.includes(task.status))
         .map((task) => ({ title: task.title, detail: `Échéance dépassée le ${formatDate(task.dueDate!)}` }))
@@ -126,7 +117,6 @@ export async function generateProjectReport(projectId: string, organisationId: s
     const ratedTotal = onTimeCount + lateCount
     const onTimeRate = ratedTotal === 0 ? null : Math.round((onTimeCount / ratedTotal) * 100)
 
-    // --- Recommandations (LLM, ancré sur les faits calculés ci-dessus) ---
     const factsBlock = [
         `Projet : ${project.name} (statut : ${project.status})`,
         `Avancement : ${progressRate === null ? 'aucune tâche' : `${progressRate}% des tâches terminées`} (${totalTasks} tâche(s) au total)`,

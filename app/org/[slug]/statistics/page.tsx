@@ -7,7 +7,11 @@ import { StatisticsFilters } from '@/src/components/statistics/StatisticsFilters
 import { ExportStatisticsButton } from '@/src/components/statistics/ExportStatisticsButton'
 import { TaskStatusBreakdown } from '@/src/components/dashboard/TaskStatusBreakdown'
 import { WorkloadChart } from '@/src/components/dashboard/WorkloadChart'
-import { BarChart3, Target, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { KpiCard } from '@/src/components/dashboard/KpiCard'
+import { PriorityBreakdown } from '@/src/components/statistics/PriorityBreakdown'
+import { ProjectVolumeChart } from '@/src/components/statistics/ProjectVolumeChart'
+import { formatDuration } from '@/src/lib/elapsed-time'
+import { BarChart3, Target, CheckCircle2, AlertTriangle, Gauge } from 'lucide-react'
 import { redirect } from 'next/navigation'
 
 interface PageProps {
@@ -22,8 +26,6 @@ interface PageProps {
   }>
 }
 
-// Même trois rôles que la barre latérale (navigationConfig) pour "Statistiques", désormais
-// appliqués côté serveur — même raisonnement que sur /teams (US-035) et /clients (US-036).
 const VIEWER_ROLES: Role[] = [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER]
 
 const periodSummaryLabels: Record<string, string> = {
@@ -33,11 +35,11 @@ const periodSummaryLabels: Record<string, string> = {
   custom: 'Période personnalisée',
 }
 
-function onTimeRateTone(rate: number | null) {
-  if (rate === null) return { border: 'border-zinc-200/80', bg: 'bg-white', text: 'text-zinc-900', label: 'text-zinc-500' }
-  if (rate >= 80) return { border: 'border-emerald-200/60', bg: 'bg-emerald-50/50', text: 'text-emerald-700', label: 'text-emerald-600/80' }
-  if (rate >= 50) return { border: 'border-amber-200/60', bg: 'bg-amber-50/50', text: 'text-amber-700', label: 'text-amber-600/80' }
-  return { border: 'border-red-200/60', bg: 'bg-red-50/50', text: 'text-red-700', label: 'text-red-600/80' }
+function onTimeRateTone(rate: number | null): 'default' | 'success' | 'warning' | 'critical' {
+  if (rate === null) return 'default'
+  if (rate >= 80) return 'success'
+  if (rate >= 50) return 'warning'
+  return 'critical'
 }
 
 export default async function StatisticsPage({ params, searchParams }: PageProps) {
@@ -96,16 +98,18 @@ export default async function StatisticsPage({ params, searchParams }: PageProps
   ].filter((part): part is string => Boolean(part))
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/80 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-zinc-700" />
-            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Statistiques</h1>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-sand-200 pb-5">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-maroon-100 text-maroon-700">
+            <BarChart3 className="h-4 w-4" />
           </div>
-          <p className="mt-1 text-sm text-zinc-500">
-            Vue d&apos;ensemble de l&apos;activité de l&apos;organisation pour piloter la charge et les délais.
-          </p>
+          <div>
+            <h1 className="font-heading text-[22px] font-bold tracking-tight text-ink-900">Statistiques</h1>
+            <p className="mt-0.5 text-[12.5px] text-ink-500">
+              Vue d&apos;ensemble de l&apos;activité de l&apos;organisation pour piloter la charge et les délais.
+            </p>
+          </div>
         </div>
 
         <ExportStatisticsButton stats={stats} filterSummary={filterSummaryParts.join(' · ')} />
@@ -123,47 +127,73 @@ export default async function StatisticsPage({ params, searchParams }: PageProps
         currentTeamId={filters.teamId}
       />
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className={`rounded-2xl border p-6 shadow-sm hover:shadow-md transition-all ${tone.border} ${tone.bg}`}>
-          <div className={`flex items-center gap-2 ${tone.label}`}>
-            <Target className="h-4 w-4" />
-            <span className="text-xs font-semibold uppercase tracking-wider">Respect des délais</span>
+      <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.onTimeRate === null ? (
+          <div className="rounded-2xl border border-sand-200 bg-white p-5 shadow-[0_1px_2px_rgba(32,22,25,0.04),0_8px_24px_-12px_rgba(32,22,25,0.12)]">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-ink-500">
+              <Target className="h-3.5 w-3.5" />
+              Respect des délais
+            </div>
+            <p className="mt-3 text-sm italic text-sand-400">Aucune tâche terminée avec échéance sur cette période.</p>
           </div>
-          {stats.onTimeRate === null ? (
-            <p className="mt-3 text-sm text-zinc-400 italic">Aucune tâche terminée avec échéance sur cette période.</p>
-          ) : (
-            <>
-              <p className={`mt-3 text-3xl font-bold ${tone.text}`}>{stats.onTimeRate}%</p>
-              <p className={`mt-1 text-xs ${tone.label}`}>
-                {stats.onTimeCount} à temps · {stats.lateCount} en retard
-              </p>
-            </>
-          )}
-        </div>
+        ) : (
+          <KpiCard
+            icon={<Target className="h-3.5 w-3.5" />}
+            label="Respect des délais"
+            value={stats.onTimeRate}
+            suffix="%"
+            tone={tone}
+            hint={`${stats.onTimeCount} à temps · ${stats.lateCount} en retard`}
+          />
+        )}
 
-        <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center gap-2 text-zinc-500">
-            <CheckCircle2 className="h-4 w-4" />
-            <span className="text-xs font-semibold uppercase tracking-wider">Tâches sur la période</span>
+        <KpiCard
+          icon={<AlertTriangle className="h-3.5 w-3.5" />}
+          label="Tâches en retard"
+          value={stats.overdueCount}
+          tone={stats.overdueCount > 0 ? 'warning' : 'default'}
+          hint={stats.overdueCount > 0 ? 'échéance dépassée, non terminées' : 'aucune échéance dépassée'}
+          delayMs={60}
+        />
+
+        {stats.avgCompletionMs === null ? (
+          <div className="rounded-2xl border border-sand-200 bg-white p-5 shadow-[0_1px_2px_rgba(32,22,25,0.04),0_8px_24px_-12px_rgba(32,22,25,0.12)]">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-ink-500">
+              <Gauge className="h-3.5 w-3.5" />
+              Temps moyen de cycle
+            </div>
+            <p className="mt-3 text-sm italic text-sand-400">Aucune tâche terminée avec horodatage complet.</p>
           </div>
-          <p className="mt-3 text-3xl font-bold text-zinc-900">{stats.totalTasks}</p>
-          <p className="mt-1 text-xs text-zinc-500">Toutes, quel que soit le statut</p>
-        </div>
-
-        <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center gap-2 text-zinc-500">
-            <AlertTriangle className="h-4 w-4" />
-            <span className="text-xs font-semibold uppercase tracking-wider">Équipes suivies</span>
+        ) : (
+          <div className="rounded-2xl border border-sand-200 bg-white p-5 shadow-[0_1px_2px_rgba(32,22,25,0.04),0_8px_24px_-12px_rgba(32,22,25,0.12)]">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-ink-500">
+              <Gauge className="h-3.5 w-3.5" />
+              Temps moyen de cycle
+            </div>
+            <p className="font-data mt-2 text-[30px] font-medium leading-none tracking-tight text-ink-900">
+              {formatDuration(stats.avgCompletionMs)}
+            </p>
+            <p className="mt-2 text-[11.5px] text-ink-500">prise en charge → validation</p>
           </div>
-          <p className="mt-3 text-3xl font-bold text-zinc-900">{stats.teamWorkload.length}</p>
-          <p className="mt-1 text-xs text-zinc-500">Charge détaillée ci-dessous</p>
-        </div>
+        )}
 
+        <KpiCard icon={<CheckCircle2 className="h-3.5 w-3.5" />} label="Tâches sur la période" value={stats.totalTasks} hint="toutes, quel que soit le statut" delayMs={180} />
+      </div>
+
+      <div className="grid gap-3.5 lg:grid-cols-3">
         <TaskStatusBreakdown tasksByStatus={stats.tasksByStatus} totalTasks={stats.totalTasks} className="lg:col-span-2" />
+
+        <PriorityBreakdown tasksByPriority={stats.tasksByPriority} />
+      </div>
+
+      <div className="grid gap-3.5 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ProjectVolumeChart data={stats.projectVolume} />
+        </div>
 
         <WorkloadChart
           data={stats.teamWorkload}
-          title="Charge par équipe"
+          title={`Charge par équipe (${stats.teamWorkload.length})`}
           emptyLabel="Aucune équipe ou aucune tâche active pour ce filtre."
         />
       </div>

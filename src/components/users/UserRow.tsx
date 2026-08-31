@@ -60,28 +60,28 @@ export function UserRow({ user, orgSlug, isSelf }: UserRowProps) {
     }
 
     return (
-        <tr className={`border-b border-zinc-100 last:border-0 ${!isActive ? 'opacity-60' : ''}`}>
+        <tr className={`border-b border-sand-100 last:border-0 ${!isActive ? 'opacity-60' : ''}`}>
             <td className="py-3 pr-4">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-white">
+                    <div className="font-data flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-steel-600 text-xs font-semibold text-white">
                         {user.firstName.charAt(0).toUpperCase()}
                         {user.lastName.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                        <p className="text-sm font-medium text-zinc-900 truncate">
+                        <p className="text-sm font-medium text-ink-900 truncate">
                             {user.firstName} {user.lastName}
-                            {isSelf && <span className="ml-1.5 text-xs font-normal text-zinc-400">(vous)</span>}
+                            {isSelf && <span className="ml-1.5 text-xs font-normal text-sand-400">(vous)</span>}
                         </p>
-                        <p className="text-xs text-zinc-500 truncate">{user.email}</p>
+                        <p className="text-xs text-ink-500 truncate">{user.email}</p>
                     </div>
                 </div>
-                {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+                {error && <p className="mt-1 text-xs text-status-critical">{error}</p>}
             </td>
 
             <td className="py-3 pr-4">
                 {isSelf ? (
                     <span
-                        className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-md uppercase ring-1 ring-inset ${roleStyles[role]}`}
+                        className={`font-data inline-block rounded-[5px] px-2 py-1 text-[10px] font-medium ${roleStyles[role]}`}
                     >
                         {roleLabels[role]}
                     </span>
@@ -90,7 +90,7 @@ export function UserRow({ user, orgSlug, isSelf }: UserRowProps) {
                         value={role}
                         onChange={(e) => handleRoleChange(e.target.value as Role)}
                         disabled={isPending}
-                        className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:opacity-50"
+                        className="rounded-lg border border-sand-200 bg-white px-2.5 py-1.5 text-xs text-ink-900 shadow-sm focus:border-maroon-600 focus:outline-none focus:ring-1 focus:ring-maroon-600 disabled:opacity-50"
                     >
                         {Object.values(Role).map((r) => (
                             <option key={r} value={r}>
@@ -103,15 +103,15 @@ export function UserRow({ user, orgSlug, isSelf }: UserRowProps) {
 
             <td className="py-3 pr-4">
                 <span
-                    className={`inline-flex items-center px-2 py-0.5 text-[10px] font-semibold rounded-md uppercase ring-1 ring-inset ${
-                        isActive ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' : 'bg-zinc-100 text-zinc-500 ring-zinc-600/10'
+                    className={`font-data inline-flex items-center rounded-[5px] px-2 py-1 text-[10px] font-medium ${
+                        isActive ? 'bg-status-success-bg text-status-success' : 'bg-sand-100 text-sand-400'
                     }`}
                 >
                     {isActive ? 'Actif' : 'Désactivé'}
                 </span>
             </td>
 
-            <td className="py-3 pr-4 text-xs text-zinc-500">{formatLastLogin(user.lastLoginAt)}</td>
+            <td className="font-data py-3 pr-4 text-xs text-ink-500">{formatLastLogin(user.lastLoginAt)}</td>
 
             <td className="py-3 text-right">
                 {!isSelf && (
@@ -122,8 +122,8 @@ export function UserRow({ user, orgSlug, isSelf }: UserRowProps) {
                         title={isActive ? 'Désactiver ce compte' : 'Réactiver ce compte'}
                         className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:opacity-50 ${
                             isActive
-                                ? 'border-red-200 text-red-600 hover:bg-red-50'
-                                : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+                                ? 'border-status-critical-bg text-status-critical hover:bg-status-critical-bg'
+                                : 'border-status-success-bg text-status-success hover:bg-status-success-bg'
                         }`}
                     >
                         <Power className="h-3.5 w-3.5" />

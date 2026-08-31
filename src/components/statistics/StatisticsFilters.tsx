@@ -34,7 +34,7 @@ interface FilterState {
 }
 
 const selectClasses =
-    'flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:opacity-50'
+    'flex-1 rounded-lg border border-sand-200 bg-white px-3 py-2.5 text-sm text-ink-900 shadow-sm focus:border-maroon-600 focus:outline-none focus:ring-1 focus:ring-maroon-600 disabled:opacity-50'
 
 export function StatisticsFilters({
     projects,
@@ -62,7 +62,6 @@ export function StatisticsFilters({
             ...overrides,
         }
 
-        // Projet et client restent mutuellement exclusifs (US-037) : choisir l'un efface l'autre.
         if (overrides.projectId) next.clientId = ''
         if (overrides.clientId) next.projectId = ''
 
@@ -145,7 +144,7 @@ export function StatisticsFilters({
                     <button
                         onClick={() => startTransition(() => router.push(pathname))}
                         disabled={isPending}
-                        className="rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 disabled:opacity-50 transition-colors"
+                        className="rounded-lg border border-sand-200 bg-white px-4 py-2.5 text-sm font-medium text-ink-700 shadow-sm hover:bg-sand-50 disabled:opacity-50 transition-colors"
                     >
                         <X className="h-4 w-4 inline mr-1" />
                         Réinitialiser
@@ -154,22 +153,22 @@ export function StatisticsFilters({
             </div>
 
             {currentPeriod === 'custom' && (
-                <div className="flex flex-wrap items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50/60 px-3.5 py-2.5">
-                    <label className="text-xs font-medium text-zinc-500">Du</label>
+                <div className="flex flex-wrap items-center gap-3 rounded-lg border border-sand-200 bg-sand-50 px-3.5 py-2.5">
+                    <label className="text-xs font-medium text-ink-500">Du</label>
                     <input
                         type="date"
                         value={currentFrom || ''}
                         onChange={(e) => push({ from: e.target.value })}
                         disabled={isPending}
-                        className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:opacity-50"
+                        className="font-data rounded-lg border border-sand-200 bg-white px-3 py-1.5 text-sm text-ink-900 shadow-sm focus:border-maroon-600 focus:outline-none focus:ring-1 focus:ring-maroon-600 disabled:opacity-50"
                     />
-                    <label className="text-xs font-medium text-zinc-500">Au</label>
+                    <label className="text-xs font-medium text-ink-500">Au</label>
                     <input
                         type="date"
                         value={currentTo || ''}
                         onChange={(e) => push({ to: e.target.value })}
                         disabled={isPending}
-                        className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:opacity-50"
+                        className="font-data rounded-lg border border-sand-200 bg-white px-3 py-1.5 text-sm text-ink-900 shadow-sm focus:border-maroon-600 focus:outline-none focus:ring-1 focus:ring-maroon-600 disabled:opacity-50"
                     />
                 </div>
             )}

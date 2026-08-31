@@ -32,36 +32,12 @@ export const taskPriorityLabels: Record<TaskPriority, string> = {
 	CRITICAL: 'Critique',
 }
 
-export const projectStatusStyles: Record<ProjectStatus, string> = {
-	PLANNING: 'bg-amber-50 text-amber-700 ring-amber-600/20',
-	IN_PROGRESS: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-	ON_HOLD: 'bg-orange-50 text-orange-700 ring-orange-600/20',
-	COMPLETED: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-	CANCELLED: 'bg-zinc-100 text-zinc-500 ring-zinc-600/10',
-}
-
-export const taskStatusStyles: Record<TaskStatus, string> = {
-	TODO: 'bg-zinc-100 text-zinc-600 ring-zinc-600/15',
-	IN_PROGRESS: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-	IN_REVIEW: 'bg-violet-50 text-violet-700 ring-violet-600/20',
-	DONE: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-	BLOCKED: 'bg-red-50 text-red-700 ring-red-600/20',
-	CANCELLED: 'bg-zinc-100 text-zinc-400 ring-zinc-600/10',
-}
-
-export const taskPriorityStyles: Record<TaskPriority, string> = {
-	LOW: 'bg-zinc-100 text-zinc-600 ring-zinc-600/15',
-	MEDIUM: 'bg-sky-50 text-sky-700 ring-sky-600/20',
-	HIGH: 'bg-amber-50 text-amber-700 ring-amber-600/20',
-	CRITICAL: 'bg-red-50 text-red-700 ring-red-600/20',
-}
-
 export const roleStyles: Record<Role, string> = {
-	ADMIN: 'bg-red-50 text-red-700 ring-red-600/20',
-	PROJECT_MANAGER: 'bg-violet-50 text-violet-700 ring-violet-600/20',
-	TEAM_LEADER: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-	USER: 'bg-zinc-100 text-zinc-600 ring-zinc-600/15',
-	VIEWER: 'bg-zinc-100 text-zinc-400 ring-zinc-600/10',
+	ADMIN: 'bg-status-critical-bg text-status-critical',
+	PROJECT_MANAGER: 'bg-maroon-100 text-maroon-700',
+	TEAM_LEADER: 'bg-steel-100 text-steel-700',
+	USER: 'bg-sand-100 text-ink-500',
+	VIEWER: 'bg-sand-100 text-sand-400',
 }
 
 

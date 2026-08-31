@@ -4,8 +4,8 @@ import { useMemo, useState, useTransition } from 'react'
 import { FolderKanban, Lock, Timer } from 'lucide-react'
 import { updateTaskMetrics } from '@/src/actions/task'
 import type { TaskStatus, TaskPriority } from '@/src/generated/client'
-import { taskStatusLabels, taskPriorityLabels, taskPriorityStyles } from '@/src/lib/labels'
-import { taskStatusSolidStyles } from '@/src/lib/status-colors'
+import { taskStatusLabels, taskPriorityLabels } from '@/src/lib/labels'
+import { taskStatusSolidStyles, taskPriorityStyles } from '@/src/lib/status-colors'
 import { formatElapsedSince } from '@/src/lib/elapsed-time'
 
 export interface KanbanTask {
@@ -64,7 +64,7 @@ export function KanbanBoard({ orgSlug, initialTasks, columns }: KanbanBoardProps
   return (
     <div className="space-y-3">
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg border border-status-critical-bg bg-status-critical-bg px-3 py-2 text-sm text-status-critical">{error}</div>
       )}
 
       <div className="flex gap-4 overflow-x-auto pb-4">
@@ -84,23 +84,23 @@ export function KanbanBoard({ orgSlug, initialTasks, columns }: KanbanBoardProps
                 e.preventDefault()
                 handleDrop(status)
               }}
-              className={`flex w-72 shrink-0 flex-col rounded-2xl border bg-zinc-50/60 p-3 transition-colors ${
-                isDragTarget ? 'border-primary/40 bg-primary/5' : 'border-zinc-200/80'
+              className={`flex w-72 shrink-0 flex-col rounded-2xl border p-3 transition-colors ${
+                isDragTarget ? 'border-maroon-500/50 bg-maroon-100/40' : 'border-sand-200 bg-sand-50'
               }`}
             >
               <div className="mb-3 flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
                   <span className={`h-2 w-2 rounded-full ${taskStatusSolidStyles[status]}`} />
-                  <h3 className="text-sm font-semibold text-zinc-800">{taskStatusLabels[status]}</h3>
+                  <h3 className="text-sm font-semibold text-ink-700">{taskStatusLabels[status]}</h3>
                 </div>
-                <span className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-zinc-500 border border-zinc-200">
+                <span className="font-data rounded-full border border-sand-200 bg-white px-2 py-0.5 text-xs font-medium text-ink-500">
                   {columnTasks.length}
                 </span>
               </div>
 
               <div className="flex flex-col gap-2 min-h-[4rem]">
                 {columnTasks.length === 0 && (
-                  <div className="rounded-xl border border-dashed border-zinc-200 py-6 text-center text-xs text-zinc-400">
+                  <div className="rounded-xl border border-dashed border-sand-200 py-6 text-center text-xs text-sand-400">
                     Aucune tâche
                   </div>
                 )}
@@ -114,30 +114,30 @@ export function KanbanBoard({ orgSlug, initialTasks, columns }: KanbanBoardProps
                       draggable={task.editable}
                       onDragStart={() => setDraggedTaskId(task.id)}
                       onDragEnd={() => setDraggedTaskId(null)}
-                      className={`rounded-xl border border-zinc-200 bg-white p-3 shadow-sm transition-shadow space-y-2 ${
-                        task.editable ? 'cursor-grab active:cursor-grabbing hover:shadow-md' : 'cursor-default opacity-90'
+                      className={`rounded-xl border border-sand-200 bg-white p-3 shadow-[0_1px_2px_rgba(32,22,25,0.04)] transition-shadow space-y-2 ${
+                        task.editable ? 'cursor-grab active:cursor-grabbing hover:shadow-[0_4px_10px_rgba(32,22,25,0.06),0_20px_40px_-16px_rgba(32,22,25,0.18)]' : 'cursor-default opacity-90'
                       } ${draggedTaskId === task.id ? 'opacity-40' : ''}`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md uppercase ring-1 ring-inset ${taskPriorityStyles[task.priority]}`}
+                          className={`font-data inline-flex items-center gap-1 rounded-[5px] px-2 py-1 text-[10px] font-medium ${taskPriorityStyles[task.priority]}`}
                         >
                           {taskPriorityLabels[task.priority]}
                         </span>
-                        {!task.editable && <Lock className="h-3 w-3 shrink-0 text-zinc-300" />}
+                        {!task.editable && <Lock className="h-3 w-3 shrink-0 text-sand-400" />}
                       </div>
 
-                      <p className="text-sm font-medium text-zinc-900 leading-snug">{task.title}</p>
+                      <p className="text-sm font-medium text-ink-900 leading-snug">{task.title}</p>
 
                       {task.project && (
-                        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                          <FolderKanban className="h-3.5 w-3.5 text-zinc-400" />
+                        <div className="flex items-center gap-1.5 text-xs text-ink-500">
+                          <FolderKanban className="h-3.5 w-3.5 text-sand-400" />
                           <span className="truncate">{task.project.name}</span>
                         </div>
                       )}
 
-                      <div className={`flex items-center gap-1.5 text-xs ${elapsed ? 'font-medium text-zinc-600' : 'text-zinc-400'}`}>
-                        <Timer className={`h-3.5 w-3.5 ${elapsed ? 'text-zinc-400' : 'text-zinc-300'}`} />
+                      <div className={`font-data flex items-center gap-1.5 text-xs ${elapsed ? 'font-medium text-ink-500' : 'text-sand-400'}`}>
+                        <Timer className={`h-3.5 w-3.5 ${elapsed ? 'text-sand-400' : 'text-sand-200'}`} />
                         <span>{elapsed ?? 'Non démarrée'}</span>
                       </div>
 
@@ -147,7 +147,7 @@ export function KanbanBoard({ orgSlug, initialTasks, columns }: KanbanBoardProps
                             <div
                               key={assignee.id}
                               title={`${assignee.firstName} ${assignee.lastName}`}
-                              className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-800 text-[10px] font-semibold text-white ring-2 ring-white"
+                              className="font-data flex h-6 w-6 items-center justify-center rounded-full bg-steel-600 text-[10px] font-semibold text-white ring-2 ring-white"
                             >
                               {assignee.firstName.charAt(0).toUpperCase()}
                             </div>

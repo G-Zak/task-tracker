@@ -15,8 +15,6 @@ export default async function ProjectReportPage({ params }: PageProps) {
 
   const user = await getCurrentUserSession()
   if (!user) redirect('/authentication')
-  // Même acteur que le critère d'acceptation ("ADMIN ou PROJECT_MANAGER") — cohérent avec la
-  // garde déjà appliquée à l'action de génération elle-même, pas seulement côté serveur silencieux.
   if (user.role !== Role.ADMIN && user.role !== Role.PROJECT_MANAGER) redirect(`/org/${orgSlug}/dashboard`)
 
   const project = await prisma.project.findFirst({

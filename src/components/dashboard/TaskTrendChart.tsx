@@ -52,20 +52,22 @@ export function TaskTrendChart({ data }: TaskTrendChartProps) {
     }
 
     return (
-        <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm hover:shadow-md transition-all">
+        <div className="rounded-2xl border border-sand-200 bg-white p-5 shadow-[0_1px_2px_rgba(32,22,25,0.04),0_8px_24px_-12px_rgba(32,22,25,0.12)] transition-shadow hover:shadow-[0_4px_10px_rgba(32,22,25,0.06),0_20px_40px_-16px_rgba(32,22,25,0.18)]">
             <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2 text-zinc-500">
-                    <TrendingUp className="h-4 w-4" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">
+                <div className="flex items-center gap-2.5">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] bg-sand-100 text-ink-500 [&_svg]:h-3.5 [&_svg]:w-3.5">
+                        <TrendingUp />
+                    </div>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-ink-500">
                         Tâches créées vs. terminées — 8 dernières semaines
                     </span>
                 </div>
-                <div className="flex items-center gap-3 text-[11px] text-zinc-500">
+                <div className="flex items-center gap-3 text-[11px] text-ink-500">
                     <span className="flex items-center gap-1">
-                        <span className="h-2 w-2 rounded-full bg-zinc-300" /> Créées
+                        <span className="h-2 w-2 rounded-full bg-steel-300" /> Créées
                     </span>
                     <span className="flex items-center gap-1">
-                        <span className="h-2 w-2 rounded-full bg-primary" /> Terminées
+                        <span className="h-2 w-2 rounded-full bg-maroon-600" /> Terminées
                     </span>
                 </div>
             </div>
@@ -78,25 +80,25 @@ export function TaskTrendChart({ data }: TaskTrendChartProps) {
                     onPointerLeave={() => setHoverIndex(null)}
                 >
                     {gridLines.map((y) => (
-                        <line key={y} x1={PADDING.left} y1={y} x2={WIDTH - PADDING.right} y2={y} stroke="currentColor" className="text-zinc-100" strokeWidth={1} />
+                        <line key={y} x1={PADDING.left} y1={y} x2={WIDTH - PADDING.right} y2={y} stroke="currentColor" className="text-sand-100" strokeWidth={1} />
                     ))}
 
                     <defs>
                         <linearGradient id="trend-completed-fill" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.18} />
-                            <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
+                            <stop offset="0%" stopColor="#8A1836" stopOpacity={0.16} />
+                            <stop offset="100%" stopColor="#8A1836" stopOpacity={0} />
                         </linearGradient>
                     </defs>
 
                     {data.length > 0 && <path d={completedAreaPath} fill="url(#trend-completed-fill)" />}
 
-                    <path d={createdPath} fill="none" stroke="currentColor" className="text-zinc-300" strokeWidth={2} />
-                    <path d={completedPath} fill="none" stroke="var(--primary)" strokeWidth={2} />
+                    <path d={createdPath} fill="none" stroke="currentColor" className="text-steel-300" strokeWidth={2} />
+                    <path d={completedPath} fill="none" stroke="#8A1836" strokeWidth={2} />
 
                     {data.map((p, i) => (
                         <g key={p.weekStart}>
-                            <circle cx={xAt(i)} cy={yAt(p.created)} r={2.5} fill="currentColor" className="text-zinc-300" />
-                            <circle cx={xAt(i)} cy={yAt(p.completed)} r={2.5} fill="var(--primary)" />
+                            <circle cx={xAt(i)} cy={yAt(p.created)} r={2.5} fill="currentColor" className="text-steel-300" />
+                            <circle cx={xAt(i)} cy={yAt(p.completed)} r={2.5} fill="#8A1836" />
                         </g>
                     ))}
 
@@ -106,7 +108,7 @@ export function TaskTrendChart({ data }: TaskTrendChartProps) {
                             cx={xAt(data.length - 1)}
                             cy={yAt(data[data.length - 1].completed)}
                             r={4}
-                            fill="var(--primary)"
+                            fill="#8A1836"
                             stroke="white"
                             strokeWidth={1.5}
                         />
@@ -119,7 +121,7 @@ export function TaskTrendChart({ data }: TaskTrendChartProps) {
                             x2={xAt(hoverIndex)}
                             y2={BASELINE_Y}
                             stroke="currentColor"
-                            className="text-zinc-300"
+                            className="text-steel-300"
                             strokeWidth={1}
                             strokeDasharray="3 3"
                         />
@@ -128,19 +130,19 @@ export function TaskTrendChart({ data }: TaskTrendChartProps) {
 
                 {hovered && hoverIndex !== null && (
                     <div
-                        className="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-[11px] shadow-md whitespace-nowrap"
+                        className="font-data pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-lg border border-sand-200 bg-white px-2.5 py-1.5 text-[11px] shadow-lg whitespace-nowrap"
                         style={{
                             left: `${(xAt(hoverIndex) / WIDTH) * 100}%`,
                             top: `${(yAt(Math.max(hovered.created, hovered.completed)) / HEIGHT) * 100}%`,
                         }}
                     >
-                        <p className="font-semibold text-zinc-900">{formatWeekLabel(hovered.weekStart)}</p>
-                        <p className="text-zinc-500">Créées : {hovered.created}</p>
-                        <p className="text-zinc-500">Terminées : {hovered.completed}</p>
+                        <p className="font-sans font-semibold text-ink-900">{formatWeekLabel(hovered.weekStart)}</p>
+                        <p className="text-ink-500">Créées : {hovered.created}</p>
+                        <p className="text-ink-500">Terminées : {hovered.completed}</p>
                     </div>
                 )}
 
-                <div className="mt-1 flex justify-between text-[10px] text-zinc-400">
+                <div className="font-data mt-1 flex justify-between text-[10px] text-sand-400">
                     {data.map((p, i) => (
                         <span key={p.weekStart} className={i % 2 === 0 || data.length <= 5 ? '' : 'invisible'}>
                             {formatWeekLabel(p.weekStart)}

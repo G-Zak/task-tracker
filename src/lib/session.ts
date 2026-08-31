@@ -32,8 +32,6 @@ export function decodeSession(cookieValue: string): SessionPayload | null {
     const signature = cookieValue.slice(separatorIndex + 1)
     const expected = sign(json)
 
-    // Comparaison en temps constant : une comparaison naïve (`===`) laisse fuir, via le temps de
-    // réponse, à quelle position la signature fournie diverge de celle attendue.
     const provided = Buffer.from(signature)
     const reference = Buffer.from(expected)
     if (provided.length !== reference.length || !crypto.timingSafeEqual(provided, reference)) {

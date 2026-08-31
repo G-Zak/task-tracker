@@ -2,9 +2,6 @@ import Link from 'next/link'
 import { FileQuestion } from 'lucide-react'
 import { BrandMark } from '@/src/components/branding/BrandMark'
 
-// Ni error.tsx ni not-found.tsx n'existaient au niveau racine (Application-Analysis-2026-08-28.md
-// §3.5) — une ressource réellement absente tombait sur l'écran par défaut de Next.js plutôt que
-// sur quelque chose au visuel de l'application.
 export default function NotFound() {
 	return (
 		<div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-50 to-zinc-100/60 px-4">

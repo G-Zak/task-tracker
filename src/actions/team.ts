@@ -8,9 +8,6 @@ import { catchActionError } from '@/src/lib/action-error'
 import { teamSchema, TeamFormValues } from '@/src/validations/team.schema'
 import { revalidatePath } from 'next/cache'
 
-// Un chef d'équipe désigné qui ne figurerait pas dans la liste des membres cochés serait
-// une incohérence silencieuse (une équipe dirigée par quelqu'un qui n'en fait pas partie) :
-// on le rattache donc automatiquement plutôt que de rejeter le formulaire.
 function resolveMemberIds(memberIds: string[] | undefined, leaderId?: string): string[] {
     const ids = memberIds ?? []
     if (!leaderId) return ids

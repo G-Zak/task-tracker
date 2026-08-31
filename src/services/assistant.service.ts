@@ -27,11 +27,6 @@ const SYSTEM_PROMPT = [
     'Réponds en français, de façon concise et factuelle.',
 ].join(' ')
 
-// Même règle de visibilité que `task.service.ts` (`restrictToUserId`) et le dashboard
-// personnel : ADMIN/PROJECT_MANAGER voient tout ; les autres rôles ne voient que leurs tâches
-// assignées et les projets dont ils sont membres. US-026 ("contrôle d'accès de l'assistant IA
-// par rôle") n'existant pas en tant que story séparée dans le code, cette story applique cette
-// même politique déjà établie plutôt que d'en inventer une nouvelle pour l'IA seule.
 export interface AssistantScope {
     projectIds: string[] | null // null = non restreint (ADMIN/PROJECT_MANAGER)
     taskIds: string[] | null
@@ -94,10 +89,6 @@ export async function askAssistant(params: {
         }
     }
 
-    // Les sources citées sont déterminées par l'application (exactement les chunks passés en
-    // contexte au modèle), jamais par une auto-citation du modèle — le deuxième critère
-    // d'acceptation ("chaque réponse cite les entités sources utilisées") tient donc toujours,
-    // indépendamment de ce que le LLM local écrit réellement dans sa réponse.
     const contextBlock = matches.map((match, index) => `[Source ${index + 1}]\n${match.content}`).join('\n\n')
 
     const messages: OllamaChatMessage[] = [

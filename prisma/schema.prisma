@@ -176,9 +176,6 @@ model  ProjectNote{
   author        User?        @relation(fields: [authorId], references: [id])
 }
 
-// Index vectoriel pour l'assistant IA (US-041). Le champ `embedding` est un type Postgres
-// (pgvector) non représentable nativement par Prisma Client : lu/écrit uniquement via
-// $queryRaw/$executeRaw dans src/services/rag.service.ts, jamais via l'API Prisma standard.
 model KnowledgeChunk{
   id             String   @id @default(uuid())
 

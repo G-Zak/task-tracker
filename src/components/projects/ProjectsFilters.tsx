@@ -3,10 +3,12 @@
 import { useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, X } from 'lucide-react'
+import { projectStatusLabels } from '@/src/lib/labels'
+import type { ProjectStatus } from '@/generated/enums'
 
 interface FilterProps {
   clients: Array<{ id: string; name: string }>
-  statuses: string[]
+  statuses: ProjectStatus[]
   currentStatus?: string
   currentClientId?: string
   currentSearch?: string
@@ -70,13 +72,13 @@ export function ProjectFilters({
     <div className="space-y-4">
       {/* Search Bar */}
       <form onSubmit={handleSearch} className="relative">
-        <Search className="absolute left-3.5 h-4 w-4 text-zinc-400 pointer-events-none top-3" />
+        <Search className="absolute left-3.5 h-4 w-4 text-sand-400 pointer-events-none top-3" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Rechercher par nom de projet..."
-          className="w-full rounded-lg border border-zinc-200 bg-white pl-10 pr-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+          className="w-full rounded-lg border border-sand-200 bg-white pl-10 pr-4 py-2.5 text-sm text-ink-900 placeholder:text-sand-400 shadow-sm focus:border-maroon-600 focus:outline-none focus:ring-1 focus:ring-maroon-600"
         />
       </form>
 
@@ -87,12 +89,12 @@ export function ProjectFilters({
           value={currentStatus || ''}
           onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
           disabled={isPending}
-          className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:opacity-50"
+          className="flex-1 rounded-lg border border-sand-200 bg-white px-3 py-2.5 text-sm text-ink-900 shadow-sm focus:border-maroon-600 focus:outline-none focus:ring-1 focus:ring-maroon-600 disabled:opacity-50"
         >
           <option value="">Tous les statuts</option>
           {statuses.map((status) => (
             <option key={status} value={status}>
-              {status}
+              {projectStatusLabels[status]}
             </option>
           ))}
         </select>
@@ -102,7 +104,7 @@ export function ProjectFilters({
           value={currentClientId || ''}
           onChange={(e) => handleFilterChange('clientId', e.target.value || undefined)}
           disabled={isPending}
-          className="flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:opacity-50"
+          className="flex-1 rounded-lg border border-sand-200 bg-white px-3 py-2.5 text-sm text-ink-900 shadow-sm focus:border-maroon-600 focus:outline-none focus:ring-1 focus:ring-maroon-600 disabled:opacity-50"
         >
           <option value="">Tous les clients</option>
           {clients.map((client) => (
@@ -117,7 +119,7 @@ export function ProjectFilters({
           <button
             onClick={handleReset}
             disabled={isPending}
-            className="rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 disabled:opacity-50 transition-colors"
+            className="rounded-lg border border-sand-200 bg-white px-4 py-2.5 text-sm font-medium text-ink-700 shadow-sm hover:bg-sand-50 disabled:opacity-50 transition-colors"
           >
             <X className="h-4 w-4 inline mr-1" />
             Réinitialiser

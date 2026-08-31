@@ -19,7 +19,7 @@ async function embed(text: string): Promise<number[] | null> {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ model: OLLAMA_EMBEDDING_MODEL, input: text }),
-            signal: AbortSignal.timeout(10_000),
+            signal: AbortSignal.timeout(45_000),
         })
         if (!res.ok) return null
 
@@ -27,8 +27,6 @@ async function embed(text: string): Promise<number[] | null> {
         const vector = data.embeddings?.[0]
         return Array.isArray(vector) ? vector : null
     } catch {
-        // Ollama indisponible (process non lancé, modèle non installé...) : l'indexation est
-        // un enrichissement, jamais une dépendance dure pour les Server Actions qui l'appellent.
         return null
     }
 }
@@ -37,9 +35,6 @@ function toVectorLiteral(embedding: number[]): string {
     return `[${embedding.join(',')}]`
 }
 
-// Documents courts (nom/titre + quelques métadonnées + description) : un chunk par entité,
-// pas de découpage en sous-blocs — inutile pour des textes de cette taille (projets/tâches/
-// messages de l'app, jamais des documents longs).
 function buildProjectDocument(project: { name: string; description: string | null; status: string }): string {
     const parts = [`Projet : ${project.name}`, `Statut : ${project.status}`]
     if (project.description) parts.push(`Description : ${project.description}`)
@@ -67,10 +62,6 @@ function buildNoteDocument(note: { content: string; authorName?: string | null; 
     return parts.join('\n')
 }
 
-// Réindexation "best-effort" : jamais bloquante pour l'opération métier qui la déclenche —
-// même posture que la diffusion temps réel (US-033), une fonctionnalité de renfort ne doit
-// jamais conditionner le succès de l'action qu'elle enrichit. `embedding` est un type Postgres
-// (pgvector) non représentable par le Prisma Client généré : écrit ici via $executeRaw.
 async function indexEntity(params: {
     organisationId: string
     sourceType: KnowledgeSourceType
@@ -102,10 +93,6 @@ export async function removeFromIndex(sourceType: KnowledgeSourceType, sourceId:
     }
 }
 
-// Une fonction par type d'entité, appelée directement depuis les Server Actions après une
-// écriture réussie (création/modification) — chacune recharge l'entité depuis la base plutôt
-// que de faire confiance aux données déjà en mémoire dans l'action appelante, pour que le
-// contenu indexé reflète toujours exactement ce qui est persisté.
 export async function indexProject(projectId: string): Promise<void> {
     const project = await prisma.project.findUnique({ where: { id: projectId } })
     if (!project) return
@@ -161,16 +148,6 @@ export interface KnowledgeScope {
     noteIds: string[]
 }
 
-// Recherche par similarité, strictement scopée à une organisation (US-041, critère "aucune
-// fuite cross-organisation") : le filtre `organisationId` fait partie de la clause WHERE
-// elle-même, jamais un post-filtrage applicatif — aucune requête ne peut donc renvoyer un
-// chunk d'une autre organisation, quelle que soit sa proximité vectorielle avec la question.
-//
-// `scope` (US-042) ajoute une deuxième restriction, optionnelle, au même niveau (dans la
-// clause WHERE, pas en post-filtrage) : un rôle non-manager ne peut faire remonter que des
-// chunks dont la source figure dans les ensembles de projets/tâches/notes qu'il a le droit de
-// voir par ailleurs dans l'app — même règle de visibilité que `task.service.ts`, pas une
-// nouvelle politique d'accès inventée pour l'assistant.
 export async function searchKnowledge(
     organisationId: string,
     query: string,

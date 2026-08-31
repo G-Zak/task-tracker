@@ -4,9 +4,6 @@ import { useEffect } from 'react'
 import { AlertTriangle } from 'lucide-react'
 import { BrandMark } from '@/src/components/branding/BrandMark'
 
-// Ni error.tsx ni not-found.tsx n'existaient au niveau racine (Application-Analysis-2026-08-28.md
-// §3.5) — une erreur non gérée tombait sur l'overlay de debug Next.js en dev, ou un écran blanc
-// sans marque en production, plutôt que sur quelque chose au visuel de l'application.
 export default function RootError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
 	useEffect(() => {
 		console.error('[error boundary]', error)

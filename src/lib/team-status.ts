@@ -8,8 +8,8 @@ export const teamStatusLabels: Record<TeamStatus, string> = {
 }
 
 export const teamStatusStyles: Record<TeamStatus, string> = {
-    overdue: 'bg-red-50 text-red-700 ring-red-600/20',
-    active: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-    idle: 'bg-zinc-100 text-zinc-500 ring-zinc-600/10',
-    empty: 'bg-zinc-50 text-zinc-400 ring-zinc-600/10',
+    overdue: 'bg-status-critical-bg text-status-critical',
+    active: 'bg-status-success-bg text-status-success',
+    idle: 'bg-sand-100 text-ink-500',
+    empty: 'bg-sand-100 text-sand-400',
 }

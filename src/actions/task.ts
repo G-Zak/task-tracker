@@ -58,9 +58,6 @@ export async function createTask(values: TaskFormValues, orgSlug: string): Promi
         })
 
         revalidateTaskViews(orgSlug, task.id, projectId)
-        // after() plutôt que await : l'indexation RAG (appel réseau à Ollama pour l'embedding)
-        // n'a pas besoin de retarder la réponse envoyée au client — même mécanique appliquée dans
-        // project.ts et note.ts (voir Application-Analysis-2026-08-28.md §4.1).
         after(() => indexTask(task.id))
 
         return { success: true, action: 'create', data: { id: task.id } }

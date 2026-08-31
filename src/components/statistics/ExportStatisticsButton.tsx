@@ -2,7 +2,8 @@
 
 import { Download } from 'lucide-react'
 import type { OrgStatistics } from '@/src/services/statistics.service'
-import { taskStatusLabels, taskStatusOptions } from '@/src/lib/labels'
+import { taskStatusLabels, taskStatusOptions, taskPriorityLabels, taskPriorityOptions } from '@/src/lib/labels'
+import { formatDuration } from '@/src/lib/elapsed-time'
 
 interface ExportStatisticsButtonProps {
     stats: OrgStatistics
@@ -32,12 +33,28 @@ export function ExportStatisticsButton({ stats, filterSummary }: ExportStatistic
         }
         lines.push('')
 
-        lines.push('Respect des délais')
+        lines.push('Répartition des tâches par priorité')
+        lines.push(row(['Priorité', 'Nombre']))
+        for (const priority of taskPriorityOptions) {
+            lines.push(row([taskPriorityLabels[priority], String(stats.tasksByPriority[priority] ?? 0)]))
+        }
+        lines.push('')
+
+        lines.push('Délais')
         lines.push(row(['Indicateur', 'Valeur']))
         lines.push(row(['Tâches évaluées', String(stats.onTimeCount + stats.lateCount)]))
         lines.push(row(['À temps', String(stats.onTimeCount)]))
-        lines.push(row(['En retard', String(stats.lateCount)]))
+        lines.push(row(['En retard (terminées)', String(stats.lateCount)]))
         lines.push(row(['Taux de respect', stats.onTimeRate === null ? 'N/A' : `${stats.onTimeRate}%`]))
+        lines.push(row(['Tâches actuellement en retard', String(stats.overdueCount)]))
+        lines.push(row(['Temps moyen de cycle', stats.avgCompletionMs === null ? 'N/A' : formatDuration(stats.avgCompletionMs)]))
+        lines.push('')
+
+        lines.push('Volume par projet')
+        lines.push(row(['Projet', 'Tâches']))
+        for (const project of stats.projectVolume) {
+            lines.push(row([project.name, String(project.count)]))
+        }
         lines.push('')
 
         lines.push('Charge par équipe')
@@ -62,7 +79,7 @@ export function ExportStatisticsButton({ stats, filterSummary }: ExportStatistic
     return (
         <button
             onClick={handleExport}
-            className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3.5 py-2 text-sm font-medium text-zinc-700 shadow-sm hover:bg-zinc-50 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg border border-sand-200 bg-white px-3.5 py-2 text-sm font-medium text-ink-700 shadow-sm hover:bg-sand-50 transition-colors"
         >
             <Download className="h-4 w-4" />
             Export CSV

@@ -2,8 +2,6 @@ import { prisma } from '@/lib/prisma'
 import { Role } from '@/generated/enums'
 import * as bcrypt from 'bcrypt'
 
-// Rôles ouverts à l'inscription libre — un compte ADMIN/PROJECT_MANAGER/TEAM_LEADER ne peut être
-// créé que par un ADMIN via inviteUser (src/actions/user.ts), jamais via ce formulaire public.
 export const SELF_SERVICE_ROLES = [Role.USER, Role.VIEWER] as const
 
 export interface RegisterAccountInput {
@@ -14,10 +12,6 @@ export interface RegisterAccountInput {
     role: (typeof SELF_SERVICE_ROLES)[number]
 }
 
-// Inscription libre : le compte est créé immédiatement mais `isApproved: false` l'empêche de se
-// connecter (voir validateCredentials ci-dessous) tant qu'un ADMIN ne l'a pas approuvé depuis la
-// page Utilisateurs. L'app n'a qu'une seule organisation en pratique (même hypothèse déjà faite
-// par loginAction/proxy.ts) — le nouveau compte y est rattaché directement.
 export async function registerAccount(input: RegisterAccountInput) {
     const email = input.email.toLowerCase().trim()
 
@@ -61,15 +55,10 @@ export async function validateCredentials(email: string, passwordPlain: string){
         return null
     }
 
-    // Vérifié après le mot de passe, pas avant : un identifiant/mot de passe correct sur un
-    // compte désactivé doit produire un message explicite plutôt que "identifiants incorrects".
     if (!user.isActive) {
         throw new Error('Ce compte a été désactivé. Contactez un administrateur.')
     }
 
-    // Comptes issus de l'inscription libre (registerAccount) : bloqués tant qu'un ADMIN ne les a
-    // pas approuvés (voir approveUser/rejectUser dans src/actions/user.ts). Les comptes créés par
-    // un ADMIN via inviteUser sont approuvés d'office.
     if (!user.isApproved) {
         throw new Error("Votre compte est en attente d'approbation par un administrateur.")
     }

@@ -110,12 +110,12 @@ export default async function TeamDetailPage({ params }: PageProps) {
                         <p className="text-sm font-medium text-zinc-900 truncate">{task.title}</p>
                         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
                           <span
-                            className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-md uppercase ring-1 ring-inset ${taskStatusStyles[task.status] ?? 'bg-zinc-100 text-zinc-600 ring-zinc-600/10'}`}
+                            className={`font-data inline-block rounded-[5px] px-2 py-1 text-[10px] font-medium ${taskStatusStyles[task.status] ?? 'bg-sand-100 text-ink-500'}`}
                           >
                             {taskStatusLabels[task.status]}
                           </span>
                           <span
-                            className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-md uppercase ring-1 ring-inset ${taskPriorityStyles[task.priority] ?? 'bg-zinc-100 text-zinc-600 ring-zinc-600/10'}`}
+                            className={`font-data inline-block rounded-[5px] px-2 py-1 text-[10px] font-medium ${taskPriorityStyles[task.priority] ?? 'bg-sand-100 text-ink-500'}`}
                           >
                             {taskPriorityLabels[task.priority]}
                           </span>

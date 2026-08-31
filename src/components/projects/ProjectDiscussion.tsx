@@ -11,7 +11,7 @@ const SOCKET_STATUS_DISPLAY: Record<SocketStatus, { dot: string; label: string }
   connecting: { dot: 'bg-amber-400 animate-pulse', label: 'Connexion au temps réel…' },
   open: { dot: 'bg-emerald-500', label: 'Temps réel' },
   reconnecting: { dot: 'bg-amber-400 animate-pulse', label: 'Reconnexion…' },
-  unavailable: { dot: 'bg-zinc-300', label: 'Temps réel indisponible (les messages restent fonctionnels)' },
+  unavailable: { dot: 'bg-sand-200', label: 'Temps réel indisponible (les messages restent fonctionnels)' },
 }
 
 interface NoteAuthor {
@@ -34,7 +34,6 @@ interface ProjectDiscussionProps {
   notes: ProjectNoteItem[]
   canPost: boolean
   currentUserId: string
-  // ADMIN/PROJECT_MANAGER : peut supprimer n'importe quel message du projet (US-022)
   canModerate: boolean
 }
 
@@ -45,8 +44,6 @@ export function ProjectDiscussion({ projectId, orgSlug, notes, canPost, currentU
   const [error, setError] = useState<string | null>(null)
 
   const handleRealtimeEvent = useCallback(() => {
-    // US-033 : un autre membre a posté ou supprimé un message — on redemande au
-    // Server Component les notes à jour plutôt que de reconstruire l'état côté client.
     router.refresh()
   }, [router])
 
@@ -69,25 +66,25 @@ export function ProjectDiscussion({ projectId, orgSlug, notes, canPost, currentU
   }
 
   return (
-    <div className="bg-white rounded-lg border border-zinc-200 p-6 space-y-4">
+    <div className="bg-white rounded-2xl border border-sand-200 p-6 space-y-4 shadow-[0_1px_2px_rgba(32,22,25,0.04),0_8px_24px_-12px_rgba(32,22,25,0.12)]">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-zinc-900">
+        <h2 className="font-heading text-lg font-semibold text-ink-900">
           Discussion ({notes.length})
         </h2>
         <div className="flex items-center gap-1.5" title={statusDisplay.label}>
           <span className={`h-2 w-2 rounded-full ${statusDisplay.dot}`} />
-          <span className="text-xs text-zinc-400">{statusDisplay.label}</span>
+          <span className="text-xs text-sand-400">{statusDisplay.label}</span>
         </div>
       </div>
 
       {notes.length === 0 ? (
-        <p className="text-sm text-zinc-500 italic py-4 text-center">
+        <p className="text-sm text-ink-500 italic py-4 text-center">
           Aucun message pour le moment
         </p>
       ) : (
         <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
           {notes.map((note) => (
-            <div key={note.id} className="flex gap-3 p-3 bg-zinc-50 rounded-lg">
+            <div key={note.id} className="flex gap-3 p-3 bg-sand-50 rounded-xl">
               {note.author?.avatarUrl ? (
                 <img
                   src={note.author.avatarUrl}
@@ -95,14 +92,16 @@ export function ProjectDiscussion({ projectId, orgSlug, notes, canPost, currentU
                   className="w-8 h-8 rounded-full shrink-0"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-zinc-200 shrink-0" />
+                <div className="font-data flex w-8 h-8 shrink-0 items-center justify-center rounded-full bg-steel-600 text-[10px] font-semibold text-white">
+                  {note.author ? note.author.firstName.charAt(0).toUpperCase() : '?'}
+                </div>
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2">
-                  <p className="text-sm font-medium text-zinc-900">
+                  <p className="text-sm font-medium text-ink-900">
                     {note.author ? `${note.author.firstName} ${note.author.lastName}` : 'Utilisateur inconnu'}
                   </p>
-                  <p className="text-xs text-zinc-400">
+                  <p className="font-data text-xs text-sand-400">
                     {new Date(note.createdAt).toLocaleString('fr-FR', {
                       day: '2-digit',
                       month: '2-digit',
@@ -112,7 +111,7 @@ export function ProjectDiscussion({ projectId, orgSlug, notes, canPost, currentU
                     })}
                   </p>
                 </div>
-                <p className="text-sm text-zinc-700 whitespace-pre-wrap break-words">
+                <p className="text-sm text-ink-700 whitespace-pre-wrap break-words">
                   {note.content}
                 </p>
               </div>
@@ -126,9 +125,9 @@ export function ProjectDiscussion({ projectId, orgSlug, notes, canPost, currentU
       )}
 
       {canPost && (
-        <form onSubmit={handleSubmit} className="space-y-2 pt-2 border-t border-zinc-100">
+        <form onSubmit={handleSubmit} className="space-y-2 pt-2 border-t border-sand-100">
           {error && (
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="text-sm text-status-critical">{error}</p>
           )}
           <div className="flex gap-2">
             <textarea
@@ -138,12 +137,12 @@ export function ProjectDiscussion({ projectId, orgSlug, notes, canPost, currentU
               rows={2}
               maxLength={2000}
               disabled={isPending}
-              className="flex-1 border border-zinc-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              className="flex-1 border border-sand-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-maroon-600 focus:border-maroon-600 disabled:opacity-50"
             />
             <button
               type="submit"
               disabled={isPending || !content.trim()}
-              className="self-end px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition flex items-center gap-2 text-sm font-medium"
+              className="self-end px-3 py-2 bg-maroon-600 text-white rounded-xl hover:bg-maroon-700 disabled:opacity-50 transition flex items-center gap-2 text-sm font-medium"
             >
               {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </button>

@@ -62,28 +62,17 @@ export function AssistantChat() {
     }
 
     return (
-        <div className="flex h-[calc(100vh-13rem)] flex-col rounded-2xl border border-zinc-200/80 bg-white shadow-sm overflow-hidden">
+        <div className="flex h-[calc(100vh-13rem)] flex-col rounded-2xl border border-sand-200 bg-white shadow-[0_1px_2px_rgba(32,22,25,0.04),0_8px_24px_-12px_rgba(32,22,25,0.12)] overflow-hidden">
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
                 {messages.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center text-center">
-                        <div className="rounded-full bg-violet-50 p-3 text-violet-600 mb-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-maroon-100 text-maroon-700 mb-3">
                             <Sparkles className="h-6 w-6" />
                         </div>
-                        <h3 className="font-semibold text-zinc-900">Posez une question sur votre organisation</h3>
-                        <p className="mt-1 max-w-sm text-sm text-zinc-500">
+                        <h3 className="font-heading font-semibold text-ink-900">Posez une question sur votre organisation</h3>
+                        <p className="mt-1 max-w-sm text-sm text-ink-500">
                             L&apos;assistant répond uniquement à partir des projets, tâches et messages auxquels vous avez accès.
                         </p>
-                        <div className="mt-5 flex flex-col gap-2">
-                            {EXAMPLE_QUESTIONS.map((question) => (
-                                <button
-                                    key={question}
-                                    onClick={() => send(question)}
-                                    className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100 transition-colors"
-                                >
-                                    {question}
-                                </button>
-                            ))}
-                        </div>
                     </div>
                 ) : (
                     messages.map((message, index) => (
@@ -92,10 +81,10 @@ export function AssistantChat() {
                                 <div
                                     className={`rounded-2xl px-4 py-2.5 text-sm whitespace-pre-wrap ${
                                         message.role === 'user'
-                                            ? 'bg-primary text-primary-foreground'
+                                            ? 'bg-maroon-600 text-white'
                                             : message.isError
-                                              ? 'bg-red-50 text-red-700 border border-red-200'
-                                              : 'bg-zinc-100 text-zinc-900'
+                                              ? 'bg-status-critical-bg text-status-critical border border-status-critical-bg'
+                                              : 'bg-sand-100 text-ink-900'
                                     }`}
                                 >
                                     {message.content}
@@ -109,9 +98,9 @@ export function AssistantChat() {
                                                 <span
                                                     key={`${source.sourceType}-${source.sourceId}-${sourceIndex}`}
                                                     title={source.label}
-                                                    className="flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[11px] text-zinc-500"
+                                                    className="flex items-center gap-1 rounded-full border border-sand-200 bg-white px-2 py-0.5 text-[11px] text-ink-500"
                                                 >
-                                                    <Icon className="h-3 w-3 text-zinc-400" />
+                                                    <Icon className="h-3 w-3 text-sand-400" />
                                                     {sourceLabels[source.sourceType]}
                                                 </span>
                                             )
@@ -125,7 +114,7 @@ export function AssistantChat() {
 
                 {isPending && (
                     <div className="flex justify-start">
-                        <div className="flex items-center gap-2 rounded-2xl bg-zinc-100 px-4 py-2.5 text-sm text-zinc-500">
+                        <div className="flex items-center gap-2 rounded-2xl bg-sand-100 px-4 py-2.5 text-sm text-ink-500">
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
                             L&apos;assistant réfléchit... (modèle local, généralement moins d&apos;une minute)
                         </div>
@@ -135,12 +124,27 @@ export function AssistantChat() {
                 <div ref={bottomRef} />
             </div>
 
+            <div className="flex items-center gap-2 overflow-x-auto border-t border-sand-100 bg-sand-50 px-4 py-2.5 [scrollbar-width:thin]">
+                <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-sand-400">Suggestions</span>
+                {EXAMPLE_QUESTIONS.map((question) => (
+                    <button
+                        key={question}
+                        type="button"
+                        onClick={() => send(question)}
+                        disabled={isPending}
+                        className="shrink-0 rounded-full border border-sand-200 bg-white px-3 py-1.5 text-xs text-ink-700 hover:border-maroon-500/40 hover:bg-maroon-100/40 disabled:opacity-50 transition-colors"
+                    >
+                        {question}
+                    </button>
+                ))}
+            </div>
+
             <form
                 onSubmit={(e) => {
                     e.preventDefault()
                     send(input)
                 }}
-                className="flex items-center gap-2 border-t border-zinc-100 p-4"
+                className="flex items-center gap-2 border-t border-sand-100 p-4"
             >
                 <input
                     type="text"
@@ -148,12 +152,12 @@ export function AssistantChat() {
                     onChange={(e) => setInput(e.target.value)}
                     disabled={isPending}
                     placeholder="Posez votre question..."
-                    className="flex-1 rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:opacity-50"
+                    className="flex-1 rounded-xl border border-sand-200 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-sand-400 focus:border-maroon-600 focus:outline-none focus:ring-1 focus:ring-maroon-600 disabled:opacity-50"
                 />
                 <button
                     type="submit"
                     disabled={isPending || !input.trim()}
-                    className="flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                    className="flex items-center gap-1.5 rounded-xl bg-maroon-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-maroon-700 disabled:opacity-50 transition-colors"
                 >
                     <Send className="h-4 w-4" />
                 </button>

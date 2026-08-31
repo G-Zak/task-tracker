@@ -11,11 +11,6 @@ export interface ProjectSocketEvent {
 
 const MAX_RECONNECT_ATTEMPTS = 5
 
-// Connexion temps réel au fil de discussion d'un projet (US-033), avec repli propre :
-// reconnexion automatique par backoff exponentiel, puis statut "unavailable" après
-// MAX_RECONNECT_ATTEMPTS échecs consécutifs — l'appelant peut alors afficher un message
-// clair sans jamais bloquer la lecture/l'envoi de messages (qui restent fonctionnels sans
-// temps réel, via la soumission de formulaire classique).
 export function useProjectSocket(projectId: string, onEvent: (event: ProjectSocketEvent) => void): SocketStatus {
     const [status, setStatus] = useState<SocketStatus>('connecting')
     const onEventRef = useRef(onEvent)

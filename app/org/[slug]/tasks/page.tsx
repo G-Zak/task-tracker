@@ -10,7 +10,7 @@ import { Pagination } from '@/src/components/ui/Pagination'
 import { getFilteredTasks } from '@/src/services/task.service'
 import { taskFilterSchema } from '@/src/validations/task.schema'
 import { Role, TaskStatus } from '@/src/generated/client'
-import { taskStatusOptions } from '@/src/lib/labels'
+import { taskStatusOptions, taskStatusLabels, taskPriorityLabels } from '@/src/lib/labels'
 import { CheckSquare, FolderKanban, Pencil } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -36,7 +36,7 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
   if (!user) redirect('/authentication')
 
   const canCreateTask = user.role === Role.ADMIN || user.role === Role.PROJECT_MANAGER
-  const view: 'list' | 'board' = rawSearchParams.view === 'board' ? 'board' : 'list'
+  const view: 'list' | 'board' = rawSearchParams.view === 'list' ? 'list' : 'board'
 
   const filters = taskFilterSchema.parse({
     q: rawSearchParams.q,
@@ -106,15 +106,17 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/80 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <CheckSquare className="h-6 w-6 text-zinc-700" />
-            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Tâches</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-sand-200 pb-5">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-maroon-100 text-maroon-700">
+            <CheckSquare className="h-4 w-4" />
           </div>
-          <p className="mt-1 text-sm text-zinc-500">
-            Suivi de l'ensemble des tâches techniques de l'organisation.
-          </p>
+          <div>
+            <h1 className="font-heading text-[22px] font-bold tracking-tight text-ink-900">Tâches</h1>
+            <p className="mt-0.5 text-[12.5px] text-ink-500">
+              Suivi de l&apos;ensemble des tâches techniques de l&apos;organisation.
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -140,17 +142,17 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
           currentView={view}
         />
 
-        <div className="text-xs font-semibold uppercase tracking-wider text-zinc-400 px-1">
+        <div className="font-data text-xs font-semibold uppercase tracking-wider text-ink-500 px-1">
           {pagination.count} tâche(s) trouvée(s)
         </div>
 
         {tasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-white p-12 text-center shadow-sm">
-            <div className="rounded-full bg-zinc-100 p-3 text-zinc-500 mb-3">
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-sand-200 bg-white p-12 text-center shadow-sm">
+            <div className="rounded-full bg-sand-100 p-3 text-ink-500 mb-3">
               <CheckSquare className="h-6 w-6" />
             </div>
-            <h3 className="font-semibold text-zinc-900">Aucune tâche trouvée</h3>
-            <p className="mt-1 text-sm text-zinc-500 max-w-sm">
+            <h3 className="font-semibold text-ink-900">Aucune tâche trouvée</h3>
+            <p className="mt-1 text-sm text-ink-500 max-w-sm">
               {filters.q || filters.status || filters.priority || filters.projectId
                 ? 'Aucune tâche ne correspond à vos critères de recherche.'
                 : canCreateTask
@@ -170,25 +172,25 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
             {tasks.map((task) => (
               <div
                 key={task.id}
-                className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-sm transition-all hover:border-zinc-300 hover:shadow-md space-y-2"
+                className="rounded-xl border border-sand-200 bg-white p-4 shadow-[0_1px_2px_rgba(32,22,25,0.04)] transition-all hover:shadow-[0_4px_10px_rgba(32,22,25,0.06),0_20px_40px_-16px_rgba(32,22,25,0.18)] space-y-2"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-md uppercase ring-1 ring-inset ${taskStatusStyles[task.status] ?? 'bg-zinc-100 text-zinc-600 ring-zinc-600/10'}`}>
-                        {task.status}
+                      <span className={`font-data inline-block rounded-[5px] px-2 py-1 text-[10px] font-medium ${taskStatusStyles[task.status] ?? 'bg-sand-100 text-ink-500'}`}>
+                        {taskStatusLabels[task.status]}
                       </span>
-                      <span className={`inline-block px-2 py-0.5 text-[10px] font-semibold rounded-md uppercase ring-1 ring-inset ${taskPriorityStyles[task.priority] ?? 'bg-zinc-100 text-zinc-600 ring-zinc-600/10'}`}>
-                        {task.priority}
+                      <span className={`font-data inline-block rounded-[5px] px-2 py-1 text-[10px] font-medium ${taskPriorityStyles[task.priority] ?? 'bg-sand-100 text-ink-500'}`}>
+                        {taskPriorityLabels[task.priority]}
                       </span>
                     </div>
-                    <h3 className="font-semibold text-zinc-900">{task.title}</h3>
+                    <h3 className="font-semibold text-ink-900">{task.title}</h3>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
                     {task.project && (
-                      <div className="flex items-center gap-1.5 text-xs text-zinc-500 bg-zinc-50 px-2.5 py-1 rounded-lg border border-zinc-100">
-                        <FolderKanban className="h-3.5 w-3.5 text-zinc-400" />
+                      <div className="flex items-center gap-1.5 text-xs text-ink-500 bg-sand-50 px-2.5 py-1 rounded-lg border border-sand-100">
+                        <FolderKanban className="h-3.5 w-3.5 text-sand-400" />
                         <span>{task.project.name}</span>
                       </div>
                     )}
@@ -196,7 +198,7 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
                     {canCreateTask && (
                       <Link
                         href={`/org/${orgSlug}/tasks/${task.id}/edit`}
-                        className="flex items-center gap-1.5 text-xs font-medium text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg hover:bg-blue-100 transition-colors"
+                        className="flex items-center gap-1.5 text-xs font-medium text-steel-700 bg-steel-100 px-2.5 py-1 rounded-lg hover:bg-steel-100/70 transition-colors"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                         Modifier
@@ -214,7 +216,7 @@ export default async function TasksPage({ params, searchParams }: PageProps) {
                     {task.assignees.map((assignee) => (
                       <span
                         key={assignee.id}
-                        className="text-xs text-zinc-500 bg-zinc-100 px-2 py-1 rounded"
+                        className="text-xs text-ink-500 bg-sand-100 px-2 py-1 rounded"
                       >
                         {assignee.firstName} {assignee.lastName}
                       </span>

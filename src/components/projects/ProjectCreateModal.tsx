@@ -26,15 +26,13 @@ export function ProjectCreateModal({ orgSlug, clients, users }: ProjectCreateMod
 
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          {/* ProjectForm porte déjà sa propre carte (titre, bordure, fond) ; la modale
-              se contente d'ajouter le fond, le centrage et le bouton de fermeture. */}
           <div className="relative max-w-lg w-full max-h-[85vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="absolute right-3 top-3 z-10 rounded-lg bg-white p-1.5 shadow-sm hover:bg-zinc-100"
+              className="absolute right-3 top-3 z-10 rounded-lg bg-white p-1.5 shadow-sm hover:bg-sand-100"
             >
-              <X className="h-5 w-5 text-zinc-500" />
+              <X className="h-5 w-5 text-ink-500" />
             </button>
 
             <ProjectForm

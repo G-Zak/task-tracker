@@ -41,10 +41,6 @@ export interface TeamDetail {
     tasks: TeamDetailTask[]
 }
 
-// "Statut" n'est pas un champ stocké sur Team (contrairement à Project) : il n'a de sens que
-// dérivé de la charge réelle, cohérent avec l'objectif de la story ("évaluer la charge de
-// chaque équipe"). Priorité : une équipe avec au moins une tâche en retard est "overdue" même
-// si elle a aussi des tâches à jour — le signal le plus actionnable l'emporte.
 function computeTeamStatus(memberCount: number, activeTaskCount: number, overdueTaskCount: number): TeamStatus {
     if (memberCount === 0) return 'empty'
     if (overdueTaskCount > 0) return 'overdue'
@@ -64,11 +60,6 @@ export async function getTeamSummaries(organisationId: string): Promise<TeamSumm
 
     const now = new Date()
 
-    // Une requête pour toute l'organisation plutôt que 2 count() par équipe (2N requêtes pour N
-    // équipes) — même pattern que statistics.service.ts (US-037) : les tâches actives sont
-    // chargées une fois, puis réparties par équipe en mémoire. Un `some()` par tâche/équipe pour
-    // préserver la sémantique d'origine (une tâche compte une fois par équipe dès qu'un de ses
-    // assignés en fait partie, jamais une fois par assigné).
     const activeTasks = await prisma.task.findMany({
         where: { organisationId, status: { notIn: CLOSED_TASK_STATUSES } },
         select: { dueDate: true, assignees: { select: { id: true } } },

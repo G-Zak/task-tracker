@@ -15,10 +15,6 @@ function generateTemporaryPassword(): string {
     return crypto.randomBytes(9).toString('base64url')
 }
 
-// Invitation "minimale" (US-039) : pas d'envoi d'e-mail réel (explicitement hors périmètre de
-// cette story), pas de lien de token à activer — le compte est créé directement avec un mot de
-// passe temporaire généré, affiché une seule fois à l'ADMIN pour transmission manuelle. Même
-// logique que les comptes de démonstration du seed (mot de passe partagé, communiqué hors app).
 export async function inviteUser(data: InviteUserFormValues, orgSlug: string) {
     try {
         const admin = await authorizeRole(Role.ADMIN)
@@ -100,8 +96,6 @@ export async function setUserActive(userId: string, isActive: boolean, orgSlug: 
     }
 }
 
-// Approuve un compte issu de l'inscription libre (registerAccount, src/services/auth.service.ts) —
-// tant que ce n'est pas fait, validateCredentials refuse la connexion.
 export async function approveUser(userId: string, orgSlug: string) {
     try {
         const admin = await authorizeRole(Role.ADMIN)
@@ -119,9 +113,6 @@ export async function approveUser(userId: string, orgSlug: string) {
     }
 }
 
-// Rejette une demande d'inscription en attente. Le compte n'a jamais eu accès à l'application,
-// donc il est supprimé plutôt que marqué "rejeté" — la personne peut refaire une demande avec la
-// même adresse e-mail si besoin.
 export async function rejectUser(userId: string, orgSlug: string) {
     try {
         const admin = await authorizeRole(Role.ADMIN)

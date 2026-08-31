@@ -14,7 +14,7 @@ export const navigationConfig: NavigationItem[] = [
     {
         name: 'Tableau de bord',
         href: '/dashboard',
-        icon: 'LayoutDashboard',
+        icon: 'Gauge',
         allowedRoles: [Role.ADMIN, Role.PROJECT_MANAGER, Role.TEAM_LEADER, Role.USER, Role.VIEWER] 
     },
     {

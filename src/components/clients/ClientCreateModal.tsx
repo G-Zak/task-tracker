@@ -2,14 +2,13 @@
 
 import { useState } from 'react'
 import { Plus, X } from 'lucide-react'
-import { TeamForm } from '@/src/components/teams/TeamForm'
+import { ClientForm } from '@/src/components/clients/ClientForm'
 
-interface TeamCreateModalProps {
+interface ClientCreateModalProps {
     orgSlug: string
-    members: { id: string; name: string; role: string }[]
 }
 
-export function TeamCreateModal({ orgSlug, members }: TeamCreateModalProps) {
+export function ClientCreateModal({ orgSlug }: ClientCreateModalProps) {
     const [isOpen, setIsOpen] = useState(false)
 
     return (
@@ -17,15 +16,15 @@ export function TeamCreateModal({ orgSlug, members }: TeamCreateModalProps) {
             <button
                 type="button"
                 onClick={() => setIsOpen(true)}
-                className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                className="flex items-center gap-2 rounded-xl bg-maroon-600 px-4 py-2 text-sm font-medium text-white hover:bg-maroon-700 transition-colors"
             >
                 <Plus className="h-4 w-4" />
-                Nouvelle équipe
+                Nouveau client
             </button>
 
             {isOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="relative max-w-lg w-full max-h-[85vh] overflow-y-auto">
+                <div className="fixed inset-0 bg-ink-900/50 flex items-center justify-center z-50 p-4">
+                    <div className="relative max-w-md w-full max-h-[85vh] overflow-y-auto">
                         <button
                             type="button"
                             onClick={() => setIsOpen(false)}
@@ -34,7 +33,7 @@ export function TeamCreateModal({ orgSlug, members }: TeamCreateModalProps) {
                             <X className="h-5 w-5 text-ink-500" />
                         </button>
 
-                        <TeamForm orgSlug={orgSlug} members={members} onSuccess={() => setIsOpen(false)} />
+                        <ClientForm orgSlug={orgSlug} onSuccess={() => setIsOpen(false)} />
                     </div>
                 </div>
             )}

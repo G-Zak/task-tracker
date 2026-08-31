@@ -6,11 +6,6 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
 })
 
-// Jeu de données 100% fictif — noms, entreprises et personnes n'existent pas et ne désignent
-// aucune organisation ou personne réelle. Seul le positionnement métier (orchestration
-// d'écosystèmes intelligents, IA multimodale & AIoT, équipements connectés, infrastructure
-// souveraine ; santé, industrie X.0, territoires intelligents, banque/assurance) reflète
-// l'activité réelle d'ABA Technology, pour que la démo reste cohérente avec la marque.
 const MOROCCAN_FIRST_NAMES = [
   'Hamza', 'Tarik', 'Bilal', 'Mounir', 'Hicham', 'Younes', 'Marouane', 'Aziz',
   'Faycal', 'Driss', 'Walid', 'Samir', 'Hatim', 'Abderrahim',
@@ -38,31 +33,26 @@ const CLIENT_NAME_POOL = [
 ]
 
 const TASK_TITLE_POOL = [
-  // Health-Tech & Biotechnologie
   'Déployer les capteurs de télésurveillance à domicile',
   'Valider la conformité réglementaire des données patients',
   'Intégrer l IA de triage pour les urgences distantes',
   'Calibrer les capteurs biométriques portables',
   'Auditer la sécurité des dossiers médicaux électroniques',
-  // Industrie X.0 & Supply Chain
   'Modéliser le jumeau numérique de la ligne d assemblage',
   'Déployer les agents de maintenance prédictive',
   'Optimiser les itinéraires logistiques multi-sites',
   'Automatiser le contrôle qualité par vision embarquée',
   'Cartographier les capteurs IoT du site industriel',
-  // Territoires intelligents
   'Déployer le réseau LoRaWAN pour l éclairage intelligent',
   'Intégrer les capteurs de qualité de l air urbains',
   'Concevoir le tableau de bord énergétique municipal',
   'Sécuriser les communications des infrastructures critiques',
   'Tester la résilience du réseau en cas de coupure',
-  // Banque & Assurance
   'Entraîner le modèle de détection de fraude',
   'Auditer la conformité des flux de paiement',
   'Chiffrer les échanges inter-agences',
   'Déployer l assistant IA de conformité réglementaire',
   'Migrer l infrastructure vers le cloud souverain',
-  // Transverse / orchestration
   'Documenter l API d intégration partenaires',
   'Former les équipes terrain aux nouveaux outils',
   'Refondre le pipeline CI/CD des modèles embarqués',
@@ -96,6 +86,23 @@ function approvedAtForStatus(status: TaskStatus, startedAt: Date | null): Date |
   if (status !== TaskStatus.DONE || !startedAt) return null
   const hoursAfterStart = randomInt(1, 72)
   return new Date(startedAt.getTime() + hoursAfterStart * 60 * 60 * 1000)
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+function dueDateForStatus(status: TaskStatus, approvedAt: Date | null): Date {
+  if (status === TaskStatus.DONE && approvedAt) {
+    const onTime = Math.random() > 0.35
+    const offsetDays = randomInt(1, 6)
+    return onTime
+      ? new Date(approvedAt.getTime() + offsetDays * DAY_MS)
+      : new Date(approvedAt.getTime() - offsetDays * DAY_MS)
+  }
+
+  const bucket = Math.random()
+  if (bucket < 0.15) return new Date(Date.now() - randomInt(1, 10) * DAY_MS)
+  if (bucket < 0.4) return new Date(Date.now() + randomInt(0, 4) * DAY_MS)
+  return new Date(Date.now() + randomInt(5, 30) * DAY_MS)
 }
 
 async function main() {
@@ -242,7 +249,6 @@ async function main() {
     fakeUsers.push(user)
   }
 
-  // Une "viewer" pour couvrir ce rôle dans la démo (aucun compte n'en portait avant).
   const viewer = await prisma.user.create({
     data: {
       email: 'viewer@abatechnology.com',
@@ -470,13 +476,15 @@ async function main() {
 
   for (const task of tasks) {
     const startedAt = startedAtForStatus(task.status)
+    const approvedAt = approvedAtForStatus(task.status, startedAt)
     await prisma.task.create({
       data: {
         title: task.title,
         status: task.status,
         priority: task.priority,
         startedAt,
-        approvedAt: approvedAtForStatus(task.status, startedAt),
+        approvedAt,
+        dueDate: dueDateForStatus(task.status, approvedAt),
         organisationId: organisation.id,
         projectId: task.projectId,
         taskTypeId: task.taskTypeId,
@@ -499,13 +507,15 @@ async function main() {
     const assignees = shuffle(allUsers).slice(0, assigneeCount)
 
     const startedAt = startedAtForStatus(status)
+    const approvedAt = approvedAtForStatus(status, startedAt)
     await prisma.task.create({
       data: {
         title,
         status,
         priority: randomItem(allPriorities),
         startedAt,
-        approvedAt: approvedAtForStatus(status, startedAt),
+        approvedAt,
+        dueDate: dueDateForStatus(status, approvedAt),
         organisationId: organisation.id,
         projectId: randomItem(allProjects).id,
         taskTypeId: randomItem(allTaskTypes).id,

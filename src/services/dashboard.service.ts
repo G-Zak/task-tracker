@@ -16,10 +16,8 @@ export interface ActivityItem {
     id: string
     timestamp: Date
     projectName: string | null
-    // 'task'
     title?: string
     status?: TaskStatus
-    // 'note'
     content?: string
     authorName?: string | null
 }
@@ -30,7 +28,7 @@ export interface OrgActivitySummary {
 }
 
 export interface WeeklyTrendPoint {
-    weekStart: string // ISO date (lundi de la semaine)
+    weekStart: string
     created: number
     completed: number
 }
@@ -44,7 +42,7 @@ export interface MemberWorkload {
 function startOfWeek(date: Date): Date {
     const d = new Date(date)
     d.setHours(0, 0, 0, 0)
-    const day = d.getDay() // 0 = dimanche
+    const day = d.getDay()
     const diffToMonday = (day + 6) % 7
     d.setDate(d.getDate() - diffToMonday)
     return d
@@ -111,9 +109,6 @@ export async function getDashboardKpis({ organisationId, restrictToUserId }: Das
     return { activeProjects, overdueTasks, tasksByStatus, totalTasks }
 }
 
-// Tâches assignées à l'utilisateur, encore actives, triées par échéance.
-// PostgreSQL place les NULL après les valeurs sur un tri ASC par défaut : les tâches
-// sans échéance se retrouvent naturellement en fin de liste, sans config supplémentaire.
 export async function getMyAssignedTasks(organisationId: string, userId: string, limit = 5): Promise<MyTask[]> {
     const tasks = await prisma.task.findMany({
         where: {
@@ -135,8 +130,29 @@ export async function getMyAssignedTasks(organisationId: string, userId: string,
     }))
 }
 
-// Fil d'activité personnel : tâches récemment modifiées + messages postés, sur le
-// périmètre de l'utilisateur (tâches qui lui sont assignées, projets dont il est membre).
+export interface NextDeadline {
+    taskId: string
+    title: string
+    dueDate: Date
+}
+
+export async function getNextDeadline(organisationId: string, userId: string): Promise<NextDeadline | null> {
+    const task = await prisma.task.findFirst({
+        where: {
+            organisationId,
+            assignees: { some: { id: userId } },
+            status: { notIn: [TaskStatus.DONE, TaskStatus.CANCELLED] },
+            dueDate: { not: null },
+        },
+        select: { id: true, title: true, dueDate: true },
+        orderBy: { dueDate: 'asc' },
+    })
+
+    if (!task || !task.dueDate) return null
+
+    return { taskId: task.id, title: task.title, dueDate: task.dueDate }
+}
+
 export async function getRecentActivity(organisationId: string, userId: string, limit = 6): Promise<ActivityItem[]> {
     const scopeOr: Prisma.TaskWhereInput['OR'] = [
         { assignees: { some: { id: userId } } },
@@ -185,8 +201,6 @@ export async function getRecentActivity(organisationId: string, userId: string, 
     return merged.slice(0, limit)
 }
 
-// Résumé additionnel réservé à ADMIN (US-028) : activité du jour sur toute l'organisation,
-// au-delà du périmètre personnel de getRecentActivity.
 export async function getOrgActivitySummary(organisationId: string): Promise<OrgActivitySummary> {
     const startOfDay = new Date()
     startOfDay.setHours(0, 0, 0, 0)
@@ -199,10 +213,6 @@ export async function getOrgActivitySummary(organisationId: string): Promise<Org
     return { tasksUpdatedToday, notesPostedToday }
 }
 
-// Tendance hebdomadaire (créées vs. terminées) sur les `weeks` dernières semaines, pour le
-// graphique du dashboard. « Terminées » est une approximation : faute d'horodatage dédié
-// (startedAt/approvedAt, prévu en US-030/US-031), on retient updatedAt des tâches déjà DONE —
-// juste tant qu'une tâche terminée n'est pas ré-éditée pour une autre raison ensuite.
 export async function getWeeklyTaskTrend(
     organisationId: string,
     restrictToUserId?: string,
@@ -248,8 +258,6 @@ export async function getWeeklyTaskTrend(
     return points
 }
 
-// Charge de travail par membre (tâches actives, non DONE/CANCELLED) — vue organisation,
-// réservée à ADMIN/PROJECT_MANAGER (même esprit que getOrgActivitySummary).
 export async function getWorkloadByMember(organisationId: string, limit = 8): Promise<MemberWorkload[]> {
     const users = await prisma.user.findMany({
         where: { organisationId },
@@ -274,4 +282,42 @@ export async function getWorkloadByMember(organisationId: string, limit = 8): Pr
         .filter((u) => u.activeTaskCount > 0)
         .sort((a, b) => b.activeTaskCount - a.activeTaskCount)
         .slice(0, limit)
+}
+
+export interface ProjectOverviewItem {
+    id: string
+    name: string
+    clientName: string | null
+    status: ProjectStatus
+    taskCount: number
+}
+
+export async function getActiveProjectsOverview(
+    { organisationId, restrictToUserId }: DashboardScope,
+    limit = 6
+): Promise<ProjectOverviewItem[]> {
+    const projects = await prisma.project.findMany({
+        where: {
+            organisationId,
+            status: { in: ACTIVE_PROJECT_STATUSES },
+            ...(restrictToUserId ? { members: { some: { id: restrictToUserId } } } : {}),
+        },
+        select: {
+            id: true,
+            name: true,
+            status: true,
+            client: { select: { name: true } },
+            _count: { select: { tasks: true } },
+        },
+        orderBy: { name: 'asc' },
+        take: limit,
+    })
+
+    return projects.map((project) => ({
+        id: project.id,
+        name: project.name,
+        clientName: project.client?.name ?? null,
+        status: project.status,
+        taskCount: project._count.tasks,
+    }))
 }

@@ -34,10 +34,10 @@ export function TaskQuickEdit({ taskId, orgSlug, currentStatus, currentPriority,
     }
 
     return (
-        <div className="space-y-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+        <div className="space-y-4 rounded-xl border border-sand-200 bg-sand-50 p-4">
             <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Mise à jour rapide</h4>
-                {isPending && <Loader2 className="h-4 w-4 animate-spin text-zinc-500" />}
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-ink-500">Mise à jour rapide</h4>
+                {isPending && <Loader2 className="h-4 w-4 animate-spin text-ink-500" />}
             </div>
 
             {error && <FormAlert type="error" message={error} />}
@@ -77,7 +77,7 @@ export function TaskQuickEdit({ taskId, orgSlug, currentStatus, currentPriority,
                             </Select>
                         ) : (
                             <div
-                                className={`flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-sm ring-1 ring-inset ${taskPriorityStyles[currentPriority] ?? ''}`}
+                                className={`flex items-center gap-1.5 rounded-xl border border-sand-200 px-3.5 py-2 text-sm font-medium ${taskPriorityStyles[currentPriority] ?? ''}`}
                                 title="Seuls les administrateurs et chefs de projet peuvent modifier la priorité."
                             >
                                 <Lock className="h-3.5 w-3.5 shrink-0 opacity-60" />

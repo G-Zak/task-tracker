@@ -1,34 +1,32 @@
 export const projectStatusStyles: Record<string, string> = {
-  PLANNING: 'bg-amber-50 text-amber-700 ring-amber-600/20',
-  IN_PROGRESS: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-  ON_HOLD: 'bg-orange-50 text-orange-700 ring-orange-600/20',
-  COMPLETED: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-  CANCELLED: 'bg-zinc-100 text-zinc-500 ring-zinc-600/10',
+  PLANNING: 'bg-maroon-100 text-maroon-700',
+  IN_PROGRESS: 'bg-steel-100 text-steel-700',
+  ON_HOLD: 'bg-status-warning-bg text-status-warning',
+  COMPLETED: 'bg-status-success-bg text-status-success',
+  CANCELLED: 'bg-sand-100 text-sand-400',
 }
 
 export const taskStatusStyles: Record<string, string> = {
-  TODO: 'bg-zinc-100 text-zinc-600 ring-zinc-600/10',
-  IN_PROGRESS: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-  IN_REVIEW: 'bg-amber-50 text-amber-700 ring-amber-600/20',
-  DONE: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-  BLOCKED: 'bg-red-50 text-red-700 ring-red-600/20',
-  CANCELLED: 'bg-zinc-100 text-zinc-500 ring-zinc-600/10',
+  TODO: 'bg-sand-100 text-ink-500',
+  IN_PROGRESS: 'bg-steel-100 text-steel-700',
+  IN_REVIEW: 'bg-maroon-100 text-maroon-700',
+  DONE: 'bg-status-success-bg text-status-success',
+  BLOCKED: 'bg-status-critical-bg text-status-critical',
+  CANCELLED: 'bg-sand-100 text-sand-400',
 }
 
 export const taskPriorityStyles: Record<string, string> = {
-  LOW: 'bg-zinc-100 text-zinc-600 ring-zinc-600/10',
-  MEDIUM: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-  HIGH: 'bg-orange-50 text-orange-700 ring-orange-600/20',
-  CRITICAL: 'bg-red-50 text-red-700 ring-red-600/20',
+  LOW: 'bg-sand-100 text-ink-500',
+  MEDIUM: 'bg-steel-100 text-steel-700',
+  HIGH: 'bg-status-warning-bg text-status-warning',
+  CRITICAL: 'bg-status-critical-bg text-status-critical',
 }
 
-// Couleurs pleines (barres, puces) associées à chaque statut de tâche.
-// Source de vérité partagée par le Kanban (STATUS_DOT) et les widgets du dashboard.
 export const taskStatusSolidStyles: Record<string, string> = {
-  TODO: 'bg-zinc-400',
-  IN_PROGRESS: 'bg-blue-500',
-  IN_REVIEW: 'bg-violet-500',
-  DONE: 'bg-emerald-500',
-  BLOCKED: 'bg-red-500',
-  CANCELLED: 'bg-zinc-300',
+  TODO: 'bg-steel-300',
+  IN_PROGRESS: 'bg-steel-600',
+  IN_REVIEW: 'bg-maroon-500',
+  DONE: 'bg-status-success',
+  BLOCKED: 'bg-status-critical',
+  CANCELLED: 'bg-sand-200',
 }
