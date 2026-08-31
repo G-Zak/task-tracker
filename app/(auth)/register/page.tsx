@@ -52,7 +52,7 @@ export default function RegisterPage() {
 		<div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-zinc-50 to-zinc-100/60 px-4 py-12">
 			<div className="w-full max-w-md space-y-6 rounded-2xl border border-zinc-200/80 bg-white p-8 shadow-md">
 				<div className="space-y-3 text-center">
-					<div className="mx-auto flex">
+					<div className="flex justify-center">
 						<BrandMark size="lg" />
 					</div>
 					<div className="space-y-1">

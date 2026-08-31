@@ -1,6 +1,3 @@
-// Serveur WebSocket autonome pour la messagerie temps réel du fil de discussion (US-033).
-// Process séparé de Next.js — ne modifie ni next dev/build/start ni Turbopack.
-// Lancement : npm run dev:ws (voir documentation/Conception/07-Guide-Construction.md §6.11).
 
 import { createServer, type IncomingMessage } from 'node:http'
 import { WebSocket, WebSocketServer } from 'ws'
@@ -11,13 +8,8 @@ import { decodeSession } from '@/lib/session'
 const PORT = Number(process.env.WS_PORT ?? 4001)
 const BROADCAST_SECRET = process.env.WS_BROADCAST_SECRET ?? ''
 
-// projectId -> connexions ouvertes sur ce fil de discussion
 const rooms = new Map<string, Set<WebSocket>>()
 
-// Process séparé de Next.js (voir en-tête du fichier) : le cookie est désormais signé
-// (src/lib/session.ts), donc décodé/vérifié ici plutôt que JSON.parse en clair. La partie "cet
-// utilisateur est-il toujours actif/approuvé" est revérifiée juste après, via Prisma, plutôt que
-// de faire confiance à ce que contenait le cookie au moment où il a été signé.
 function parseSessionCookie(cookieHeader: string | undefined) {
     if (!cookieHeader) return null
 
@@ -55,7 +47,6 @@ function joinRoom(projectId: string, socket: WebSocket) {
 }
 
 const httpServer = createServer(async (req, res) => {
-    // Déclenché par les Server Actions (createProjectNote/deleteProjectNote) après écriture en base.
     if (req.method === 'POST' && req.url === '/broadcast') {
         if (req.headers['x-ws-broadcast-secret'] !== BROADCAST_SECRET) {
             res.writeHead(401).end()
@@ -89,8 +80,6 @@ const httpServer = createServer(async (req, res) => {
 
 const wss = new WebSocketServer({ noServer: true })
 
-// Auth vérifiée avant d'accepter la connexion (pas après) : un client non autorisé
-// reçoit un refus HTTP à la poignée de main, il ne rejoint jamais une room.
 httpServer.on('upgrade', async (req, socket, head) => {
     try {
         const url = new URL(req.url ?? '', `http://localhost:${PORT}`)
@@ -103,9 +92,6 @@ httpServer.on('upgrade', async (req, socket, head) => {
             return
         }
 
-        // Revérifié en base plutôt que de faire confiance au cookie signé : un compte désactivé
-        // depuis la signature du cookie ne doit pas pouvoir ouvrir un canal temps réel (même
-        // logique que getCurrentUserSession() côté Next.js, src/lib/rbac.ts).
         const liveUser = await prisma.user.findUnique({
             where: { id: payload.id },
             select: { id: true, role: true, organisationId: true, isActive: true, isApproved: true },

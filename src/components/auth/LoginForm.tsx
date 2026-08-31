@@ -84,7 +84,7 @@ export function LoginForm({ currentUser }: LoginFormProps) {
 			<div className="flex w-full flex-1 items-center justify-center px-4 py-12 lg:w-1/2">
 				<div className="w-full max-w-md space-y-6 rounded-2xl border border-zinc-200/80 bg-white p-8 shadow-md">
 					<div className="space-y-3 text-center">
-						<div className="mx-auto flex lg:hidden">
+						<div className="flex justify-center lg:hidden">
 							<BrandMark size="lg" />
 						</div>
 						<div className="space-y-1">
