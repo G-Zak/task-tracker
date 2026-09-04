@@ -45,8 +45,9 @@ next-env.d.ts
 
 
 /src/generated/prisma
-/scripts/
+/scripts/*
+!/scripts/reindex-knowledge.ts
 
 
 PROGRESS.md
-
+DEPLOYMENT_PLAN.md

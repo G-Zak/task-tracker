@@ -7,7 +7,6 @@ node_modules
 *.tsbuildinfo
 next-env.d.ts
 documentation
-scripts
 coverage
 npm-debug.log*
 .DS_Store

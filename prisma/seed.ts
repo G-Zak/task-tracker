@@ -59,18 +59,33 @@ const TASK_TITLE_POOL = [
   'Préparer l audit de sécurité trimestriel',
 ]
 
+const RANDOM_SEED = Number(process.env.SEED_RANDOM_SEED ?? 20260101)
+
+function createRandom(seed: number): () => number {
+  let state = seed >>> 0
+  return function next() {
+    state = (state + 0x6d2b79f5) >>> 0
+    let t = state
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+const random = createRandom(RANDOM_SEED)
+
 function randomItem<T>(items: T[]): T {
-  return items[Math.floor(Math.random() * items.length)]
+  return items[Math.floor(random() * items.length)]
 }
 
 function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min
+  return Math.floor(random() * (max - min + 1)) + min
 }
 
 function shuffle<T>(items: T[]): T[] {
   const copy = [...items]
   for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
+    const j = Math.floor(random() * (i + 1))
     ;[copy[i], copy[j]] = [copy[j], copy[i]]
   }
   return copy
@@ -92,14 +107,14 @@ const DAY_MS = 24 * 60 * 60 * 1000
 
 function dueDateForStatus(status: TaskStatus, approvedAt: Date | null): Date {
   if (status === TaskStatus.DONE && approvedAt) {
-    const onTime = Math.random() > 0.35
+    const onTime = random() > 0.35
     const offsetDays = randomInt(1, 6)
     return onTime
       ? new Date(approvedAt.getTime() + offsetDays * DAY_MS)
       : new Date(approvedAt.getTime() - offsetDays * DAY_MS)
   }
 
-  const bucket = Math.random()
+  const bucket = random()
   if (bucket < 0.15) return new Date(Date.now() - randomInt(1, 10) * DAY_MS)
   if (bucket < 0.4) return new Date(Date.now() + randomInt(0, 4) * DAY_MS)
   return new Date(Date.now() + randomInt(5, 30) * DAY_MS)
@@ -234,7 +249,7 @@ async function main() {
     }
     usedEmails.add(email)
 
-    const role = Math.random() < 0.15 ? Role.TEAM_LEADER : Role.USER
+    const role = random() < 0.15 ? Role.TEAM_LEADER : Role.USER
 
     const user = await prisma.user.create({
       data: {

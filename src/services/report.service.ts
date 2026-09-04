@@ -4,7 +4,7 @@ import { taskStatusOptions } from '@/src/lib/labels'
 import { CLOSED_TASK_STATUSES } from '@/src/services/dashboard.service'
 import { isProjectOverdue } from '@/src/services/client.service'
 import { searchKnowledge, type KnowledgeScope } from '@/src/services/rag.service'
-import { ollamaChat, type OllamaChatMessage } from '@/src/lib/ollama-chat'
+import { describeOllamaFailure, ollamaChatDetailed, type OllamaChatMessage } from '@/src/lib/ollama-chat'
 
 export interface ProjectReportRiskItem {
     title: string
@@ -73,8 +73,8 @@ async function generateRecommendations(params: {
         { role: 'user', content: 'Rédige les recommandations.' },
     ]
 
-    const answer = await ollamaChat(messages)
-    return answer ?? "_L'assistant IA local est indisponible pour le moment : recommandations non générées. Réessayez plus tard._"
+    const result = await ollamaChatDetailed(messages)
+    return result.ok ? result.content : `_${describeOllamaFailure(result.reason, result.detail)}_`
 }
 
 export async function generateProjectReport(projectId: string, organisationId: string): Promise<ProjectReport | null> {

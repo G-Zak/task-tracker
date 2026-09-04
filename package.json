@@ -7,7 +7,10 @@
     "dev:ws": "tsx watch --env-file=.env server/ws-server.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "seed": "prisma db seed",
+    "reindex": "tsx scripts/reindex-knowledge.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

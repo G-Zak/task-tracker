@@ -1,7 +1,7 @@
 import { prisma } from '@/src/lib/prisma'
 import { Role } from '@/generated/enums'
 import { searchKnowledge, type KnowledgeSourceType } from '@/src/services/rag.service'
-import { ollamaChat, type OllamaChatMessage } from '@/src/lib/ollama-chat'
+import { AI_DISABLED_MESSAGE, describeOllamaFailure, isAiEnabled, ollamaChatDetailed, type OllamaChatMessage } from '@/src/lib/ollama-chat'
 
 export interface AssistantMessage {
     role: 'user' | 'assistant'
@@ -97,14 +97,20 @@ export async function askAssistant(params: {
         { role: 'user', content: question },
     ]
 
-    const answer = await ollamaChat(messages)
+    if (!isAiEnabled()) {
+        return { answer: AI_DISABLED_MESSAGE, sources: [] }
+    }
 
-    if (!answer) {
+    const result = await ollamaChatDetailed(messages)
+
+    if (!result.ok) {
         return {
-            answer: "L'assistant IA local est indisponible pour le moment (Ollama non joignable). Réessayez dans un instant.",
+            answer: describeOllamaFailure(result.reason, result.detail),
             sources: [],
         }
     }
+
+    const answer = result.content
 
     const sources: AssistantSource[] = matches.map((match) => ({
         sourceType: match.sourceType,
